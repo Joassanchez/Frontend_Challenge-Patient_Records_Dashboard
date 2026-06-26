@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { request } from './apiClient';
+import { isApiError } from './types';
+import type { ApiError } from './types';
 
 describe('apiClient', () => {
   beforeEach(() => {
@@ -28,9 +30,10 @@ describe('apiClient', () => {
       json: () => Promise.resolve(null),
     });
 
-    await expect(request('/missing')).rejects.toEqual({
+    await expect(request('/missing')).rejects.toMatchObject({
       status: 404,
       message: 'Not Found',
+      code: 'HTTP_ERROR',
     });
   });
 
@@ -52,5 +55,73 @@ describe('apiClient', () => {
       expect.stringContaining('/test'),
       expect.objectContaining({ method: 'POST' }),
     );
+  });
+
+  it('request<T>() throws ApiError with code NETWORK_ERROR on fetch rejection', async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(
+      new TypeError('Failed to fetch'),
+    );
+
+    await expect(request('/offline')).rejects.toMatchObject({
+      status: 0,
+      message: 'Failed to fetch',
+      code: 'NETWORK_ERROR',
+    }    );
+  });
+});
+
+describe('isApiError', () => {
+  it('returns true for ApiError with code', () => {
+    const error: ApiError = {
+      status: 404,
+      message: 'Not Found',
+      code: 'HTTP_ERROR',
+    };
+
+    expect(isApiError(error)).toBe(true);
+  });
+
+  it('returns true for ApiError without code (backward compat)', () => {
+    const error: ApiError = {
+      status: 500,
+      message: 'Server Error',
+    };
+
+    expect(isApiError(error)).toBe(true);
+  });
+
+  it('returns false for null', () => {
+    expect(isApiError(null)).toBe(false);
+  });
+
+  it('returns false for string', () => {
+    expect(isApiError('error message')).toBe(false);
+  });
+
+  it('returns false for plain object without status', () => {
+    expect(isApiError({ message: 'no status' })).toBe(false);
+  });
+
+  it('returns false for plain object without message', () => {
+    expect(isApiError({ status: 404 })).toBe(false);
+  });
+
+  it('returns false for TypeError', () => {
+    expect(isApiError(new TypeError('fail'))).toBe(false);
+  });
+
+  it('returns false for object with non-number status', () => {
+    expect(isApiError({ status: '404', message: 'ok' })).toBe(false);
+  });
+
+  it('returns false for empty object', () => {
+    expect(isApiError({})).toBe(false);
+  });
+});
+
+describe('environment configuration', () => {
+  it('VITE_API_BASE_URL is configured', () => {
+    expect(import.meta.env.VITE_API_BASE_URL).toBeDefined();
+    expect(import.meta.env.VITE_API_BASE_URL).toContain('mockapi.io');
   });
 });
