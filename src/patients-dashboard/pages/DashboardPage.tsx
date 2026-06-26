@@ -1,7 +1,9 @@
+import { DashboardLayout } from '@/patients-dashboard/organisms';
+
 export default function DashboardPage() {
   return (
-    <main>
+    <DashboardLayout>
       <h1>Patient Records Dashboard</h1>
-    </main>
+    </DashboardLayout>
   );
 }

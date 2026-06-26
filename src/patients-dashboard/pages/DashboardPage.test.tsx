@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import DashboardPage from './DashboardPage';
 
 describe('DashboardPage', () => {
-  it('renders the dashboard title', () => {
+  it('renders the dashboard page heading', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <DashboardPage />
@@ -16,14 +16,41 @@ describe('DashboardPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders within a main landmark', () => {
+  it('delegates shell structure to DashboardLayout (banner landmark present)', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <DashboardPage />
       </MemoryRouter>,
     );
 
-    const mainElements = screen.getAllByRole('main');
-    expect(mainElements.length).toBeGreaterThanOrEqual(1);
+    // The shell should provide exactly one banner (from Header)
+    const banners = screen.getAllByRole('banner');
+    expect(banners).toHaveLength(1);
+  });
+
+  it('delegates shell structure to DashboardLayout (main landmark present)', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <DashboardPage />
+      </MemoryRouter>,
+    );
+
+    // The shell should provide exactly one main landmark
+    const mains = screen.getAllByRole('main');
+    expect(mains).toHaveLength(1);
+  });
+
+  it('renders the page heading inside the main landmark, not the banner', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <DashboardPage />
+      </MemoryRouter>,
+    );
+
+    const main = screen.getByRole('main');
+    const heading = screen.getByRole('heading', {
+      name: /patient records dashboard/i,
+    });
+    expect(main.contains(heading)).toBe(true);
   });
 });
