@@ -46,4 +46,33 @@ describe('Icon', () => {
     expect(svg.getAttribute('width')).toBe('24');
     expect(svg.getAttribute('height')).toBe('24');
   });
+
+  describe('plus icon', () => {
+    it('renders plus icon SVG with a non-empty path and aria-hidden by default', () => {
+      const { container } = render(<Icon name="plus" />);
+      const svg = container.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+      expect(svg).toHaveAttribute('aria-hidden', 'true');
+
+      const path = svg!.querySelector('path');
+      expect(path).toBeInTheDocument();
+      expect(path!.getAttribute('d')).toBeTruthy();
+      expect(path!.getAttribute('d')!.length).toBeGreaterThan(0);
+    });
+
+    it('plus icon with label sets aria-label and removes aria-hidden', () => {
+      render(<Icon name="plus" label="Add" />);
+      const svg = screen.getByLabelText('Add');
+      expect(svg).toBeInTheDocument();
+      expect(svg).not.toHaveAttribute('aria-hidden');
+    });
+
+    it('plus icon path differs from other icons', () => {
+      const { container: c1 } = render(<Icon name="plus" />);
+      const { container: c2 } = render(<Icon name="close" />);
+      const path1 = c1.querySelector('path')!;
+      const path2 = c2.querySelector('path')!;
+      expect(path1.getAttribute('d')).not.toEqual(path2.getAttribute('d'));
+    });
+  });
 });
