@@ -50,9 +50,20 @@ describe('src/index.css – design token and base layer contract', () => {
     expect(content).toMatch(/html\s*\{[^}]*height\s*:\s*100%/);
   });
 
-  it('sets body min-height to 100%', () => {
+  it('sets body min-height to 100vh and antialiased', () => {
     const content = loadCss();
-    expect(content).toMatch(/body\s*\{[^}]*min-height\s*:\s*100%/);
+    expect(content).toMatch(/body\s*\{[^}]*min-height\s*:\s*100vh/);
+    expect(content).toMatch(/body\s*\{[^}]*antialiased/);
+  });
+
+  it('defines body font-family as system stack', () => {
+    const content = loadCss();
+    expect(content).toMatch(/body\s*\{[^}]*font-family\s*:\s*system-ui/);
+  });
+
+  it('defines body color using var(--color-text)', () => {
+    const content = loadCss();
+    expect(content).toMatch(/body\s*\{[^}]*color\s*:\s*var\(--color-text\)/);
   });
 
   it('applies box-sizing: border-box globally', () => {
@@ -60,15 +71,17 @@ describe('src/index.css – design token and base layer contract', () => {
     expect(content).toMatch(/box-sizing\s*:\s*border-box/);
   });
 
-  it('styles h1 with font-weight and line-height', () => {
+  it('styles h1 with text-2xl equivalent, font-bold, and text color', () => {
     const content = loadCss();
-    expect(content).toMatch(/h1\s*\{[^}]*font-weight/);
-    expect(content).toMatch(/h1\s*\{[^}]*line-height/);
+    expect(content).toMatch(/h1\s*\{[^}]*font-size\s*:\s*1\.5rem/);
+    expect(content).toMatch(/h1\s*\{[^}]*font-weight\s*:\s*700/);
+    expect(content).toMatch(/h1\s*\{[^}]*color\s*:\s*var\(--color-text\)/);
   });
 
-  it('styles h2 with font-weight and line-height', () => {
+  it('styles h2 with text-xl equivalent, font-semibold, and text color', () => {
     const content = loadCss();
-    expect(content).toMatch(/h2\s*\{[^}]*font-weight/);
-    expect(content).toMatch(/h2\s*\{[^}]*line-height/);
+    expect(content).toMatch(/h2\s*\{[^}]*font-size\s*:\s*1\.25rem/);
+    expect(content).toMatch(/h2\s*\{[^}]*font-weight\s*:\s*600/);
+    expect(content).toMatch(/h2\s*\{[^}]*color\s*:\s*var\(--color-text\)/);
   });
 });
