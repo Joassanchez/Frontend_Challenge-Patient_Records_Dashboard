@@ -75,4 +75,40 @@ describe('Icon', () => {
       expect(path1.getAttribute('d')).not.toEqual(path2.getAttribute('d'));
     });
   });
+
+  describe('new action icons (eye, edit, heart)', () => {
+    it.each(['eye', 'edit', 'heart'] as const)('renders %s icon with a non-empty path', (name) => {
+      const { container } = render(<Icon name={name} />);
+      const svg = container.querySelector('svg');
+      expect(svg).toBeInTheDocument();
+
+      const path = svg!.querySelector('path');
+      expect(path).toBeInTheDocument();
+      expect(path!.getAttribute('d')).toBeTruthy();
+      expect(path!.getAttribute('d')!.length).toBeGreaterThan(0);
+    });
+
+    it.each(['eye', 'edit', 'heart'] as const)('%s icon defaults to aria-hidden', (name) => {
+      const { container } = render(<Icon name={name} />);
+      const svg = container.querySelector('svg');
+      expect(svg).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it.each(['eye', 'edit', 'heart'] as const)('%s icon with label sets aria-label', (name) => {
+      render(<Icon name={name} label={`Label for ${name}`} />);
+      expect(screen.getByLabelText(`Label for ${name}`)).toBeInTheDocument();
+    });
+
+    it('all three new icons have different paths from each other', () => {
+      const { container: c1 } = render(<Icon name="eye" />);
+      const { container: c2 } = render(<Icon name="edit" />);
+      const { container: c3 } = render(<Icon name="heart" />);
+      const d1 = c1.querySelector('path')!.getAttribute('d')!;
+      const d2 = c2.querySelector('path')!.getAttribute('d')!;
+      const d3 = c3.querySelector('path')!.getAttribute('d')!;
+      expect(d1).not.toEqual(d2);
+      expect(d2).not.toEqual(d3);
+      expect(d1).not.toEqual(d3);
+    });
+  });
 });

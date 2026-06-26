@@ -7,7 +7,10 @@ export type IconName =
   | 'close'
   | 'inbox'
   | 'plus'
-  | 'user';
+  | 'user'
+  | 'eye'
+  | 'edit'
+  | 'heart';
 
 interface IconProps {
   name: IconName;
@@ -33,6 +36,9 @@ const PATH_MAP: Record<IconName, string> = {
     'M22 12h-6l-2 3H10l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z',
   plus: 'M12 5v14M5 12h14',
   user: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z',
+  eye: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+  edit: 'M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z',
+  heart: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z',
 };
 
 const svgAttrs: Record<string, SVGProps<SVGSVGElement>> = {
