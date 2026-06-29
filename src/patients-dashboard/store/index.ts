@@ -17,3 +17,13 @@ export {
 } from './favorites.store';
 
 export type { FavoritesState } from './favorites.store';
+
+export {
+  useModalStore,
+  selectIsOpen,
+  selectModalMode,
+  selectSelectedPatientId,
+  initialState as modalInitialState,
+} from './modal.store';
+
+export type { ModalState, ModalActions, ModalMode } from './modal.store';
