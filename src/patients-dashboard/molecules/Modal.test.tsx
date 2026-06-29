@@ -27,13 +27,15 @@ function renderModal(
 // ============================================================================
 
 describe('REQ-MC-01: Renderizado y accesibilidad', () => {
-  it('renders with role="dialog", aria-modal="true" and aria-label', () => {
+  it('renders with role="dialog", aria-modal="true" and aria-labelledby', () => {
     renderModal();
 
     const dialog = screen.getByRole('dialog');
     expect(dialog).toBeInTheDocument();
     expect(dialog).toHaveAttribute('aria-modal', 'true');
-    expect(dialog).toHaveAttribute('aria-label', 'Crear paciente');
+    expect(dialog).toHaveAttribute('aria-labelledby');
+    expect(dialog.getAttribute('aria-labelledby')).toBeTruthy();
+    expect(dialog).not.toHaveAttribute('aria-label');
   });
 
   it('renders the title as visible text inside the modal header', () => {

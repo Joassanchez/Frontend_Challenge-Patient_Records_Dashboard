@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { cn } from '@/shared/utils/cn';
 import Icon from '@/patients-dashboard/atoms/Icon';
 import Button from '@/patients-dashboard/atoms/Button';
@@ -20,6 +20,7 @@ interface ModalProps {
 // ---------------------------------------------------------------------------
 
 function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
+  const titleId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   // --- Focus close button when modal opens ---
@@ -59,7 +60,8 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={ariaLabel}
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={!title ? ariaLabel : undefined}
         className={cn(
           'relative w-full max-w-2xl mx-4 rounded-2xl',
           'border border-slate-200 bg-white shadow-xl',
@@ -69,7 +71,7 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
       >
         {/* ---- Header ---- */}
         <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-text">{title}</h2>
+          <h2 id={titleId} className="text-lg font-semibold text-text">{title}</h2>
           <Button
             ref={closeButtonRef}
             variant="ghost"

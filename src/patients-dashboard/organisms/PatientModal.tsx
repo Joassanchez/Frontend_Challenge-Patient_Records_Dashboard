@@ -47,12 +47,12 @@ function PatientModal() {
   const addPatient = usePatientsStore((s) => s.addPatient);
   const updatePatient = usePatientsStore((s) => s.updatePatient);
 
-  // Stabilize defaultValues based on mode and selectedPatientId
-  // selectedPatientId changing implies selectedPatient changes too
+  // Stabilize defaultValues based on mode and selectedPatient.
+  // selectedPatient captures changes from selectedPatientId transitively,
+  // keeping the dependency list clean for ESLint exhaustive-deps.
   const defaultValues = useMemo(
     () => toFormDefaults(mode === 'edit' ? selectedPatient : undefined),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mode, selectedPatientId],
+    [mode, selectedPatient],
   );
 
   // ---- Determine title and submit label ----
