@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { cn } from '@/shared/utils/cn';
 import Avatar from '@/patients-dashboard/atoms/Avatar';
 import Badge from '@/patients-dashboard/atoms/Badge';
@@ -33,6 +34,8 @@ function formatWebsiteDisplay(url: string): string {
 
 function PatientCard({ patient, className }: PatientCardProps) {
   const websiteDisplay = formatWebsiteDisplay(patient.webpage);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const detailsId = `patient-details-${patient.id}`;
 
   const handleNoOp = () => {
     // Placeholder: no state mutation, no navigation.
@@ -115,6 +118,40 @@ function PatientCard({ patient, className }: PatientCardProps) {
           <Icon name="heart" size="sm" />
           Favorito
         </Button>
+      </div>
+
+      {/* ---- Expand/collapse toggle ---- */}
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-expanded={isExpanded}
+        aria-controls={detailsId}
+        onClick={() => setIsExpanded((prev) => !prev)}
+      >
+        {isExpanded ? 'Ver menos' : 'Ver más'}
+      </Button>
+
+      {/* ---- Expandable details panel ---- */}
+      <div
+        id={detailsId}
+        role="region"
+        className={cn(
+          'grid transition-[grid-template-rows] duration-300 ease-in-out',
+          isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+        <div className="overflow-hidden" aria-hidden={!isExpanded || undefined}>
+          {patient.createdAt && (
+            <div className="bg-slate-50 rounded-lg px-4 py-3 mt-2">
+              <p className="text-sm text-slate-500">
+                Fecha de registro:{' '}
+                <span className="text-slate-700 font-medium">
+                  {new Date(patient.createdAt).toLocaleDateString('es-AR')}
+                </span>
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </article>
   );

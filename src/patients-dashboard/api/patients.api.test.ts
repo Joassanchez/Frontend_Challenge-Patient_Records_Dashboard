@@ -14,7 +14,7 @@ describe('getPatients', () => {
     vi.resetAllMocks();
   });
 
-  it('returns mapped Patient[] on successful fetch, dropping createdAt', async () => {
+  it('returns mapped Patient[] on successful fetch, keeping createdAt', async () => {
     const mockUsers: UserDto[] = [
       {
         id: '1',
@@ -46,16 +46,16 @@ describe('getPatients', () => {
       description: 'Desc A',
       webpage: 'https://a.com',
       avatar: 'https://img/a.png',
+      createdAt: '2024-01-01',
     });
-    expect(patients[0]).not.toHaveProperty('createdAt');
     expect(patients[1]).toEqual({
       id: '2',
       name: 'Juan',
       description: 'Desc J',
       webpage: 'https://j.com',
       avatar: 'https://img/j.png',
+      createdAt: '2024-02-01',
     });
-    expect(patients[1]).not.toHaveProperty('createdAt');
   });
 
   it('returns empty array for empty API response', async () => {

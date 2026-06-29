@@ -4,6 +4,7 @@ export interface Patient {
   description: string;
   webpage: string;
   avatar: string;
+  createdAt?: string;
 }
 
 export interface UserDto {

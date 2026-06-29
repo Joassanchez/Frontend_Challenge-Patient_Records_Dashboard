@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import PatientCard from './PatientCard';
 import type { Patient } from '@/patients-dashboard/types/patient.types';
 
@@ -96,8 +97,8 @@ describe('PatientCard', () => {
     // We verify the component renders without errors and buttons exist.
     render(<PatientCard patient={mockPatient()} />);
     const buttons = screen.getAllByRole('button');
-    // All three buttons render successfully without requiring store setup
-    expect(buttons).toHaveLength(3);
+    // All action buttons plus toggle render successfully without requiring store setup
+    expect(buttons.length).toBeGreaterThanOrEqual(3);
   });
 
   // ---- Accessibility ----
@@ -109,5 +110,137 @@ describe('PatientCard', () => {
       // Each button must have a class that includes focus-visible ring
       expect(button.className).toContain('focus-visible');
     }
+  });
+
+  // ---- Expand/collapse behavior ----
+
+  it('renders collapsed by default with "Ver más" toggle and no expanded content', () => {
+    render(
+      <PatientCard
+        patient={mockPatient({ createdAt: '2024-01-15T10:00:00Z' })}
+      />,
+    );
+
+    const toggle = screen.getByRole('button', { name: /ver más/i });
+    expect(toggle).toBeInTheDocument();
+
+    // The expandable region exists but its inner content is hidden from assistive tech
+    const region = screen.getByRole('region');
+    const innerContent = region.firstElementChild as HTMLElement;
+    expect(innerContent).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('expands on toggle click, showing "Ver menos" and creation date', async () => {
+    const user = userEvent.setup();
+    render(
+      <PatientCard
+        patient={mockPatient({ createdAt: '2024-01-15T10:00:00Z' })}
+      />,
+    );
+
+    const toggle = screen.getByRole('button', { name: /ver más/i });
+    await user.click(toggle);
+
+    expect(toggle).toHaveTextContent(/ver menos/i);
+    expect(screen.getByText(/fecha de registro/i)).toBeInTheDocument();
+  });
+
+  it('collapses back when toggle is clicked a second time, hiding detail content', async () => {
+    const user = userEvent.setup();
+    render(
+      <PatientCard
+        patient={mockPatient({ createdAt: '2024-01-15T10:00:00Z' })}
+      />,
+    );
+
+    const toggle = screen.getByRole('button', { name: /ver más/i });
+    const region = screen.getByRole('region');
+    const innerContent = region.firstElementChild as HTMLElement;
+
+    // Expand first
+    await user.click(toggle);
+    expect(screen.getByText(/fecha de registro/i)).toBeInTheDocument();
+    expect(innerContent).not.toHaveAttribute('aria-hidden');
+
+    // Collapse
+    await user.click(toggle);
+    expect(innerContent).toHaveAttribute('aria-hidden', 'true');
+    expect(toggle).toHaveTextContent(/ver más/i);
+  });
+
+  it('each card toggles independently without affecting the other', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <PatientCard
+          patient={mockPatient({ id: '1', name: 'Card 1', createdAt: '2024-01-01' })}
+        />
+        <PatientCard
+          patient={mockPatient({ id: '2', name: 'Card 2', createdAt: '2024-06-01' })}
+        />
+      </>,
+    );
+
+    const toggles = screen.getAllByRole('button', { name: /ver más/i });
+    expect(toggles).toHaveLength(2);
+
+    const regions = screen.getAllByRole('region');
+    const firstInner = regions[0].firstElementChild as HTMLElement;
+    const secondInner = regions[1].firstElementChild as HTMLElement;
+
+    // Both collapsed initially
+    expect(firstInner).toHaveAttribute('aria-hidden', 'true');
+    expect(secondInner).toHaveAttribute('aria-hidden', 'true');
+
+    // Expand the first card
+    await user.click(toggles[0]);
+
+    // First card reveals content, second stays hidden
+    expect(firstInner).not.toHaveAttribute('aria-hidden');
+    expect(secondInner).toHaveAttribute('aria-hidden', 'true');
+    expect(toggles[1]).toHaveTextContent(/ver más/i);
+  });
+
+  it('toggle button has aria-expanded that reflects current state', async () => {
+    const user = userEvent.setup();
+    render(
+      <PatientCard
+        patient={mockPatient({ createdAt: '2024-01-15T10:00:00Z' })}
+      />,
+    );
+
+    const toggle = screen.getByRole('button', { name: /ver más/i });
+
+    // Initially collapsed
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+    // Expand
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('toggle button has aria-controls that matches the expandable region id', () => {
+    render(<PatientCard patient={mockPatient()} />);
+
+    const toggle = screen.getByRole('button', { name: /ver más/i });
+    const region = screen.getByRole('region');
+
+    expect(toggle).toHaveAttribute('aria-controls');
+    expect(region).toHaveAttribute('id');
+    expect(toggle.getAttribute('aria-controls')).toBe(region.getAttribute('id'));
+  });
+
+  it('when createdAt is absent, toggle still works but panel shows no extra content', async () => {
+    const user = userEvent.setup();
+    render(<PatientCard patient={mockPatient({ createdAt: undefined })} />);
+
+    const toggle = screen.getByRole('button', { name: /ver más/i });
+    await user.click(toggle);
+
+    // Toggle state changes
+    expect(toggle).toHaveTextContent(/ver menos/i);
+
+    // No creation date content appears
+    expect(screen.queryByText(/fecha de registro/i)).not.toBeInTheDocument();
   });
 });

@@ -9,6 +9,7 @@ function mapUserDtoToPatient(dto: UserDto): Patient {
     description: dto.description,
     webpage: dto.webpage,
     avatar: dto.avatar,
+    createdAt: dto.createdAt,
   };
 }
 
