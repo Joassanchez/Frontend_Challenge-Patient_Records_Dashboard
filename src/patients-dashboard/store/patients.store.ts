@@ -4,6 +4,24 @@ import { isApiError } from '../../api/types';
 import type { Patient } from '../types/patient.types';
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+let idCounter = 0;
+
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  idCounter += 1;
+  return `local-${idCounter}-${Date.now()}`;
+}
+
+function generateCreatedAt(): string {
+  return new Date().toISOString();
+}
+
+// ---------------------------------------------------------------------------
 // State & Actions types
 // ---------------------------------------------------------------------------
 
@@ -15,7 +33,7 @@ export interface PatientsState {
 
 export interface PatientsActions {
   loadPatients(): Promise<void>;
-  addPatient(patient: Patient): void;
+  addPatient(input: Omit<Patient, 'id' | 'createdAt'>): Patient;
   updatePatient(patient: Patient): void;
   clearError(): void;
   resetStore(): void;
@@ -56,10 +74,16 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
     }
   },
 
-  addPatient: (patient: Patient) => {
+  addPatient: (input: Omit<Patient, 'id' | 'createdAt'>): Patient => {
+    const patient: Patient = {
+      ...input,
+      id: generateId(),
+      createdAt: generateCreatedAt(),
+    };
     set((state) => ({
       patients: [...state.patients, patient],
     }));
+    return patient;
   },
 
   updatePatient: (patient: Patient) => {
@@ -89,8 +113,11 @@ export function selectPatients(state: PatientsState): Patient[] {
   return state.patients;
 }
 
-export function selectPatientById(id: string): (state: PatientsState) => Patient | undefined {
-  return (state: PatientsState) => state.patients.find((p) => p.id === id);
+export function selectPatientById(id: string | null): (state: PatientsState) => Patient | undefined {
+  return (state: PatientsState) => {
+    if (id === null) return undefined;
+    return state.patients.find((p) => p.id === id);
+  };
 }
 
 export function selectPatientsLoading(state: PatientsState): boolean {

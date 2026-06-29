@@ -93,19 +93,35 @@ describe('REQ-PS-10: Exported Selectors', () => {
 // REQ-PS-05: Add Patient (In-Memory, Immutable)
 // ============================================================================
 describe('REQ-PS-05: Add Patient', () => {
-  it('appends patient to the patients array', () => {
+  it('appends patient to the patients array with generated id and createdAt', () => {
     usePatientsStore.setState({ patients: [patientA] });
-    usePatientsStore.getState().addPatient(patientB);
+
+    const result = usePatientsStore.getState().addPatient({
+      name: patientB.name,
+      description: patientB.description,
+      webpage: patientB.webpage,
+      avatar: patientB.avatar,
+    });
 
     const { patients } = usePatientsStore.getState();
-    expect(patients).toEqual([patientA, patientB]);
+    expect(patients).toHaveLength(2);
+    expect(patients[0]).toEqual(patientA);
+    expect(result).toEqual(patients[1]);
+    expect(typeof result.id).toBe('string');
+    expect(result.id.length).toBeGreaterThan(0);
+    expect(typeof result.createdAt).toBe('string');
   });
 
   it('does not mutate the previous patients array reference', () => {
     usePatientsStore.setState({ patients: [patientA] });
     const beforePatients = usePatientsStore.getState().patients;
 
-    usePatientsStore.getState().addPatient(patientB);
+    usePatientsStore.getState().addPatient({
+      name: patientB.name,
+      description: patientB.description,
+      webpage: patientB.webpage,
+      avatar: patientB.avatar,
+    });
 
     const afterPatients = usePatientsStore.getState().patients;
     // Immutability: old reference is unchanged, new reference is different
@@ -315,6 +331,85 @@ describe('REQ-PS-04: Load Patients — Unknown Error Translation', () => {
     expect(state.patients).toEqual([patientA, patientB]);
     expect(state.isLoading).toBe(false);
     expect(state.error).toBeTruthy();
+  });
+});
+
+// ============================================================================
+// REQ-PS-05-MODIFIED: Add Patient — genera id y createdAt (NEW SIGNATURE)
+// ============================================================================
+describe('REQ-PS-05-MODIFIED: Add Patient genera id y createdAt', () => {
+  it('generates a non-empty id and valid createdAt ISO string', () => {
+    usePatientsStore.getState().resetStore();
+    const input = {
+      name: 'Nuevo',
+      description: 'Test',
+      webpage: 'https://test.example.com',
+      avatar: 'https://test.example.com/avatar.jpg',
+    };
+
+    const result = usePatientsStore.getState().addPatient(input);
+
+    // id must be a non-empty string
+    expect(typeof result.id).toBe('string');
+    expect(result.id.length).toBeGreaterThan(0);
+
+    // createdAt must be a valid ISO date string
+    expect(typeof result.createdAt).toBe('string');
+    expect(() => new Date(result.createdAt!)).not.toThrow();
+    expect(new Date(result.createdAt!).toISOString()).toBe(result.createdAt);
+  });
+
+  it('generates unique ids on consecutive calls', () => {
+    usePatientsStore.getState().resetStore();
+    const input = {
+      name: 'A',
+      description: 'B',
+      webpage: 'https://a.example.com',
+      avatar: 'https://a.example.com/avatar.jpg',
+    };
+
+    const r1 = usePatientsStore.getState().addPatient(input);
+    const r2 = usePatientsStore.getState().addPatient({ ...input, name: 'B' });
+
+    expect(r1.id).not.toBe(r2.id);
+  });
+
+  it('appends the full Patient to the patients array', () => {
+    usePatientsStore.getState().resetStore();
+    usePatientsStore.setState({ patients: [patientA] });
+    const input = {
+      name: 'Nuevo',
+      description: 'Test',
+      webpage: 'https://test.example.com',
+      avatar: 'https://test.example.com/avatar.jpg',
+    };
+
+    const result = usePatientsStore.getState().addPatient(input);
+    const { patients } = usePatientsStore.getState();
+
+    expect(patients).toHaveLength(2);
+    expect(patients[1]).toEqual(result);
+    expect(patients[1].name).toBe('Nuevo');
+    expect(patients[1].id).toBe(result.id);
+    expect(patients[1].createdAt).toBe(result.createdAt);
+  });
+
+  it('does not mutate the previous patients array reference', () => {
+    usePatientsStore.getState().resetStore();
+    usePatientsStore.setState({ patients: [patientA] });
+    const beforePatients = usePatientsStore.getState().patients;
+
+    const input = {
+      name: 'Nuevo',
+      description: 'Test',
+      webpage: 'https://test.example.com',
+      avatar: 'https://test.example.com/avatar.jpg',
+    };
+    usePatientsStore.getState().addPatient(input);
+
+    const afterPatients = usePatientsStore.getState().patients;
+    expect(afterPatients).not.toBe(beforePatients);
+    expect(beforePatients).toEqual([patientA]);
   });
 });
 
