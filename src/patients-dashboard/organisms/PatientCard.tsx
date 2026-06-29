@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { cn } from '@/shared/utils/cn';
+import { useFavoritesStore, selectIsFavorite } from '@/patients-dashboard/store/favorites.store';
 import Avatar from '@/patients-dashboard/atoms/Avatar';
 import Badge from '@/patients-dashboard/atoms/Badge';
 import Button from '@/patients-dashboard/atoms/Button';
@@ -36,6 +37,10 @@ function PatientCard({ patient, className }: PatientCardProps) {
   const websiteDisplay = formatWebsiteDisplay(patient.webpage);
   const [isExpanded, setIsExpanded] = useState(false);
   const detailsId = `patient-details-${patient.id}`;
+
+  // Favorites store — wired to real toggle
+  const isFavorite = useFavoritesStore(selectIsFavorite(patient.id));
+  const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
   const handleNoOp = () => {
     // Placeholder: no state mutation, no navigation.
@@ -113,7 +118,11 @@ function PatientCard({ patient, className }: PatientCardProps) {
           variant="ghost"
           size="sm"
           aria-label="Favorito"
-          onClick={handleNoOp}
+          aria-pressed={isFavorite}
+          className={cn(
+            isFavorite && 'text-favorite bg-favorite/10 hover:bg-favorite/15',
+          )}
+          onClick={() => toggleFavorite(patient.id)}
         >
           <Icon name="heart" size="sm" />
           Favorito

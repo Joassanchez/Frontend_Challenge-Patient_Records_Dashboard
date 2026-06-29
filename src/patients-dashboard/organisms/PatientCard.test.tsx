@@ -1,8 +1,32 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PatientCard from './PatientCard';
 import type { Patient } from '@/patients-dashboard/types/patient.types';
+
+// ---------------------------------------------------------------------------
+// Mocks — hoisted before component import
+// ---------------------------------------------------------------------------
+
+const mockToggleFavorite = vi.fn<(id: string) => void>();
+
+// Favorites store state used by the mock selector
+let favoritesStoreState: {
+  favoritePatientIds: string[];
+  toggleFavorite: (id: string) => void;
+} = {
+  favoritePatientIds: [],
+  toggleFavorite: mockToggleFavorite,
+};
+
+vi.mock('@/patients-dashboard/store/favorites.store', () => ({
+  useFavoritesStore: vi.fn((selector?: (state: typeof favoritesStoreState) => unknown) => {
+    if (typeof selector === 'function') return selector(favoritesStoreState);
+    return favoritesStoreState;
+  }),
+  selectIsFavorite: (id: string) => (state: typeof favoritesStoreState) =>
+    state.favoritePatientIds.includes(id),
+}));
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -242,5 +266,61 @@ describe('PatientCard', () => {
 
     // No creation date content appears
     expect(screen.queryByText(/fecha de registro/i)).not.toBeInTheDocument();
+  });
+
+  // =========================================================================
+  // REQ-PC-05 / REQ-FS-03: Favorite Button Behavior
+  // =========================================================================
+
+  describe('Favorite button', () => {
+    it('has aria-pressed="false" when the patient is not a favorite', () => {
+      favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
+      render(<PatientCard patient={mockPatient({ id: 'p1' })} />);
+
+      const button = screen.getByRole('button', { name: /favorito/i });
+      expect(button).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('has aria-pressed="true" when the patient is a favorite', () => {
+      favoritesStoreState = { favoritePatientIds: ['p1'], toggleFavorite: mockToggleFavorite };
+      render(<PatientCard patient={mockPatient({ id: 'p1' })} />);
+
+      const button = screen.getByRole('button', { name: /favorito/i });
+      expect(button).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('calls toggleFavorite with patient.id when clicked', async () => {
+      const user = userEvent.setup();
+      favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
+      mockToggleFavorite.mockClear();
+
+      render(<PatientCard patient={mockPatient({ id: 'p1' })} />);
+
+      const button = screen.getByRole('button', { name: /favorito/i });
+      await user.click(button);
+
+      expect(mockToggleFavorite).toHaveBeenCalledWith('p1');
+    });
+
+    it('shows active visual state when favorite (text-favorite class)', () => {
+      favoritesStoreState = { favoritePatientIds: ['p1'], toggleFavorite: mockToggleFavorite };
+      render(<PatientCard patient={mockPatient({ id: 'p1' })} />);
+
+      const button = screen.getByRole('button', { name: /favorito/i });
+      // Active state: should contain a class indicating active favorite
+      // The design uses text-favorite for active state
+      expect(button.className).toContain('text-favorite');
+    });
+
+    it('shows inactive visual state when not favorite (muted class)', () => {
+      favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
+      render(<PatientCard patient={mockPatient({ id: 'p1' })} />);
+
+      const button = screen.getByRole('button', { name: /favorito/i });
+      // Inactive state: should NOT have text-favorite class
+      expect(button.className).not.toContain('text-favorite');
+      // Should have a muted/neutral text class
+      expect(button.className).toContain('text-text-muted');
+    });
   });
 });
