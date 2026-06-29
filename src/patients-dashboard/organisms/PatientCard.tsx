@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { cn } from '@/shared/utils/cn';
 import { useFavoritesStore, selectIsFavorite } from '@/patients-dashboard/store/favorites.store';
+import { useModalStore } from '@/patients-dashboard/store/modal.store';
 import Avatar from '@/patients-dashboard/atoms/Avatar';
 import Badge from '@/patients-dashboard/atoms/Badge';
 import Button from '@/patients-dashboard/atoms/Button';
@@ -42,9 +43,11 @@ function PatientCard({ patient, className }: PatientCardProps) {
   const isFavorite = useFavoritesStore(selectIsFavorite(patient.id));
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
+  // Modal store — wire "Editar" button
+  const openEditModal = useModalStore((s) => s.openEditModal);
+
   const handleNoOp = () => {
-    // Placeholder: no state mutation, no navigation.
-    // Future iterations will wire real behavior here.
+    // Placeholder for "Ver detalle" — future iteration will wire real behavior
   };
 
   return (
@@ -108,7 +111,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
           variant="ghost"
           size="sm"
           aria-label="Editar"
-          onClick={handleNoOp}
+          onClick={() => openEditModal(patient.id)}
         >
           <Icon name="edit" size="sm" />
           Editar

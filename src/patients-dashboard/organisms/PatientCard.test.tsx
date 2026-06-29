@@ -29,6 +29,26 @@ vi.mock('@/patients-dashboard/store/favorites.store', () => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Modal store mock
+// ---------------------------------------------------------------------------
+
+const mockOpenEditModal = vi.fn<(patientId: string) => void>();
+
+vi.mock('@/patients-dashboard/store/modal.store', () => ({
+  useModalStore: vi.fn((selector?: (s: unknown) => unknown) => {
+    const state = {
+      isOpen: false,
+      mode: 'create' as const,
+      selectedPatientId: null as string | null,
+      openEditModal: mockOpenEditModal,
+      closeModal: vi.fn(),
+    };
+    if (typeof selector === 'function') return selector(state);
+    return state;
+  }),
+}));
+
+// ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
@@ -322,5 +342,24 @@ describe('PatientCard', () => {
       // Should have a muted/neutral text class
       expect(button.className).toContain('text-text-muted');
     });
+  });
+});
+
+// ============================================================================
+// REQ-PC-02: Botón Editar abre modal — RED (not yet implemented)
+// ============================================================================
+
+describe('REQ-PC-02: Botón Editar abre modal', () => {
+  it('calls openEditModal with patient.id when "Editar" is clicked', async () => {
+    const user = userEvent.setup();
+    mockOpenEditModal.mockClear();
+
+    render(<PatientCard patient={mockPatient({ id: 'p1' })} />);
+
+    const editButton = screen.getByRole('button', { name: /editar/i });
+    await user.click(editButton);
+
+    expect(mockOpenEditModal).toHaveBeenCalledTimes(1);
+    expect(mockOpenEditModal).toHaveBeenCalledWith('p1');
   });
 });
