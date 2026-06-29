@@ -12,6 +12,9 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  server: {
+    host: '0.0.0.0',
+  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

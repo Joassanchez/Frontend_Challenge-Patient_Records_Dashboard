@@ -20,6 +20,14 @@ npm install
 npm run dev
 ```
 
+## Docker
+
+```bash
+docker compose up --build
+```
+
+Open [http://localhost:5173](http://localhost:5173). The dev server runs inside the container with hot reload via bind mount.
+
 ## Scripts
 
 | Command | Description |
