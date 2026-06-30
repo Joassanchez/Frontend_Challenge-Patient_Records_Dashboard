@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { cn } from '@/shared/utils/cn';
 import { useFavoritesStore, selectIsFavorite } from '@/patients-dashboard/store/favorites.store';
 import { useModalStore } from '@/patients-dashboard/store/modal.store';
+import { useToastStore } from '@/patients-dashboard/store/toast.store';
 import Avatar from '@/patients-dashboard/atoms/Avatar';
-import Badge from '@/patients-dashboard/atoms/Badge';
 import Button from '@/patients-dashboard/atoms/Button';
 import Icon from '@/patients-dashboard/atoms/Icon';
 import type { Patient } from '@/patients-dashboard/types/patient.types';
@@ -46,19 +46,29 @@ function PatientCard({ patient, className }: PatientCardProps) {
   // Modal store — wire "Editar" button
   const openEditModal = useModalStore((s) => s.openEditModal);
 
-  const handleNoOp = () => {
-    // Placeholder for "Ver detalle" — future iteration will wire real behavior
-  };
+  // Toast store — wired to favorite toggle
+  const showSuccess = useToastStore((s) => s.showSuccess);
+  const showInfo = useToastStore((s) => s.showInfo);
+
+  function handleFavoriteClick() {
+    const wasFavorite = isFavorite;
+    toggleFavorite(patient.id);
+    if (wasFavorite) {
+      showInfo('Quitado de favoritos');
+    } else {
+      showSuccess('Agregado a favoritos');
+    }
+  }
 
   return (
     <article
       className={cn(
-        'flex flex-col gap-4 rounded-xl border border-border bg-surface p-5',
+        'flex flex-col gap-3 rounded-xl border border-border bg-surface p-4',
         'shadow-sm transition-shadow hover:shadow-md',
         className,
       )}
     >
-      {/* ---- Identity: avatar + name + badge ---- */}
+      {/* ---- Identity: avatar + name ---- */}
       <div className="flex items-start gap-4">
         <Avatar
           name={patient.name}
@@ -71,9 +81,14 @@ function PatientCard({ patient, className }: PatientCardProps) {
             {patient.name}
           </h3>
           {patient.description && (
-            <Badge variant="neutral" size="sm">
+            <p
+              className={cn(
+                'text-sm text-text-muted',
+                !isExpanded && 'line-clamp-2',
+              )}
+            >
               {patient.description}
-            </Badge>
+            </p>
           )}
         </div>
       </div>
@@ -95,18 +110,8 @@ function PatientCard({ patient, className }: PatientCardProps) {
         </a>
       )}
 
-      {/* ---- Action buttons (visual placeholders) ---- */}
-      <div className="flex items-center gap-2 pt-2 border-t border-border">
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-label="Ver detalle"
-          onClick={handleNoOp}
-        >
-          <Icon name="eye" size="sm" />
-          Ver detalle
-        </Button>
-
+      {/* ---- Actions footer: Editar + Favorito + Ver más/menos in one row ---- */}
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
         <Button
           variant="ghost"
           size="sm"
@@ -125,23 +130,23 @@ function PatientCard({ patient, className }: PatientCardProps) {
           className={cn(
             isFavorite && 'text-favorite bg-favorite/10 hover:bg-favorite/15',
           )}
-          onClick={() => toggleFavorite(patient.id)}
+          onClick={handleFavoriteClick}
         >
           <Icon name="heart" size="sm" />
           Favorito
         </Button>
-      </div>
 
-      {/* ---- Expand/collapse toggle ---- */}
-      <Button
-        variant="ghost"
-        size="sm"
-        aria-expanded={isExpanded}
-        aria-controls={detailsId}
-        onClick={() => setIsExpanded((prev) => !prev)}
-      >
-        {isExpanded ? 'Ver menos' : 'Ver más'}
-      </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-expanded={isExpanded}
+          aria-controls={detailsId}
+          className="ml-auto"
+          onClick={() => setIsExpanded((prev) => !prev)}
+        >
+          {isExpanded ? 'Ver menos' : 'Ver más'}
+        </Button>
+      </div>
 
       {/* ---- Expandable details panel ---- */}
       <div

@@ -7,34 +7,50 @@ import {
   selectPatientsError,
 } from './patients.store';
 import type { Patient } from '../types/patient.types';
+import type { PatientFormData } from '../schemas/patient.schema';
+import { createPatient } from '@/test/fixtures/patient.fixture';
 
 // Mock the API module before any imports that use it
 vi.mock('../api/patients.api');
 
 import { getPatients } from '../api/patients.api';
 
-const patientA: Patient = {
+const patientA = createPatient({
   id: '1',
   name: 'Alice',
   description: 'Patient A description',
   webpage: 'https://alice.example.com',
   avatar: 'https://alice.example.com/avatar.jpg',
-};
+});
 
-const patientB: Patient = {
+const patientB = createPatient({
   id: '2',
   name: 'Bob',
   description: 'Patient B description',
   webpage: 'https://bob.example.com',
   avatar: 'https://bob.example.com/avatar.jpg',
-};
+});
 
-const patientC: Patient = {
+const patientC = createPatient({
   id: '3',
   name: 'Charlie',
   description: 'Patient C description',
   webpage: 'https://charlie.example.com',
   avatar: 'https://charlie.example.com/avatar.jpg',
+});
+
+const formDataA: PatientFormData = {
+  name: 'Alice',
+  description: 'Patient A description',
+  webpage: '',
+  avatar: '',
+};
+
+const formDataB: PatientFormData = {
+  name: 'Bob',
+  description: 'Patient B description',
+  webpage: '',
+  avatar: '',
 };
 
 beforeEach(() => {
@@ -43,9 +59,9 @@ beforeEach(() => {
 });
 
 // ============================================================================
-// REQ-PS-01: Initial State
+// Initial State
 // ============================================================================
-describe('REQ-PS-01: Initial State', () => {
+describe('Initial State', () => {
   it('initializes with empty patients, isLoading false, error null', () => {
     const state = usePatientsStore.getState();
     expect(state.patients).toEqual([]);
@@ -55,9 +71,9 @@ describe('REQ-PS-01: Initial State', () => {
 });
 
 // ============================================================================
-// REQ-PS-10: Exported Selectors
+// Exported Selectors
 // ============================================================================
-describe('REQ-PS-10: Exported Selectors', () => {
+describe('Exported Selectors', () => {
   it('selectPatients returns the patients array', () => {
     usePatientsStore.setState({ patients: [patientA, patientB] });
     const state = usePatientsStore.getState();
@@ -90,105 +106,168 @@ describe('REQ-PS-10: Exported Selectors', () => {
 });
 
 // ============================================================================
-// REQ-PS-05: Add Patient (In-Memory, Immutable)
+// addPatient — accepts PatientFormData, auto-generates hidden fields
 // ============================================================================
-describe('REQ-PS-05: Add Patient', () => {
-  it('appends patient to the patients array with generated id and createdAt', () => {
+describe('addPatient with PatientFormData', () => {
+  it('appends a full Patient from only name and description', () => {
     usePatientsStore.setState({ patients: [patientA] });
 
-    const result = usePatientsStore.getState().addPatient({
-      name: patientB.name,
-      description: patientB.description,
-      webpage: patientB.webpage,
-      avatar: patientB.avatar,
-    });
+    const result = usePatientsStore.getState().addPatient(formDataB);
 
     const { patients } = usePatientsStore.getState();
     expect(patients).toHaveLength(2);
     expect(patients[0]).toEqual(patientA);
     expect(result).toEqual(patients[1]);
+    // input fields preserved
+    expect(result.name).toBe('Bob');
+    expect(result.description).toBe('Patient B description');
+  });
+
+  it('generates a non-empty id and valid createdAt ISO string', () => {
+    const result = usePatientsStore.getState().addPatient(formDataA);
+
     expect(typeof result.id).toBe('string');
     expect(result.id.length).toBeGreaterThan(0);
+
     expect(typeof result.createdAt).toBe('string');
+    expect(() => new Date(result.createdAt!)).not.toThrow();
+    expect(new Date(result.createdAt!).toISOString()).toBe(result.createdAt);
+  });
+
+  it('generates unique ids on consecutive calls', () => {
+    const r1 = usePatientsStore.getState().addPatient(formDataA);
+    const r2 = usePatientsStore.getState().addPatient(formDataB);
+
+    expect(r1.id).not.toBe(r2.id);
+  });
+
+  it('generates webpage derived from the new patient id', () => {
+    const result = usePatientsStore.getState().addPatient(formDataA);
+
+    expect(typeof result.webpage).toBe('string');
+    expect(result.webpage).toContain(result.id);
+    // must be a well-formed URL-like string
+    expect(result.webpage.startsWith('https://')).toBe(true);
+  });
+
+  it('generates webpage deterministically from the id', () => {
+    const r1 = usePatientsStore.getState().addPatient(formDataA);
+    const r2 = usePatientsStore.getState().addPatient(formDataA);
+
+    // Same input, different ids, different webpages
+    expect(r1.id).not.toBe(r2.id);
+    expect(r1.webpage).toContain(r1.id);
+    expect(r2.webpage).toContain(r2.id);
+    expect(r1.webpage).not.toBe(r2.webpage);
+  });
+
+  it('generates avatar as empty string', () => {
+    const result = usePatientsStore.getState().addPatient(formDataA);
+
+    expect(result.avatar).toBe('');
   });
 
   it('does not mutate the previous patients array reference', () => {
     usePatientsStore.setState({ patients: [patientA] });
     const beforePatients = usePatientsStore.getState().patients;
 
-    usePatientsStore.getState().addPatient({
-      name: patientB.name,
-      description: patientB.description,
-      webpage: patientB.webpage,
-      avatar: patientB.avatar,
-    });
+    usePatientsStore.getState().addPatient(formDataB);
 
     const afterPatients = usePatientsStore.getState().patients;
-    // Immutability: old reference is unchanged, new reference is different
     expect(afterPatients).not.toBe(beforePatients);
     expect(beforePatients).toEqual([patientA]);
   });
 });
 
 // ============================================================================
-// REQ-PS-06: Update Patient — Existing ID
+// updatePatient — accepts (id, PatientFormData), updates all editable fields,
+// preserves only id and createdAt
 // ============================================================================
-describe('REQ-PS-06: Update Patient — Existing ID', () => {
-  it('replaces the patient with matching id immutably', () => {
-    usePatientsStore.setState({ patients: [patientA, patientB] });
-    const updatedA: Patient = { ...patientA, name: 'Alice Updated' };
+describe('updatePatient updates all editable fields', () => {
+  it('updates name, description, webpage, and avatar; preserves id and createdAt', () => {
+    const existing = createPatient({
+      id: '1',
+      name: 'Ana',
+      description: 'Old desc',
+      webpage: 'https://ana.example.com',
+      avatar: '',
+      createdAt: '2025-01-01T00:00:00Z',
+    });
+    usePatientsStore.setState({ patients: [existing] });
 
-    usePatientsStore.getState().updatePatient(updatedA);
+    usePatientsStore.getState().updatePatient('1', {
+      name: 'Ana María',
+      description: 'Updated desc',
+      webpage: 'https://ana-nueva.example.com',
+      avatar: 'https://ana-nueva.example.com/avatar.jpg',
+    });
 
-    const { patients } = usePatientsStore.getState();
-    expect(patients).toEqual([updatedA, patientB]);
+    const updated = usePatientsStore.getState().patients[0];
+    expect(updated.name).toBe('Ana María');
+    expect(updated.description).toBe('Updated desc');
+    expect(updated.webpage).toBe('https://ana-nueva.example.com');
+    expect(updated.avatar).toBe('https://ana-nueva.example.com/avatar.jpg');
+    // id and createdAt preserved
+    expect(updated.id).toBe('1');
+    expect(updated.createdAt).toBe('2025-01-01T00:00:00Z');
   });
 
-  it('does not mutate unrelated patients', () => {
+  it('is a silent no-op for unknown id', () => {
+    usePatientsStore.setState({ patients: [patientA], error: null });
+    const beforePatients = usePatientsStore.getState().patients;
+
+    usePatientsStore.getState().updatePatient('unknown', {
+      name: 'Ghost',
+      description: 'Nope',
+      webpage: '',
+      avatar: '',
+    });
+
+    const afterState = usePatientsStore.getState();
+    // Patients reference unchanged (no new array)
+    expect(afterState.patients).toBe(beforePatients);
+    expect(afterState.error).toBeNull();
+    expect(afterState.patients).toEqual([patientA]);
+  });
+
+  it('does not mutate the previous patients array on update', () => {
     usePatientsStore.setState({ patients: [patientA, patientB] });
     const beforePatients = usePatientsStore.getState().patients;
-    const updatedA: Patient = { ...patientA, name: 'Alice Updated' };
 
-    usePatientsStore.getState().updatePatient(updatedA);
+    usePatientsStore.getState().updatePatient('1', {
+      name: 'Alice Updated',
+      description: 'New desc',
+      webpage: 'https://updated.example.com',
+      avatar: '',
+    });
 
     const afterPatients = usePatientsStore.getState().patients;
     expect(afterPatients).not.toBe(beforePatients);
-    expect(afterPatients[1]).toBe(beforePatients[1]); // patientB reference unchanged
+    // patientB reference unchanged
+    expect(afterPatients[1]).toBe(beforePatients[1]);
   });
-});
 
-// ============================================================================
-// REQ-PS-07: Update Patient — Silent No-Op for Unknown ID
-// ============================================================================
-describe('REQ-PS-07: Update Patient — Unknown ID', () => {
-  it('does not modify state when id is not found (silent no-op)', () => {
-    usePatientsStore.setState({ patients: [patientA], error: null });
-    const beforeState = usePatientsStore.getState();
-    const beforePatientsRef = beforeState.patients;
+  it('updates only matching patient by id', () => {
+    usePatientsStore.setState({ patients: [patientA, patientB] });
 
-    const unknownPatient: Patient = {
-      id: 'nonexistent',
-      name: 'Ghost',
-      description: 'Does not exist',
-      webpage: '',
+    usePatientsStore.getState().updatePatient('1', {
+      name: 'Alice Updated',
+      description: 'New desc',
+      webpage: 'https://updated.example.com',
       avatar: '',
-    };
-    usePatientsStore.getState().updatePatient(unknownPatient);
+    });
 
-    const afterState = usePatientsStore.getState();
-    // Patients reference must be unchanged (no new array created)
-    expect(afterState.patients).toBe(beforePatientsRef);
-    // Error must NOT be set
-    expect(afterState.error).toBeNull();
-    // Patients content unchanged
-    expect(afterState.patients).toEqual([patientA]);
+    const { patients } = usePatientsStore.getState();
+    expect(patients[0].name).toBe('Alice Updated');
+    // patientB unchanged
+    expect(patients[1].name).toBe('Bob');
   });
 });
 
 // ============================================================================
-// REQ-PS-08: Clear Error
+// Clear Error
 // ============================================================================
-describe('REQ-PS-08: Clear Error', () => {
+describe('Clear Error', () => {
   it('sets error to null', () => {
     usePatientsStore.setState({ error: 'Server Error' });
     expect(usePatientsStore.getState().error).toBe('Server Error');
@@ -200,11 +279,10 @@ describe('REQ-PS-08: Clear Error', () => {
 });
 
 // ============================================================================
-// REQ-PS-09: Reset Store
+// Reset Store
 // ============================================================================
-describe('REQ-PS-09: Reset Store', () => {
+describe('Reset Store', () => {
   it('restores state to initialState', () => {
-    // Mutate state first
     usePatientsStore.setState({
       patients: [patientA, patientB, patientC],
       isLoading: true,
@@ -221,11 +299,10 @@ describe('REQ-PS-09: Reset Store', () => {
 });
 
 // ============================================================================
-// REQ-PS-11: Test Isolation via resetStore
+// Test Isolation
 // ============================================================================
-describe('REQ-PS-11: Test Isolation', () => {
+describe('Test Isolation', () => {
   it('resetStore is callable and returns state to defaults', () => {
-    // This test explicitly validates that resetStore() works as a beforeEach isolation tool
     usePatientsStore.setState({ patients: [patientA], error: 'test error' });
     const { resetStore } = usePatientsStore.getState();
     resetStore();
@@ -238,9 +315,9 @@ describe('REQ-PS-11: Test Isolation', () => {
 });
 
 // ============================================================================
-// REQ-PS-02: Load Patients — Happy Path
+// Load Patients — Happy Path
 // ============================================================================
-describe('REQ-PS-02: Load Patients — Happy Path', () => {
+describe('Load Patients — Happy Path', () => {
   it('populates patients on successful API call', async () => {
     const mockedGetPatients = vi.mocked(getPatients);
     mockedGetPatients.mockResolvedValue([patientA, patientB]);
@@ -255,7 +332,6 @@ describe('REQ-PS-02: Load Patients — Happy Path', () => {
 
   it('sets isLoading to true during the call and false after resolution', async () => {
     const mockedGetPatients = vi.mocked(getPatients);
-    // Use a deferred promise so we can observe the loading state mid-flight
     let resolvePromise!: (value: Patient[]) => void;
     const deferred = new Promise<Patient[]>((resolve) => {
       resolvePromise = resolve;
@@ -263,35 +339,30 @@ describe('REQ-PS-02: Load Patients — Happy Path', () => {
     mockedGetPatients.mockReturnValue(deferred);
 
     const loadPromise = usePatientsStore.getState().loadPatients();
-
-    // isLoading should be true while the call is pending
     expect(usePatientsStore.getState().isLoading).toBe(true);
 
-    // Resolve the deferred promise
     resolvePromise([patientA]);
     await loadPromise;
-
-    // isLoading should be false after resolution
     expect(usePatientsStore.getState().isLoading).toBe(false);
   });
 });
 
 // ============================================================================
-// REQ-PS-03: Load Patients — ApiError Translation
+// Load Patients — ApiError Translation
 // ============================================================================
-describe('REQ-PS-03: Load Patients — ApiError Translation', () => {
+describe('Load Patients — ApiError Translation', () => {
   it('sets error to ApiError message and keeps patients unchanged', async () => {
     const mockedGetPatients = vi.mocked(getPatients);
 
-    // Import isApiError to construct a valid ApiError shape
     const { isApiError } = await import('../../api/types');
-    const apiError = { status: 500, message: 'Server Error', code: 'HTTP_ERROR' as const };
-    // Verify the mock error satisfies ApiError
+    const apiError = {
+      status: 500,
+      message: 'Server Error',
+      code: 'HTTP_ERROR' as const,
+    };
     expect(isApiError(apiError)).toBe(true);
 
-    // Pre-populate some patients to verify they are preserved
     usePatientsStore.setState({ patients: [patientA] });
-
     mockedGetPatients.mockRejectedValue(apiError);
 
     await usePatientsStore.getState().loadPatients();
@@ -304,9 +375,9 @@ describe('REQ-PS-03: Load Patients — ApiError Translation', () => {
 });
 
 // ============================================================================
-// REQ-PS-04: Load Patients — Unknown Error Translation
+// Load Patients — Unknown Error Translation
 // ============================================================================
-describe('REQ-PS-04: Load Patients — Unknown Error Translation', () => {
+describe('Load Patients — Unknown Error', () => {
   it('sets a fallback error message for non-ApiError throws', async () => {
     const mockedGetPatients = vi.mocked(getPatients);
     mockedGetPatients.mockRejectedValue(new Error('network down'));
@@ -314,7 +385,6 @@ describe('REQ-PS-04: Load Patients — Unknown Error Translation', () => {
     await usePatientsStore.getState().loadPatients();
 
     const state = usePatientsStore.getState();
-    // Must be a non-empty fallback string
     expect(state.error).toBeTruthy();
     expect(typeof state.error).toBe('string');
     expect(state.isLoading).toBe(false);
@@ -335,92 +405,10 @@ describe('REQ-PS-04: Load Patients — Unknown Error Translation', () => {
 });
 
 // ============================================================================
-// REQ-PS-05-MODIFIED: Add Patient — genera id y createdAt (NEW SIGNATURE)
+// No Direct Fetch
 // ============================================================================
-describe('REQ-PS-05-MODIFIED: Add Patient genera id y createdAt', () => {
-  it('generates a non-empty id and valid createdAt ISO string', () => {
-    usePatientsStore.getState().resetStore();
-    const input = {
-      name: 'Nuevo',
-      description: 'Test',
-      webpage: 'https://test.example.com',
-      avatar: 'https://test.example.com/avatar.jpg',
-    };
-
-    const result = usePatientsStore.getState().addPatient(input);
-
-    // id must be a non-empty string
-    expect(typeof result.id).toBe('string');
-    expect(result.id.length).toBeGreaterThan(0);
-
-    // createdAt must be a valid ISO date string
-    expect(typeof result.createdAt).toBe('string');
-    expect(() => new Date(result.createdAt!)).not.toThrow();
-    expect(new Date(result.createdAt!).toISOString()).toBe(result.createdAt);
-  });
-
-  it('generates unique ids on consecutive calls', () => {
-    usePatientsStore.getState().resetStore();
-    const input = {
-      name: 'A',
-      description: 'B',
-      webpage: 'https://a.example.com',
-      avatar: 'https://a.example.com/avatar.jpg',
-    };
-
-    const r1 = usePatientsStore.getState().addPatient(input);
-    const r2 = usePatientsStore.getState().addPatient({ ...input, name: 'B' });
-
-    expect(r1.id).not.toBe(r2.id);
-  });
-
-  it('appends the full Patient to the patients array', () => {
-    usePatientsStore.getState().resetStore();
-    usePatientsStore.setState({ patients: [patientA] });
-    const input = {
-      name: 'Nuevo',
-      description: 'Test',
-      webpage: 'https://test.example.com',
-      avatar: 'https://test.example.com/avatar.jpg',
-    };
-
-    const result = usePatientsStore.getState().addPatient(input);
-    const { patients } = usePatientsStore.getState();
-
-    expect(patients).toHaveLength(2);
-    expect(patients[1]).toEqual(result);
-    expect(patients[1].name).toBe('Nuevo');
-    expect(patients[1].id).toBe(result.id);
-    expect(patients[1].createdAt).toBe(result.createdAt);
-  });
-
-  it('does not mutate the previous patients array reference', () => {
-    usePatientsStore.getState().resetStore();
-    usePatientsStore.setState({ patients: [patientA] });
-    const beforePatients = usePatientsStore.getState().patients;
-
-    const input = {
-      name: 'Nuevo',
-      description: 'Test',
-      webpage: 'https://test.example.com',
-      avatar: 'https://test.example.com/avatar.jpg',
-    };
-    usePatientsStore.getState().addPatient(input);
-
-    const afterPatients = usePatientsStore.getState().patients;
-    expect(afterPatients).not.toBe(beforePatients);
-    expect(beforePatients).toEqual([patientA]);
-  });
-});
-
-// ============================================================================
-// REQ-PS-12: No Direct Fetch
-// ============================================================================
-describe('REQ-PS-12: No Direct Fetch', () => {
+describe('No Direct Fetch', () => {
   it('store module imports getPatients from the API module', async () => {
-    // Verify that getPatients can be imported from the API module
-    // and that the store uses it (tested via mock in other tests).
-    // This test acts as a compile/import-time assertion.
     const apiModule = await import('../api/patients.api');
     expect(apiModule.getPatients).toBeDefined();
     expect(typeof apiModule.getPatients).toBe('function');

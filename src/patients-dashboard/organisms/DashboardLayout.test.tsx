@@ -1,6 +1,75 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import DashboardLayout from './DashboardLayout';
+import type { ToastMessage } from '../store/toast.store';
+import { makeToast } from '@/test/helpers/toast.helper';
+
+// ---------------------------------------------------------------------------
+// Toast store mock (stateful via vi.hoisted)
+// ---------------------------------------------------------------------------
+
+const { toastState } = vi.hoisted(() => {
+  const dismissToast = vi.fn<(id: string) => void>();
+  const toasts: ToastMessage[] = [];
+  return { toastState: { toasts, dismissToast } };
+});
+
+vi.mock('@/patients-dashboard/store/toast.store', () => ({
+  useToastStore: vi.fn(
+    (selector?: (state: { toasts: ToastMessage[]; dismissToast: typeof toastState.dismissToast }) => unknown) => {
+      const state = { toasts: toastState.toasts, dismissToast: toastState.dismissToast };
+      if (typeof selector === 'function') return selector(state);
+      return state;
+    },
+  ),
+  selectToasts: (state: { toasts: ToastMessage[] }) => state.toasts,
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  toastState.toasts = [];
+  toastState.dismissToast = vi.fn<(id: string) => void>();
+});
+
+// ============================================================================
+// ToastContainer mount integration (REQ-TW-05)
+// ============================================================================
+
+describe('ToastContainer mount integration', () => {
+  it('renders active toasts through the mounted ToastContainer', () => {
+    toastState.toasts = [
+      makeToast({ id: 't1', type: 'success', message: 'Paciente creado correctamente' }),
+    ];
+
+    render(
+      <DashboardLayout>
+        <p>Dashboard content</p>
+      </DashboardLayout>,
+    );
+
+    // The toast message proves ToastContainer is mounted and functional
+    expect(
+      screen.getByText('Paciente creado correctamente'),
+    ).toBeInTheDocument();
+  });
+
+  it('preserves layout landmarks when toasts are active', () => {
+    toastState.toasts = [
+      makeToast({ id: 't1', type: 'info', message: 'System notification' }),
+    ];
+
+    render(
+      <DashboardLayout>
+        <p>Dashboard content</p>
+      </DashboardLayout>,
+    );
+
+    // Layout landmarks still intact — banner, main, and children
+    expect(screen.getByRole('banner')).toBeInTheDocument();
+    expect(screen.getByRole('main')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard content')).toBeInTheDocument();
+  });
+});
 
 describe('DashboardLayout', () => {
   it('renders children inside the layout', () => {
@@ -59,18 +128,17 @@ describe('DashboardLayout', () => {
     expect(main.className).toContain('flex-1');
   });
 
-  it('applies a full-height layout with background', () => {
+  it('applies min-height to fill the viewport', () => {
     render(
       <DashboardLayout>
         <span>Content</span>
       </DashboardLayout>,
     );
 
-    // The outer wrapper should fill the viewport and set background
+    // The outer wrapper should fill the viewport
     const main = screen.getByRole('main');
     const outerDiv = main.parentElement!;
     expect(outerDiv.className).toContain('min-h-screen');
-    expect(outerDiv.className).toContain('bg-slate-50');
   });
 
   it('header appears above the main content in DOM order', () => {

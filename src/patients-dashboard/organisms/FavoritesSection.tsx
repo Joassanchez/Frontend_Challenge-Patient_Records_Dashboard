@@ -28,14 +28,23 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
     favoritePatientIds.includes(p.id),
   );
 
+  // Counter copy — singular/plural, uses MATCHED count (not localStorage count)
+  const counterText =
+    favoritePatients.length === 1
+      ? '1 paciente guardado'
+      : `${favoritePatients.length} pacientes guardados`;
+
   return (
     <section
       aria-labelledby={headingId}
       className={cn('w-full', className)}
     >
-      <h2 id={headingId} className="text-lg font-semibold text-slate-800 mb-4">
-        Favoritos
-      </h2>
+      <div className="flex items-baseline gap-2 mb-4">
+        <h2 id={headingId} className="text-lg font-semibold text-slate-800">
+          Favoritos
+        </h2>
+        <span className="text-sm text-text-muted">{counterText}</span>
+      </div>
 
       {/* ---- Empty: no favorites at all ---- */}
       {favoritePatientIds.length === 0 && (
@@ -43,6 +52,7 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
           icon="inbox"
           title="Todavía no marcaste favoritos"
           description="Guardá pacientes importantes para accederlos más rápido"
+          variant="compact"
         />
       )}
 
@@ -52,6 +62,7 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
           icon="inbox"
           title="Tus favoritos aparecerán acá"
           description="Tus favoritos aparecerán cuando la lista de pacientes esté disponible"
+          variant="compact"
         />
       )}
 

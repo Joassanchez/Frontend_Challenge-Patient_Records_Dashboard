@@ -2,20 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PatientModal from './PatientModal';
-import type { Patient } from '@/patients-dashboard/types/patient.types';
+import { createPatient } from '@/test/fixtures/patient.fixture';
 
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const existingPatient: Patient = {
+const existingPatient = createPatient({
   id: 'p1',
   name: 'Carlos López',
   description: 'Neurología',
   webpage: 'https://carlos.example.com',
   avatar: 'https://carlos.example.com/avatar.jpg',
   createdAt: '2024-01-15T10:00:00Z',
-};
+});
 
 // ---------------------------------------------------------------------------
 // Modal store mock
@@ -45,6 +45,26 @@ vi.mock('@/patients-dashboard/store/modal.store', () => ({
   selectModalMode: (s: ReturnType<typeof defaultModalState>) => s.mode,
   selectSelectedPatientId: (s: ReturnType<typeof defaultModalState>) =>
     s.selectedPatientId,
+}));
+
+// ---------------------------------------------------------------------------
+// Toast store mock
+// ---------------------------------------------------------------------------
+
+const { toastSpy } = vi.hoisted(() => {
+  const showSuccess = vi.fn();
+  const toasts: unknown[] = [];
+  return { toastSpy: { showSuccess, toasts } };
+});
+
+vi.mock('@/patients-dashboard/store/toast.store', () => ({
+  useToastStore: vi.fn(
+    (selector?: (s: { toasts: unknown[]; showSuccess: typeof toastSpy.showSuccess }) => unknown) => {
+      const state = { toasts: toastSpy.toasts, showSuccess: toastSpy.showSuccess };
+      if (typeof selector === 'function') return selector(state);
+      return state;
+    },
+  ),
 }));
 
 // ---------------------------------------------------------------------------
@@ -85,14 +105,16 @@ beforeEach(() => {
   vi.clearAllMocks();
   modalStoreState = defaultModalState();
   patientsStoreState = defaultPatientsState();
+  toastSpy.toasts = [];
+  toastSpy.showSuccess = vi.fn();
 });
 
 // ============================================================================
-// REQ-PM-01: Orquestación create
+// Create mode — two-field form, empty defaults
 // ============================================================================
 
-describe('REQ-PM-01: Orquestación create', () => {
-  it('renders Modal with create title and PatientForm with empty defaults when mode is create', () => {
+describe('Create mode', () => {
+  it('renders Modal with create title and PatientForm with empty defaults', () => {
     modalStoreState = {
       ...defaultModalState(),
       isOpen: true,
@@ -108,7 +130,21 @@ describe('REQ-PM-01: Orquestación create', () => {
     expect(screen.getByLabelText(/descripción/i)).toHaveValue('');
   });
 
-  it('calls addPatient and closeModal on valid create submit', async () => {
+  it('does NOT render webpage or avatar inputs in create mode', () => {
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'create',
+      selectedPatientId: null,
+    };
+
+    render(<PatientModal />);
+
+    expect(screen.queryByLabelText(/página web/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/avatar/i)).not.toBeInTheDocument();
+  });
+
+  it('calls addPatient with PatientFormData (webpage/avatar default to empty) and closes modal on valid submit', async () => {
     const user = userEvent.setup();
     modalStoreState = {
       ...defaultModalState(),
@@ -123,37 +159,32 @@ describe('REQ-PM-01: Orquestación create', () => {
 
     const nameInput = screen.getByLabelText(/nombre/i);
     const descInput = screen.getByLabelText(/descripción/i);
-    const webInput = screen.getByLabelText(/página web/i);
-    const avatarInput = screen.getByLabelText(/avatar/i);
 
     await user.clear(nameInput);
     await user.type(nameInput, 'Nuevo Paciente');
     await user.clear(descInput);
     await user.type(descInput, 'Cardiología');
-    await user.clear(webInput);
-    await user.type(webInput, 'https://nuevo.example.com');
-    await user.clear(avatarInput);
-    await user.type(avatarInput, 'https://nuevo.example.com/avatar.jpg');
 
     await user.click(screen.getByRole('button', { name: /crear paciente/i }));
 
     expect(mockAddPatient).toHaveBeenCalledTimes(1);
+    // addPatient receives full PatientFormData — store auto-generates webpage/avatar
     expect(mockAddPatient).toHaveBeenCalledWith({
       name: 'Nuevo Paciente',
       description: 'Cardiología',
-      webpage: 'https://nuevo.example.com',
-      avatar: 'https://nuevo.example.com/avatar.jpg',
+      webpage: '',
+      avatar: '',
     });
     expect(mockCloseModal).toHaveBeenCalledTimes(1);
   });
 });
 
 // ============================================================================
-// REQ-PM-02: Orquestación edit
+// Edit mode — pre-filled with all editable fields, hidden fields preserved by store
 // ============================================================================
 
-describe('REQ-PM-02: Orquestación edit', () => {
-  it('renders Modal with edit title and PatientForm pre-filled with patient data', () => {
+describe('Edit mode', () => {
+  it('renders Modal with edit title and PatientForm pre-filled with all editable fields', () => {
     modalStoreState = {
       ...defaultModalState(),
       isOpen: true,
@@ -167,12 +198,16 @@ describe('REQ-PM-02: Orquestación edit', () => {
     expect(screen.getByText('Editar paciente')).toBeInTheDocument();
     expect(screen.getByLabelText(/nombre/i)).toHaveValue('Carlos López');
     expect(screen.getByLabelText(/descripción/i)).toHaveValue('Neurología');
-    expect(
-      screen.getByLabelText(/página web/i),
-    ).toHaveValue('https://carlos.example.com');
+    // Webpage and avatar are now visible in edit mode
+    expect(screen.getByLabelText(/página web/i)).toHaveValue(
+      'https://carlos.example.com',
+    );
+    expect(screen.getByLabelText(/avatar/i)).toHaveValue(
+      'https://carlos.example.com/avatar.jpg',
+    );
   });
 
-  it('calls updatePatient with merged data and closeModal on valid edit submit', async () => {
+  it('calls updatePatient(id, formData) with all editable fields and closes modal', async () => {
     const user = userEvent.setup();
     modalStoreState = {
       ...defaultModalState(),
@@ -194,19 +229,22 @@ describe('REQ-PM-02: Orquestación edit', () => {
     );
 
     expect(mockUpdatePatient).toHaveBeenCalledTimes(1);
-    expect(mockUpdatePatient).toHaveBeenCalledWith({
-      ...existingPatient,
+    // updatePatient(id, data) — all editable fields included
+    expect(mockUpdatePatient).toHaveBeenCalledWith('p1', {
       name: 'Carlos Actualizado',
+      description: 'Neurología',
+      webpage: 'https://carlos.example.com',
+      avatar: 'https://carlos.example.com/avatar.jpg',
     });
     expect(mockCloseModal).toHaveBeenCalledTimes(1);
   });
 });
 
 // ============================================================================
-// REQ-PM-03: Edit con paciente inexistente
+// Edit with unknown patient — not found state
 // ============================================================================
 
-describe('REQ-PM-03: Paciente no encontrado', () => {
+describe('Patient not found', () => {
   it('shows "Paciente no encontrado" message and close button when patient does not exist', () => {
     modalStoreState = {
       ...defaultModalState(),
@@ -241,10 +279,10 @@ describe('REQ-PM-03: Paciente no encontrado', () => {
 });
 
 // ============================================================================
-// REQ-PM-05: Composición Modal + PatientForm
+// Closed state & close behavior
 // ============================================================================
 
-describe('REQ-PM-05: Composición y cerrado', () => {
+describe('Closed and close behavior', () => {
   it('renders nothing when modal is closed (isOpen=false)', () => {
     modalStoreState = {
       ...defaultModalState(),
@@ -290,5 +328,117 @@ describe('REQ-PM-05: Composición y cerrado', () => {
 
     await user.keyboard('{Escape}');
     expect(mockCloseModal).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ============================================================================
+// Toast wiring — REQ-TW-01 & REQ-TW-02
+// ============================================================================
+
+describe('Toast wiring on successful submit', () => {
+  it('calls showSuccess("Paciente creado correctamente") after create succeeds and modal closes', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'create',
+      selectedPatientId: null,
+    };
+    mockAddPatient.mockClear();
+    mockCloseModal.mockClear();
+    toastSpy.showSuccess.mockClear();
+
+    render(<PatientModal />);
+
+    const nameInput = screen.getByLabelText(/nombre/i);
+    const descInput = screen.getByLabelText(/descripción/i);
+
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Nuevo Paciente');
+    await user.clear(descInput);
+    await user.type(descInput, 'Cardiología');
+
+    await user.click(screen.getByRole('button', { name: /crear paciente/i }));
+
+    expect(toastSpy.showSuccess).toHaveBeenCalledWith(
+      'Paciente creado correctamente',
+    );
+    expect(mockAddPatient).toHaveBeenCalledTimes(1);
+    expect(mockCloseModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls showSuccess("Cambios guardados") after edit succeeds and modal closes', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'edit',
+      selectedPatientId: 'p1',
+    };
+    mockUpdatePatient.mockClear();
+    mockCloseModal.mockClear();
+    toastSpy.showSuccess.mockClear();
+
+    render(<PatientModal />);
+
+    const nameInput = screen.getByLabelText(/nombre/i);
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Carlos Actualizado');
+
+    await user.click(
+      screen.getByRole('button', { name: /guardar cambios/i }),
+    );
+
+    expect(toastSpy.showSuccess).toHaveBeenCalledWith('Cambios guardados');
+    expect(mockUpdatePatient).toHaveBeenCalledTimes(1);
+    expect(mockCloseModal).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Toast NOT shown on validation failure', () => {
+  it('does NOT call showSuccess when create form is invalid (empty required fields)', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'create',
+      selectedPatientId: null,
+    };
+    toastSpy.showSuccess.mockClear();
+    mockAddPatient.mockClear();
+    mockCloseModal.mockClear();
+
+    render(<PatientModal />);
+
+    // Submit without filling required fields — Zod validation blocks onSubmit
+    await user.click(screen.getByRole('button', { name: /crear paciente/i }));
+
+    expect(toastSpy.showSuccess).not.toHaveBeenCalled();
+    expect(mockAddPatient).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call showSuccess when edit form is invalid (empty name)', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'edit',
+      selectedPatientId: 'p1',
+    };
+    toastSpy.showSuccess.mockClear();
+    mockUpdatePatient.mockClear();
+    mockCloseModal.mockClear();
+
+    render(<PatientModal />);
+
+    // Clear the name field to trigger validation
+    await user.clear(screen.getByLabelText(/nombre/i));
+
+    await user.click(
+      screen.getByRole('button', { name: /guardar cambios/i }),
+    );
+
+    expect(toastSpy.showSuccess).not.toHaveBeenCalled();
+    expect(mockUpdatePatient).not.toHaveBeenCalled();
   });
 });

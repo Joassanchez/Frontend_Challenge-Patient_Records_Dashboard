@@ -1,2 +1,2 @@
-export { patientSchema } from './patient.schema';
+export { patientSchema, patientFormSchema } from './patient.schema';
 export type { PatientFormData } from './patient.schema';

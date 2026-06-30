@@ -28,6 +28,26 @@ vi.mock('@/patients-dashboard/store/modal.store', () => ({
     s.selectedPatientId,
 }));
 
+// No-op toast.store mock — DashboardPage uses DashboardLayout which mounts
+// ToastContainer, and rendered sections may indirectly read the toast store.
+vi.mock('@/patients-dashboard/store/toast.store', () => ({
+  useToastStore: vi.fn((selector?: (state: unknown) => unknown) => {
+    const state = {
+      toasts: [],
+      showSuccess: vi.fn(),
+      showError: vi.fn(),
+      showInfo: vi.fn(),
+      showWarning: vi.fn(),
+      dismissToast: vi.fn(),
+      clearToasts: vi.fn(),
+      resetStore: vi.fn(),
+    };
+    if (typeof selector === 'function') return selector(state);
+    return state;
+  }),
+  selectToasts: () => [],
+}));
+
 describe('DashboardPage', () => {
   function renderDashboard() {
     return render(

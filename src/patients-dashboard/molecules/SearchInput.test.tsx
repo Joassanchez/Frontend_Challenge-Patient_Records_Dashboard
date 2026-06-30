@@ -9,7 +9,7 @@ describe('SearchInput', () => {
       <SearchInput value="" onChange={() => {}} />,
     );
     // type="search" inputs have role "searchbox"
-    const input = screen.getByRole('searchbox');
+    const input = screen.getByRole('textbox');
     expect(input).toBeInTheDocument();
     // Search icon SVG should be present
     const svg = container.querySelector('svg');
@@ -52,7 +52,7 @@ describe('SearchInput', () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
     render(<SearchInput value="" onChange={onChange} />);
-    const input = screen.getByRole('searchbox');
+    const input = screen.getByRole('textbox');
     await user.type(input, 'a');
     // onChange should be called for each keystroke
     expect(onChange).toHaveBeenCalled();

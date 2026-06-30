@@ -13,13 +13,21 @@ interface EmptyStateProps {
   description?: string;
   icon?: IconName;
   action?: EmptyStateAction;
+  variant?: 'default' | 'compact';
 }
 
-function EmptyState({ title, description, icon, action }: EmptyStateProps) {
+function EmptyState({
+  title,
+  description,
+  icon,
+  action,
+  variant = 'default',
+}: EmptyStateProps) {
   return (
     <div
       className={cn(
         'flex flex-col items-center justify-center gap-4 py-16 px-4 text-center',
+        variant === 'compact' && 'py-8',
       )}
     >
       {icon && <Icon name={icon} size="lg" />}

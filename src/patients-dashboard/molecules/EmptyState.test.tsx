@@ -70,4 +70,61 @@ describe('EmptyState', () => {
     render(<EmptyState title="Empty" />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
+
+  // =========================================================================
+  // REQ-EMP-01: variant prop — default vs compact
+  // =========================================================================
+
+  describe('variant prop', () => {
+    it('renders with default full padding when variant is not provided', () => {
+      render(<EmptyState title="No results" />);
+      const heading = screen.getByRole('heading', { name: 'No results' });
+      const container = heading.parentElement!.parentElement!;
+      // Contract: default variant uses full vertical padding
+      expect(container.className).toContain('py-16');
+    });
+
+    it('renders with reduced padding when variant="compact"', () => {
+      render(<EmptyState title="Sin favoritos" variant="compact" />);
+      const heading = screen.getByRole('heading', { name: 'Sin favoritos' });
+      const container = heading.parentElement!.parentElement!;
+      // Contract: compact variant uses significantly less vertical padding
+      expect(container.className).toContain('py-8');
+      expect(container.className).not.toContain('py-16');
+    });
+
+    it('preserves heading and content when compact variant is used', () => {
+      render(
+        <EmptyState
+          title="Sin favoritos"
+          description="Marcá pacientes como favoritos"
+          icon="inbox"
+          variant="compact"
+        />,
+      );
+      // Heading still visible
+      expect(screen.getByRole('heading', { name: 'Sin favoritos' })).toBeInTheDocument();
+      // Description still visible
+      expect(screen.getByText('Marcá pacientes como favoritos')).toBeInTheDocument();
+      // Icon still rendered
+      const container = screen.getByRole('heading', { name: 'Sin favoritos' }).parentElement!.parentElement!;
+      expect(container.querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('renders action button correctly with compact variant', async () => {
+      const onClick = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <EmptyState
+          title="Empty"
+          variant="compact"
+          action={{ label: 'Add', onClick }}
+        />,
+      );
+      const button = screen.getByRole('button', { name: 'Add' });
+      expect(button).toBeInTheDocument();
+      await user.click(button);
+      expect(onClick).toHaveBeenCalledTimes(1);
+    });
+  });
 });

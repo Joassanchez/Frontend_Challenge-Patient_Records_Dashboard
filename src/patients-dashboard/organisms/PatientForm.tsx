@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  patientSchema,
+  patientFormSchema,
   type PatientFormData,
 } from '@/patients-dashboard/schemas/patient.schema';
 import Label from '@/patients-dashboard/atoms/Label';
@@ -16,6 +16,7 @@ import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
 // ---------------------------------------------------------------------------
 
 interface PatientFormProps {
+  mode: 'create' | 'edit';
   defaultValues: PatientFormData;
   onSubmit: (data: PatientFormData) => void;
   submitLabel: string;
@@ -27,6 +28,7 @@ interface PatientFormProps {
 // ---------------------------------------------------------------------------
 
 function PatientForm({
+  mode,
   defaultValues,
   onSubmit,
   submitLabel,
@@ -38,7 +40,7 @@ function PatientForm({
     reset,
     formState: { errors },
   } = useForm<PatientFormData>({
-    resolver: zodResolver(patientSchema),
+    resolver: zodResolver(patientFormSchema),
     defaultValues,
   });
 
@@ -112,65 +114,64 @@ function PatientForm({
         )}
       </div>
 
-      {/* Página web */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="patient-webpage" required>
-          Página web
-        </Label>
-        <Controller
-          name="webpage"
-          control={control}
-          render={({ field: { ref, ...field } }) => (
-            <Input
-              id="patient-webpage"
-              placeholder="https://ejemplo.com"
-              type="url"
-              ref={ref}
-              aria-invalid={errors.webpage ? 'true' : undefined}
-              aria-describedby={
-                errors.webpage ? 'patient-webpage-error' : undefined
-              }
-              {...field}
+      {/* Webpage + Avatar — edit mode only */}
+      {mode === 'edit' && (
+        <>
+          {/* Página web */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="patient-webpage">Página web</Label>
+            <Controller
+              name="webpage"
+              control={control}
+              render={({ field: { ref, ...field } }) => (
+                <Input
+                  id="patient-webpage"
+                  placeholder="https://ejemplo.com"
+                  ref={ref}
+                  aria-invalid={errors.webpage ? 'true' : undefined}
+                  aria-describedby={
+                    errors.webpage ? 'patient-webpage-error' : undefined
+                  }
+                  {...field}
+                />
+              )}
             />
-          )}
-        />
-        {errors.webpage && (
-          <ErrorMessage
-            id="patient-webpage-error"
-            message={errors.webpage.message!}
-          />
-        )}
-      </div>
+            {errors.webpage && (
+              <ErrorMessage
+                id="patient-webpage-error"
+                message={errors.webpage.message!}
+              />
+            )}
+          </div>
 
-      {/* Avatar */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="patient-avatar" required>
-          Avatar
-        </Label>
-        <Controller
-          name="avatar"
-          control={control}
-          render={({ field: { ref, ...field } }) => (
-            <Input
-              id="patient-avatar"
-              placeholder="https://ejemplo.com/avatar.jpg"
-              type="url"
-              ref={ref}
-              aria-invalid={errors.avatar ? 'true' : undefined}
-              aria-describedby={
-                errors.avatar ? 'patient-avatar-error' : undefined
-              }
-              {...field}
+          {/* Avatar */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="patient-avatar">Avatar</Label>
+            <Controller
+              name="avatar"
+              control={control}
+              render={({ field: { ref, ...field } }) => (
+                <Input
+                  id="patient-avatar"
+                  placeholder="https://ejemplo.com/avatar.jpg"
+                  ref={ref}
+                  aria-invalid={errors.avatar ? 'true' : undefined}
+                  aria-describedby={
+                    errors.avatar ? 'patient-avatar-error' : undefined
+                  }
+                  {...field}
+                />
+              )}
             />
-          )}
-        />
-        {errors.avatar && (
-          <ErrorMessage
-            id="patient-avatar-error"
-            message={errors.avatar.message!}
-          />
-        )}
-      </div>
+            {errors.avatar && (
+              <ErrorMessage
+                id="patient-avatar-error"
+                message={errors.avatar.message!}
+              />
+            )}
+          </div>
+        </>
+      )}
 
       {/* Submit */}
       <Button

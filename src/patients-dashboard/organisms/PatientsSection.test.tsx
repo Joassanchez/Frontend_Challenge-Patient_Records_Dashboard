@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import PatientsSection from './PatientsSection';
+import { createPatient } from '@/test/fixtures/patient.fixture';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -45,14 +46,6 @@ vi.mock('@/patients-dashboard/store/patients.store', () => ({
     return { ...storeState, loadPatients: mockLoadPatients };
   }),
 }));
-
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
-
-function createPatient(id: string, name: string) {
-  return { id, name, description: 'Desc', webpage: `https://${id}.example`, avatar: '' };
-}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -103,7 +96,7 @@ describe('PatientsSection', () => {
   it('does NOT render patient cards while loading', () => {
     setStoreState({
       isLoading: true,
-      patients: [createPatient('1', 'Ana')],
+      patients: [createPatient({ id: '1', name: 'Ana' })],
       error: null,
     });
     render(<PatientsSection />);
@@ -121,7 +114,7 @@ describe('PatientsSection', () => {
   it('does NOT render patient cards when error is set', () => {
     setStoreState({
       isLoading: false,
-      patients: [createPatient('1', 'Ana')],
+      patients: [createPatient({ id: '1', name: 'Ana' })],
       error: 'Network error',
     });
     render(<PatientsSection />);
@@ -156,9 +149,9 @@ describe('PatientsSection', () => {
     setStoreState({
       isLoading: false,
       patients: [
-        createPatient('1', 'Ana García'),
-        createPatient('2', 'Juan Pérez'),
-        createPatient('3', 'María López'),
+        createPatient({ id: '1', name: 'Ana García' }),
+        createPatient({ id: '2', name: 'Juan Pérez' }),
+        createPatient({ id: '3', name: 'María López' }),
       ],
       error: null,
     });
@@ -171,7 +164,7 @@ describe('PatientsSection', () => {
   it('passes each patient as prop to PatientCard', () => {
     setStoreState({
       isLoading: false,
-      patients: [createPatient('x1', 'Ana'), createPatient('x2', 'Juan')],
+      patients: [createPatient({ id: 'x1', name: 'Ana' }), createPatient({ id: 'x2', name: 'Juan' })],
       error: null,
     });
     render(<PatientsSection />);
@@ -185,7 +178,7 @@ describe('PatientsSection', () => {
   it('renders a responsive grid layout for cards', () => {
     setStoreState({
       isLoading: false,
-      patients: [createPatient('1', 'Ana')],
+      patients: [createPatient({ id: '1', name: 'Ana' })],
       error: null,
     });
     render(<PatientsSection />);
@@ -200,7 +193,7 @@ describe('PatientsSection', () => {
   it('renders patient name in each card', () => {
     setStoreState({
       isLoading: false,
-      patients: [createPatient('a', 'Ana García')],
+      patients: [createPatient({ id: 'a', name: 'Ana García' })],
       error: null,
     });
     render(<PatientsSection />);

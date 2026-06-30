@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/shared/utils/cn';
 import { usePatientsStore } from '@/patients-dashboard/store/patients.store';
 import EmptyState from '@/patients-dashboard/molecules/EmptyState';
 import Spinner from '@/patients-dashboard/atoms/Spinner';
 import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
+import SearchInput from '@/patients-dashboard/molecules/SearchInput';
 import PatientCard from './PatientCard';
 
 // ---------------------------------------------------------------------------
@@ -28,6 +29,32 @@ function PatientsSection({ className }: PatientsSectionProps) {
   const error = usePatientsStore((s) => s.error);
   const loadPatients = usePatientsStore((s) => s.loadPatients);
 
+  // Local search state (no debounce, per spec)
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Derived filtered list — case-insensitive match on name and description
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredPatients = useMemo(
+    () =>
+      normalizedQuery
+        ? patients.filter((p) =>
+            [p.name, p.description].some((v) =>
+              v.toLowerCase().includes(normalizedQuery),
+            ),
+          )
+        : patients,
+    [patients, normalizedQuery],
+  );
+
+  const showContent = !isLoading && !error;
+  const hasPatients = patients.length > 0;
+  const hasFilteredResults = filteredPatients.length > 0;
+
+  // Counter copy
+  const count = filteredPatients.length;
+  const counterText =
+    count === 1 ? '1 registro encontrado' : `${count} registros encontrados`;
+
   // Mount-only fetch: guard ensures exactly-one execution
   useEffect(() => {
     if (!hasMounted.current) {
@@ -41,9 +68,27 @@ function PatientsSection({ className }: PatientsSectionProps) {
       aria-labelledby={headingId}
       className={cn('w-full', className)}
     >
-      <h2 id={headingId} className="text-lg font-semibold text-slate-800 mb-4">
-        Pacientes
-      </h2>
+      {/* ---- Header row: heading + counter + search ---- */}
+      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-baseline gap-2">
+          <h2
+            id={headingId}
+            className="text-lg font-semibold text-slate-800"
+          >
+            Pacientes
+          </h2>
+          {showContent && hasPatients && (
+            <span className="text-sm text-text-muted">{counterText}</span>
+          )}
+        </div>
+        {showContent && hasPatients && (
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar por nombre o descripción"
+          />
+        )}
+      </div>
 
       {/* ---- Loading ---- */}
       {isLoading && (
@@ -59,8 +104,8 @@ function PatientsSection({ className }: PatientsSectionProps) {
         </div>
       )}
 
-      {/* ---- Empty ---- */}
-      {!isLoading && !error && patients.length === 0 && (
+      {/* ---- Empty: no patients loaded ---- */}
+      {showContent && !hasPatients && (
         <EmptyState
           icon="user"
           title="No hay pacientes cargados"
@@ -68,8 +113,18 @@ function PatientsSection({ className }: PatientsSectionProps) {
         />
       )}
 
+      {/* ---- Filtered empty: patients exist but none match search ---- */}
+      {showContent && hasPatients && !hasFilteredResults && (
+        <EmptyState
+          icon="search"
+          title="No hay resultados"
+          description={`No se encontraron pacientes para "${searchQuery.trim()}"`}
+          variant="compact"
+        />
+      )}
+
       {/* ---- Success: responsive grid of PatientCards ---- */}
-      {!isLoading && !error && patients.length > 0 && (
+      {showContent && hasPatients && hasFilteredResults && (
         <div
           className={cn(
             'grid gap-4',
@@ -78,7 +133,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
             'lg:grid-cols-3',
           )}
         >
-          {patients.map((patient) => (
+          {filteredPatients.map((patient) => (
             <PatientCard key={patient.id} patient={patient} />
           ))}
         </div>

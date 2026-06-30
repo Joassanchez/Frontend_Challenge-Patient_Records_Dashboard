@@ -11,6 +11,7 @@ import {
   usePatientsStore,
   selectPatientById,
 } from '@/patients-dashboard/store/patients.store';
+import { useToastStore } from '@/patients-dashboard/store/toast.store';
 import Button from '@/patients-dashboard/atoms/Button';
 import type { PatientFormData } from '@/patients-dashboard/schemas/patient.schema';
 import type { Patient } from '@/patients-dashboard/types/patient.types';
@@ -46,6 +47,7 @@ function PatientModal() {
   );
   const addPatient = usePatientsStore((s) => s.addPatient);
   const updatePatient = usePatientsStore((s) => s.updatePatient);
+  const showSuccess = useToastStore((s) => s.showSuccess);
 
   // Stabilize defaultValues based on mode and selectedPatient.
   // selectedPatient captures changes from selectedPatientId transitively,
@@ -64,8 +66,10 @@ function PatientModal() {
   function handleSubmit(data: PatientFormData) {
     if (isCreate) {
       addPatient(data);
+      showSuccess('Paciente creado correctamente');
     } else if (selectedPatient) {
-      updatePatient({ ...selectedPatient, ...data });
+      updatePatient(selectedPatient.id, data);
+      showSuccess('Cambios guardados');
     }
     closeModal();
   }
@@ -91,6 +95,7 @@ function PatientModal() {
         </div>
       ) : (
         <PatientForm
+          mode={mode}
           defaultValues={defaultValues}
           onSubmit={handleSubmit}
           submitLabel={submitLabel}

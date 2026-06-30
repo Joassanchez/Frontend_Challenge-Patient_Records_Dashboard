@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { getPatients } from '../api/patients.api';
 import { isApiError } from '../../api/types';
 import type { Patient } from '../types/patient.types';
+import type { PatientFormData } from '../schemas/patient.schema';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -21,6 +22,10 @@ function generateCreatedAt(): string {
   return new Date().toISOString();
 }
 
+function generateWebpage(id: string): string {
+  return `https://patient.local/${id}`;
+}
+
 // ---------------------------------------------------------------------------
 // State & Actions types
 // ---------------------------------------------------------------------------
@@ -33,8 +38,8 @@ export interface PatientsState {
 
 export interface PatientsActions {
   loadPatients(): Promise<void>;
-  addPatient(input: Omit<Patient, 'id' | 'createdAt'>): Patient;
-  updatePatient(patient: Patient): void;
+  addPatient(input: PatientFormData): Patient;
+  updatePatient(id: string, data: PatientFormData): void;
   clearError(): void;
   resetStore(): void;
 }
@@ -74,11 +79,15 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
     }
   },
 
-  addPatient: (input: Omit<Patient, 'id' | 'createdAt'>): Patient => {
+  addPatient: (input: PatientFormData): Patient => {
+    const id = generateId();
     const patient: Patient = {
-      ...input,
-      id: generateId(),
+      name: input.name,
+      description: input.description,
+      id,
       createdAt: generateCreatedAt(),
+      webpage: generateWebpage(id),
+      avatar: '',
     };
     set((state) => ({
       patients: [...state.patients, patient],
@@ -86,12 +95,20 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
     return patient;
   },
 
-  updatePatient: (patient: Patient) => {
-    const exists = get().patients.some((p) => p.id === patient.id);
-    if (!exists) return; // silent no-op — do not touch state
+  updatePatient: (id: string, data: PatientFormData) => {
+    const existing = get().patients.find((p) => p.id === id);
+    if (!existing) return; // silent no-op — do not touch state
     set((state) => ({
       patients: state.patients.map((p) =>
-        p.id === patient.id ? patient : p,
+        p.id === id
+          ? {
+              ...p,
+              name: data.name,
+              description: data.description,
+              webpage: data.webpage,
+              avatar: data.avatar,
+            }
+          : p,
       ),
     }));
   },

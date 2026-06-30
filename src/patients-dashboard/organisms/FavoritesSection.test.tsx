@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import FavoritesSection from './FavoritesSection';
+import { createPatient } from '@/test/fixtures/patient.fixture';
 
 // ---------------------------------------------------------------------------
 // Mocks — hoisted before component import
@@ -30,6 +31,7 @@ vi.mock('@/patients-dashboard/store/favorites.store', () => ({
     return favoritesState;
   }),
   selectFavoriteIds: (state: typeof favoritesState) => state.favoritePatientIds,
+  selectFavoritesCount: (state: typeof favoritesState) => state.favoritePatientIds.length,
 }));
 
 // --- Patients store mock ---
@@ -47,13 +49,25 @@ vi.mock('@/patients-dashboard/store/patients.store', () => ({
   selectPatients: (state: typeof patientsState) => state.patients,
 }));
 
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
-
-function createPatient(id: string, name: string) {
-  return { id, name, description: 'Desc', webpage: `https://${id}.example`, avatar: '' };
-}
+// No-op toast.store mock — FavoritesSection does not use toasts directly,
+// but it renders components (PatientCard) that may read the store.
+vi.mock('@/patients-dashboard/store/toast.store', () => ({
+  useToastStore: vi.fn((selector?: (state: unknown) => unknown) => {
+    const state = {
+      toasts: [],
+      showSuccess: vi.fn(),
+      showError: vi.fn(),
+      showInfo: vi.fn(),
+      showWarning: vi.fn(),
+      dismissToast: vi.fn(),
+      clearToasts: vi.fn(),
+      resetStore: vi.fn(),
+    };
+    if (typeof selector === 'function') return selector(state);
+    return state;
+  }),
+  selectToasts: () => [],
+}));
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -122,24 +136,25 @@ describe('FavoritesSection', () => {
 
   // ---- REQ-DL-02: Empty state ----
 
-  it('renders empty state with inbox icon when there are no favorites', () => {
+  it('renders compact empty state when there are no favorites', () => {
     setFavoritesState([]);
     setPatientsState([]);
     render(<FavoritesSection />);
 
-    // Descriptive message about no favorites
+    // Descriptive message about no favorites still visible
     expect(
       screen.getByText(/todavía no marcaste favoritos/i),
     ).toBeInTheDocument();
 
-    // The inbox icon must be rendered inside the section
+    // The inbox icon must be rendered
     const section = screen.getByRole('region', { name: /favoritos/i });
     const svg = section.querySelector('svg');
     expect(svg).toBeInTheDocument();
 
-    const path = svg!.querySelector('path');
-    expect(path).toBeInTheDocument();
-    expect(path!.getAttribute('d')).toContain('M22 12h-6l-2 3');
+    // Compact variant: uses reduced padding (py-8), not full padding (py-16)
+    const emptyContainer = svg!.parentElement!;
+    expect(emptyContainer.className).toContain('py-8');
+    expect(emptyContainer.className).not.toContain('py-16');
   });
 
   it('remains visible even when empty', () => {
@@ -155,7 +170,7 @@ describe('FavoritesSection', () => {
 
   it('renders a responsive grid of PatientCards when favorites exist', () => {
     setFavoritesState(['p1', 'p2']);
-    setPatientsState([createPatient('p1', 'Ana García'), createPatient('p2', 'Juan Pérez')]);
+    setPatientsState([createPatient({ id: 'p1', name: 'Ana García' }), createPatient({ id: 'p2', name: 'Juan Pérez' })]);
     render(<FavoritesSection />);
 
     // Two cards should be rendered
@@ -167,7 +182,7 @@ describe('FavoritesSection', () => {
 
   it('passes each patient to PatientCard as prop', () => {
     setFavoritesState(['x1', 'x2']);
-    setPatientsState([createPatient('x1', 'Ana'), createPatient('x2', 'Juan')]);
+    setPatientsState([createPatient({ id: 'x1', name: 'Ana' }), createPatient({ id: 'x2', name: 'Juan' })]);
     render(<FavoritesSection />);
 
     const calls = vi.mocked(PatientCard).mock.calls;
@@ -178,7 +193,7 @@ describe('FavoritesSection', () => {
 
   it('uses responsive grid classes matching PatientsSection', () => {
     setFavoritesState(['p1']);
-    setPatientsState([createPatient('p1', 'Ana')]);
+    setPatientsState([createPatient({ id: 'p1', name: 'Ana' })]);
     render(<FavoritesSection />);
 
     const section = screen.getByRole('region', { name: /favoritos/i });
@@ -195,13 +210,16 @@ describe('FavoritesSection', () => {
   it('handles orphan favorite IDs gracefully (IDs not found in patients)', () => {
     // p99 is favorited but doesn't exist in patients — should be silently ignored
     setFavoritesState(['p1', 'p99']);
-    setPatientsState([createPatient('p1', 'Ana García')]);
+    setPatientsState([createPatient({ id: 'p1', name: 'Ana García' })]);
     render(<FavoritesSection />);
 
     // Only Ana's card should render
     const cards = screen.getAllByRole('article');
     expect(cards).toHaveLength(1);
     expect(cards[0]).toHaveTextContent('Ana García');
+
+    // Counter must use matched count (1), not localStorage count (2)
+    expect(screen.getByText('1 paciente guardado')).toBeInTheDocument();
   });
 
   it('shows empty state when favorites exist but no patients match', () => {
@@ -214,5 +232,53 @@ describe('FavoritesSection', () => {
     expect(
       screen.getByRole('heading', { name: /tus favoritos aparecerán acá/i }),
     ).toBeInTheDocument();
+
+    // Counter must show 0 (matched count), NOT the localStorage count (2)
+    expect(screen.getByText('0 pacientes guardados')).toBeInTheDocument();
+    expect(screen.queryByText('2 pacientes guardados')).not.toBeInTheDocument();
+  });
+
+  // ===========================================================================
+  // Section Counter — REQ-COUNTERS-01
+  // ===========================================================================
+
+  describe('Section counter', () => {
+    it('shows "N pacientes guardados" for plural count', () => {
+      setFavoritesState(['p1', 'p2', 'p3']);
+      setPatientsState([
+        createPatient({ id: 'p1', name: 'Ana' }),
+        createPatient({ id: 'p2', name: 'Juan' }),
+        createPatient({ id: 'p3', name: 'María' }),
+      ]);
+      render(<FavoritesSection />);
+      expect(screen.getByText('3 pacientes guardados')).toBeInTheDocument();
+    });
+
+    it('shows "1 paciente guardado" for singular count', () => {
+      setFavoritesState(['p1']);
+      setPatientsState([createPatient({ id: 'p1', name: 'Ana' })]);
+      render(<FavoritesSection />);
+      expect(screen.getByText('1 paciente guardado')).toBeInTheDocument();
+    });
+
+    it('shows "0 pacientes guardados" when there are no favorites', () => {
+      setFavoritesState([]);
+      setPatientsState([]);
+      render(<FavoritesSection />);
+      expect(screen.getByText('0 pacientes guardados')).toBeInTheDocument();
+    });
+
+    it('renders counter adjacent to the h2 heading (heading text unchanged)', () => {
+      setFavoritesState(['p1']);
+      setPatientsState([createPatient({ id: 'p1', name: 'Ana' })]);
+      render(<FavoritesSection />);
+
+      // The h2 still has name "Favoritos" — counter is outside
+      const heading = screen.getByRole('heading', { name: 'Favoritos', level: 2 });
+      expect(heading).toBeInTheDocument();
+
+      // Counter must NOT be inside the h2
+      expect(heading).not.toHaveTextContent(/paciente/i);
+    });
   });
 });

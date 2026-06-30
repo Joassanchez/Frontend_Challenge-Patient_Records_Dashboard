@@ -1,24 +1,50 @@
 import { describe, it, expect } from 'vitest';
-import { patientSchema } from './patient.schema';
+import { patientFormSchema } from './patient.schema';
 import type { PatientFormData } from './patient.schema';
 
 const validPayload = {
-  name: 'Juan Pérez',
-  description: 'Paciente con historial clínico',
-  webpage: 'https://example.com',
-  avatar: 'https://example.com/avatar.jpg',
+  name: 'Ana',
+  description: 'Doctora',
+  webpage: '',
+  avatar: '',
 };
 
-describe('patientSchema', () => {
-  // 1. Valid payload passes all rules
-  it('accepts a valid payload with all fields', () => {
-    const result = patientSchema.safeParse(validPayload);
+// ============================================================================
+// patientFormSchema — four-field validation (edit mode exposes all, create
+// defaults webpage/avatar to empty strings completed by the store)
+// ============================================================================
+
+describe('patientFormSchema', () => {
+  // --- Valid four-field payload ---
+  it('accepts a valid payload with name, description, webpage, and avatar', () => {
+    const result = patientFormSchema.safeParse(validPayload);
     expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(validPayload);
+    }
   });
 
-  // 2. Empty name fails with Spanish message
-  it('rejects empty name with Spanish error message', () => {
-    const result = patientSchema.safeParse({ ...validPayload, name: '' });
+  // --- Valid edit payload with real URLs ---
+  it('accepts valid edit payload with real webpage and avatar URLs', () => {
+    const editPayload = {
+      name: 'Ana',
+      description: 'Doctora',
+      webpage: 'https://ana.example.com',
+      avatar: 'https://ana.example.com/avatar.jpg',
+    };
+    const result = patientFormSchema.safeParse(editPayload);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toEqual(editPayload);
+    }
+  });
+
+  // --- Empty name fails with Spanish message ---
+  it('rejects empty name with "El nombre es obligatorio"', () => {
+    const result = patientFormSchema.safeParse({
+      ...validPayload,
+      name: '',
+    });
     expect(result.success).toBe(false);
     if (!result.success) {
       const nameIssue = result.error.issues.find(
@@ -28,9 +54,9 @@ describe('patientSchema', () => {
     }
   });
 
-  // 3. Empty description fails with Spanish message
-  it('rejects empty description with Spanish error message', () => {
-    const result = patientSchema.safeParse({
+  // --- Empty description fails with Spanish message ---
+  it('rejects empty description with "La descripción es obligatoria"', () => {
+    const result = patientFormSchema.safeParse({
       ...validPayload,
       description: '',
     });
@@ -43,9 +69,12 @@ describe('patientSchema', () => {
     }
   });
 
-  // 4. Whitespace-only name fails (trim before min(1))
-  it('rejects whitespace-only name', () => {
-    const result = patientSchema.safeParse({ ...validPayload, name: '   ' });
+  // --- Whitespace-only name fails (trim before min(1)) ---
+  it('rejects whitespace-only name after trim', () => {
+    const result = patientFormSchema.safeParse({
+      ...validPayload,
+      name: '   ',
+    });
     expect(result.success).toBe(false);
     if (!result.success) {
       const nameIssue = result.error.issues.find(
@@ -55,9 +84,9 @@ describe('patientSchema', () => {
     }
   });
 
-  // 5. Whitespace-only description fails (trim before min(1))
-  it('rejects whitespace-only description', () => {
-    const result = patientSchema.safeParse({
+  // --- Whitespace-only description fails (trim before min(1)) ---
+  it('rejects whitespace-only description after trim', () => {
+    const result = patientFormSchema.safeParse({
       ...validPayload,
       description: '   ',
     });
@@ -70,121 +99,73 @@ describe('patientSchema', () => {
     }
   });
 
-  // 6. Valid webpage URL passes
-  it('accepts a valid webpage URL', () => {
-    const result = patientSchema.safeParse({
-      ...validPayload,
-      webpage: 'https://example.com',
-    });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.webpage).toBe('https://example.com');
-    }
-  });
-
-  // 7. Valid avatar URL passes
-  it('accepts a valid avatar URL', () => {
-    const result = patientSchema.safeParse({
-      ...validPayload,
-      avatar: 'https://example.com/avatar.jpg',
-    });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.avatar).toBe('https://example.com/avatar.jpg');
-    }
-  });
-
-  // 8. Invalid webpage URL fails with Spanish message
-  it('rejects invalid webpage URL with Spanish error message', () => {
-    const result = patientSchema.safeParse({
-      ...validPayload,
-      webpage: 'not-a-url',
-    });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      const webIssue = result.error.issues.find(
-        (i) => i.path?.[0] === 'webpage',
-      );
-      expect(webIssue?.message).toBe('La página web debe ser una URL válida');
-    }
-  });
-
-  // 9. Invalid avatar URL fails with Spanish message
-  it('rejects invalid avatar URL with Spanish error message', () => {
-    const result = patientSchema.safeParse({
-      ...validPayload,
-      avatar: 'not-a-url',
-    });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      const avatarIssue = result.error.issues.find(
-        (i) => i.path?.[0] === 'avatar',
-      );
-      expect(avatarIssue?.message).toBe('El avatar debe ser una URL válida');
-    }
-  });
-
-  // 10. Missing name field entirely
-  it('rejects missing name field', () => {
+  // --- Missing name field ---
+  it('rejects payload missing the name field', () => {
     const { name: _unused, ...withoutName } = validPayload;
     void _unused;
-    const result = patientSchema.safeParse(withoutName);
+    const result = patientFormSchema.safeParse(withoutName);
     expect(result.success).toBe(false);
   });
 
-  // 11. Missing description field entirely
-  it('rejects missing description field', () => {
+  // --- Missing description field ---
+  it('rejects payload missing the description field', () => {
     const { description: _unused, ...withoutDescription } = validPayload;
     void _unused;
-    const result = patientSchema.safeParse(withoutDescription);
+    const result = patientFormSchema.safeParse(withoutDescription);
     expect(result.success).toBe(false);
   });
 
-  // 12. Missing webpage field entirely
-  it('rejects missing webpage field', () => {
-    const { webpage: _unused, ...withoutWebpage } = validPayload;
-    void _unused;
-    const result = patientSchema.safeParse(withoutWebpage);
-    expect(result.success).toBe(false);
-  });
-
-  // 13. Missing avatar field entirely
-  it('rejects missing avatar field', () => {
-    const { avatar: _unused, ...withoutAvatar } = validPayload;
-    void _unused;
-    const result = patientSchema.safeParse(withoutAvatar);
-    expect(result.success).toBe(false);
-  });
-
-  // 14. Extra unknown fields are stripped (Zod v4 behavior)
-  it('strips extra unknown fields from parsed data', () => {
-    const withExtra = { ...validPayload, id: 'abc-123' };
-    const result = patientSchema.safeParse(withExtra);
+  // --- Extra unknown fields are stripped ---
+  it('strips extra unknown fields (id, createdAt) from result', () => {
+    const withExtra = {
+      ...validPayload,
+      id: 'abc-123',
+      createdAt: '2025-01-01T00:00:00Z',
+    };
+    const result = patientFormSchema.safeParse(withExtra);
     expect(result.success).toBe(true);
     if (result.success) {
+      // webpage and avatar are now known fields — they survive
       expect(result.data).toEqual(validPayload);
+      expect('id' in result.data).toBe(false);
+      expect('createdAt' in result.data).toBe(false);
+    }
+  });
+
+  // --- Empty name with whitespace then trim fails ---
+  it('rejects name that becomes empty after trim', () => {
+    const result = patientFormSchema.safeParse({
+      ...validPayload,
+      name: '  \t  ',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const nameIssue = result.error.issues.find(
+        (i) => i.path?.[0] === 'name',
+      );
+      expect(nameIssue?.message).toBe('El nombre es obligatorio');
     }
   });
 });
 
+// ============================================================================
+// PatientFormData type narrowing
+// ============================================================================
+
 describe('PatientFormData type', () => {
-  it('is assignable from parsed schema output', () => {
-    const result = patientSchema.safeParse({
-      name: 'Ana',
-      description: 'Doctora',
-      webpage: 'https://example.com',
-      avatar: 'https://example.com/avatar.png',
-    });
+  it('is inferred from patientFormSchema and contains all editable fields', () => {
+    const result = patientFormSchema.safeParse(validPayload);
     expect(result.success).toBe(true);
     if (result.success) {
       const formData: PatientFormData = result.data;
       expect(formData.name).toBe('Ana');
       expect(formData.description).toBe('Doctora');
-      expect(formData.webpage).toBe('https://example.com');
-      expect(formData.avatar).toBe('https://example.com/avatar.png');
-      // PatientFormData must NOT have id — this is a type-level constraint
-      // verified by tsc -b --noEmit, but we also assert it at runtime
+      // PatientFormData MUST have webpage and avatar (editable in edit mode)
+      expect(formData.webpage).toBe('');
+      expect(formData.avatar).toBe('');
+      // PatientFormData must NOT have id or createdAt
       expect('id' in formData).toBe(false);
+      expect('createdAt' in formData).toBe(false);
     }
   });
 });
