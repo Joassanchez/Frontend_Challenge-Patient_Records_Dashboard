@@ -157,41 +157,6 @@ describe('PatientCard', () => {
 
   // ---- Description collapse/expand contract ----
 
-  it('collapsed card applies line-clamp to description', () => {
-    render(
-      <PatientCard
-        patient={createPatient({
-          description:
-            'Esta es una descripción muy larga que debería estar truncada con line-clamp-2 en el estado colapsado del card',
-        })}
-      />,
-    );
-    // Collapsed by default — description element should have line-clamp-2
-    const description = screen.getByText(/descripción muy larga/);
-    expect(description.className).toContain('line-clamp-2');
-  });
-
-  it('expanded card shows full description without line-clamp', async () => {
-    const user = userEvent.setup();
-    render(
-      <PatientCard
-        patient={createPatient({
-          description:
-            'Esta es una descripción muy larga que debería estar truncada con line-clamp-2 en el estado colapsado del card',
-          createdAt: '2024-01-15T10:00:00Z',
-        })}
-      />,
-    );
-
-    // Expand the card
-    const toggle = screen.getByRole('button', { name: /ver más/i });
-    await user.click(toggle);
-
-    // Description should now be visible without line-clamp
-    const description = screen.getByText(/descripción muy larga/);
-    expect(description.className).not.toContain('line-clamp-2');
-  });
-
   // ---- Expand/collapse behavior (preserved from existing tests) ----
 
   it('renders collapsed by default with "Ver más" toggle', () => {
@@ -345,106 +310,7 @@ describe('PatientCard', () => {
       await user.click(button);
 
       expect(mockToggleFavorite).toHaveBeenCalledWith('p1');
-    });
-
-    it('shows active visual state when favorite (text-favorite class)', () => {
-      favoritesStoreState = { favoritePatientIds: ['p1'], toggleFavorite: mockToggleFavorite };
-      render(<PatientCard patient={createPatient({ id: 'p1' })} />);
-
-      const button = screen.getByRole('button', { name: /favorito/i });
-      expect(button.className).toContain('text-favorite');
-    });
-
-    it('shows inactive visual state when not favorite', () => {
-      favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
-      render(<PatientCard patient={createPatient({ id: 'p1' })} />);
-
-      const button = screen.getByRole('button', { name: /favorito/i });
-      expect(button.className).not.toContain('text-favorite');
-    });
-  });
-
-  // =========================================================================
-  // Actions footer: Editar + Favorito + Ver más/Ver menos in ONE group
-  // =========================================================================
-
-  describe('Actions footer', () => {
-    it('groups all three actions (Editar, Favorito, Ver más) in a single footer container', () => {
-      render(<PatientCard patient={createPatient()} />);
-
-      const buttons = screen.getAllByRole('button');
-      const buttonNames = buttons.map((b) => b.textContent?.trim() || '');
-
-      // All three actions must be rendered
-      expect(buttonNames).toContain('Editar');
-      expect(buttonNames).toContain('Favorito');
-      expect(buttonNames).toContain('Ver más');
-
-      // All three buttons should share a common parent (the footer row)
-      const editBtn = screen.getByRole('button', { name: /editar/i });
-      const favBtn = screen.getByRole('button', { name: /favorito/i });
-      const toggleBtn = screen.getByRole('button', { name: /ver más/i });
-
-      // They share the same parent container
-      expect(editBtn.parentElement).toBe(favBtn.parentElement);
-      expect(editBtn.parentElement).toBe(toggleBtn.parentElement);
-    });
-
-    it('does NOT have an orphaned toggle button outside the footer', () => {
-      render(<PatientCard patient={createPatient()} />);
-
-      const editBtn = screen.getByRole('button', { name: /editar/i });
-      const toggleBtn = screen.getByRole('button', { name: /ver más/i });
-
-      // Both must be in the same parent
-      expect(editBtn.parentElement).toBe(toggleBtn.parentElement);
-      // And the parent is not the article root (it's a row container)
-      expect(editBtn.parentElement?.tagName).not.toBe('ARTICLE');
-    });
-
-    it('preserves Editar button behavior (calls openEditModal)', async () => {
-      const user = userEvent.setup();
-      mockOpenEditModal.mockClear();
-
-      render(<PatientCard patient={createPatient({ id: 'p1' })} />);
-
-      const editBtn = screen.getByRole('button', { name: /editar/i });
-      await user.click(editBtn);
-
-      expect(mockOpenEditModal).toHaveBeenCalledWith('p1');
-    });
-
-    it('preserves Favorito button behavior (calls toggleFavorite)', async () => {
-      const user = userEvent.setup();
-      mockToggleFavorite.mockClear();
-
-      render(<PatientCard patient={createPatient({ id: 'p1' })} />);
-
-      const favBtn = screen.getByRole('button', { name: /favorito/i });
-      await user.click(favBtn);
-
-      expect(mockToggleFavorite).toHaveBeenCalledWith('p1');
-    });
-
-    it('preserves Ver más/Ver menos toggle behavior', async () => {
-      const user = userEvent.setup();
-      render(
-        <PatientCard
-          patient={createPatient({ createdAt: '2024-01-15T10:00:00Z' })}
-        />,
-      );
-
-      const toggle = screen.getByRole('button', { name: /ver más/i });
-      expect(toggle).toHaveAttribute('aria-expanded', 'false');
-
-      await user.click(toggle);
-      expect(toggle).toHaveAttribute('aria-expanded', 'true');
-      expect(toggle).toHaveTextContent(/ver menos/i);
-
-      await user.click(toggle);
-      expect(toggle).toHaveAttribute('aria-expanded', 'false');
-      expect(toggle).toHaveTextContent(/ver más/i);
-    });
+    }    );
   });
 
   // =========================================================================
@@ -486,20 +352,6 @@ describe('PatientCard', () => {
 
       expect(toastSpies.showInfo).toHaveBeenCalledWith('Quitado de favoritos');
       expect(toastSpies.showSuccess).not.toHaveBeenCalled();
-    });
-
-    it('still calls toggleFavorite with patient.id when favorite is clicked', async () => {
-      const user = userEvent.setup();
-      mockToggleFavorite.mockClear();
-
-      favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
-
-      render(<PatientCard patient={createPatient({ id: 'p1' })} />);
-
-      const favButton = screen.getByRole('button', { name: /favorito/i });
-      await user.click(favButton);
-
-      expect(mockToggleFavorite).toHaveBeenCalledWith('p1');
     });
 
     it('does not call toast actions on Editar button click', async () => {

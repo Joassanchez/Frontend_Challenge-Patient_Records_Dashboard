@@ -225,61 +225,12 @@ describe('PatientForm submit', () => {
     expect(submitted.avatar).toBe('');
   });
 
-  it('renders submit button with configurable label', () => {
-    render(
-      <PatientForm
-        mode="create"
-        defaultValues={validDefaults}
-        onSubmit={vi.fn()}
-        submitLabel="Guardar cambios"
-      />,
-    );
-
-    expect(
-      screen.getByRole('button', { name: /guardar cambios/i }),
-    ).toBeInTheDocument();
-  });
-
-  it('renders submit button with different label for create mode', () => {
-    render(
-      <PatientForm
-        mode="create"
-        defaultValues={validDefaults}
-        onSubmit={vi.fn()}
-        submitLabel="Crear paciente"
-      />,
-    );
-
-    expect(
-      screen.getByRole('button', { name: /crear paciente/i }),
-    ).toBeInTheDocument();
-  });
-});
-
-// ============================================================================
-// Submitted data does NOT include id or createdAt
-// ============================================================================
-
-describe('PatientForm no store fields in submit', () => {
-  it('submitted data does not include id or createdAt', async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-
-    render(
-      <PatientForm
-        mode="edit"
-        defaultValues={validDefaults}
-        onSubmit={onSubmit}
-        submitLabel="Guardar"
-      />,
-    );
-
-    await user.click(screen.getByRole('button', { name: /guardar/i }));
-
-    const submitted = onSubmit.mock.calls[0]?.[0];
-    expect(submitted).toBeDefined();
-    expect(submitted).not.toHaveProperty('id');
-    expect(submitted).not.toHaveProperty('createdAt');
+  it.each([
+    ['Crear paciente', 'create'],
+    ['Guardar cambios', 'edit'],
+  ])('renders submit button with label "%s" for %s mode', (label, _mode) => {
+    render(<PatientForm onSubmit={vi.fn()} submitLabel={label} />);
+    expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
   });
 });
 

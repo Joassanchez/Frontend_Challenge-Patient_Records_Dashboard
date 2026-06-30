@@ -41,21 +41,5 @@ describe('Avatar', () => {
     expect(screen.getByText('J')).toBeInTheDocument();
   });
 
-  it('defaults to md size (40px)', () => {
-    const { container } = render(<Avatar name="JD" />);
-    const avatar = container.firstChild as HTMLElement;
-    expect(avatar).toBeInTheDocument();
-  });
 
-  it('renders sm size (32px)', () => {
-    const { container } = render(<Avatar name="A" size="sm" />);
-    const avatar = container.firstChild as HTMLElement;
-    expect(avatar).toBeInTheDocument();
-  });
-
-  it('renders lg size (48px)', () => {
-    const { container } = render(<Avatar name="B" size="lg" />);
-    const avatar = container.firstChild as HTMLElement;
-    expect(avatar).toBeInTheDocument();
-  });
 });

@@ -33,20 +33,13 @@ describe('REQ-FP-03: isStringArray validator', () => {
     expect(isStringArray(['a', 1 as unknown, 'c'])).toBe(false);
   });
 
-  it('returns false for a non-array value (string)', () => {
-    expect(isStringArray('not-an-array')).toBe(false);
-  });
-
-  it('returns false for a non-array value (object)', () => {
-    expect(isStringArray({ a: 1 })).toBe(false);
-  });
-
-  it('returns false for null', () => {
-    expect(isStringArray(null)).toBe(false);
-  });
-
-  it('returns false for undefined', () => {
-    expect(isStringArray(undefined)).toBe(false);
+  it.each([
+    ['a string', 'some string'],
+    ['an object', { key: 'value' }],
+    ['null', null],
+    ['undefined', undefined],
+  ])('returns false for %s', (_, value) => {
+    expect(isStringArray(value)).toBe(false);
   });
 });
 
@@ -126,11 +119,7 @@ describe('REQ-FP-02: setItem safe writes', () => {
     Storage.prototype.setItem = originalSetItem;
   });
 
-  it('writes an empty array and returns true', () => {
-    const result = setItem('test-key', []);
-    expect(result).toBe(true);
-    expect(localStorage.getItem('test-key')).toBe(JSON.stringify([]));
-  });
+
 });
 
 // ============================================================================

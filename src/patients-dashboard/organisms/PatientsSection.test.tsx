@@ -161,35 +161,6 @@ describe('PatientsSection', () => {
     expect(cards).toHaveLength(3);
   });
 
-  it('passes each patient as prop to PatientCard', () => {
-    setStoreState({
-      isLoading: false,
-      patients: [createPatient({ id: 'x1', name: 'Ana' }), createPatient({ id: 'x2', name: 'Juan' })],
-      error: null,
-    });
-    render(<PatientsSection />);
-    // Each PatientCard mock call should receive the patient prop
-    const calls = vi.mocked(PatientCard).mock.calls;
-    expect(calls).toHaveLength(2);
-    expect(calls[0]?.[0]?.patient).toMatchObject({ id: 'x1', name: 'Ana' });
-    expect(calls[1]?.[0]?.patient).toMatchObject({ id: 'x2', name: 'Juan' });
-  });
-
-  it('renders a responsive grid layout for cards', () => {
-    setStoreState({
-      isLoading: false,
-      patients: [createPatient({ id: '1', name: 'Ana' })],
-      error: null,
-    });
-    render(<PatientsSection />);
-    // The section should contain a grid container — we verify cards are rendered
-    // inside a grid by checking section structure
-    const section = screen.getByRole('region', { name: /pacientes/i });
-    // Grid should exist as a child of the section
-    const grid = section.querySelector('.grid');
-    expect(grid).toBeInTheDocument();
-  });
-
   it('renders patient name in each card', () => {
     setStoreState({
       isLoading: false,

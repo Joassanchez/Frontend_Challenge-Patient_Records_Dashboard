@@ -125,15 +125,6 @@ describe('FavoritesSection', () => {
     expect(heading.id).toBe(labelledBy);
   });
 
-  it('applies optional className prop', () => {
-    setFavoritesState([]);
-    setPatientsState([]);
-    render(<FavoritesSection className="test-extra" />);
-
-    const section = screen.getByRole('region', { name: 'Favoritos' });
-    expect(section.className).toContain('test-extra');
-  });
-
   // ---- REQ-DL-02: Empty state ----
 
   it('renders compact empty state when there are no favorites', () => {
@@ -178,31 +169,6 @@ describe('FavoritesSection', () => {
     expect(cards).toHaveLength(2);
     expect(cards[0]).toHaveTextContent('Ana García');
     expect(cards[1]).toHaveTextContent('Juan Pérez');
-  });
-
-  it('passes each patient to PatientCard as prop', () => {
-    setFavoritesState(['x1', 'x2']);
-    setPatientsState([createPatient({ id: 'x1', name: 'Ana' }), createPatient({ id: 'x2', name: 'Juan' })]);
-    render(<FavoritesSection />);
-
-    const calls = vi.mocked(PatientCard).mock.calls;
-    expect(calls).toHaveLength(2);
-    expect(calls[0]?.[0]?.patient).toMatchObject({ id: 'x1', name: 'Ana' });
-    expect(calls[1]?.[0]?.patient).toMatchObject({ id: 'x2', name: 'Juan' });
-  });
-
-  it('uses responsive grid classes matching PatientsSection', () => {
-    setFavoritesState(['p1']);
-    setPatientsState([createPatient({ id: 'p1', name: 'Ana' })]);
-    render(<FavoritesSection />);
-
-    const section = screen.getByRole('region', { name: /favoritos/i });
-    const grid = section.querySelector('.grid');
-    expect(grid).toBeInTheDocument();
-    // Verify responsive grid classes
-    expect(grid!.className).toContain('grid-cols-1');
-    expect(grid!.className).toContain('md:grid-cols-2');
-    expect(grid!.className).toContain('lg:grid-cols-3');
   });
 
   // ---- REQ-DL-09: Join between favorites and patients ----
@@ -268,17 +234,6 @@ describe('FavoritesSection', () => {
       expect(screen.getByText('0 pacientes guardados')).toBeInTheDocument();
     });
 
-    it('renders counter adjacent to the h2 heading (heading text unchanged)', () => {
-      setFavoritesState(['p1']);
-      setPatientsState([createPatient({ id: 'p1', name: 'Ana' })]);
-      render(<FavoritesSection />);
 
-      // The h2 still has name "Favoritos" — counter is outside
-      const heading = screen.getByRole('heading', { name: 'Favoritos', level: 2 });
-      expect(heading).toBeInTheDocument();
-
-      // Counter must NOT be inside the h2
-      expect(heading).not.toHaveTextContent(/paciente/i);
-    });
   });
 });

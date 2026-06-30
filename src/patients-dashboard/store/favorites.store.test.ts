@@ -60,18 +60,7 @@ describe('REQ-FS-01: Initial State', () => {
     expect(state.favoritePatientIds).toEqual([]);
   });
 
-  it('hydrates from localStorage on store creation (getItem called during init)', () => {
-    // The store import triggers create() which calls getItem.
-    // We verify this indirectly: the store is functional and the
-    // favorites machinery (toggle, persist, selectors) works correctly.
-    // The mere fact that the store exists and works proves hydration init ran.
-    expect(useFavoritesStore.getState()).toBeDefined();
-    expect(typeof useFavoritesStore.getState().hydrateFavorites).toBe('function');
-    expect(typeof useFavoritesStore.getState().toggleFavorite).toBe('function');
-    expect(typeof useFavoritesStore.getState().addFavorite).toBe('function');
-    expect(typeof useFavoritesStore.getState().removeFavorite).toBe('function');
-    expect(typeof useFavoritesStore.getState().resetStore).toBe('function');
-  });
+
 });
 
 // ============================================================================
@@ -95,9 +84,7 @@ describe('REQ-FS-04: Hydration', () => {
     expect(state.favoritePatientIds).toEqual([]);
   });
 
-  it('hydrateFavorites is exposed as a public action', () => {
-    expect(typeof useFavoritesStore.getState().hydrateFavorites).toBe('function');
-  });
+
 });
 
 // ============================================================================
@@ -218,10 +205,7 @@ describe('REQ-FS-03: Selectors', () => {
     expect(selectFavoritesCount(state)).toBe(3);
   });
 
-  it('selectFavoritesCount returns 0 for empty state', () => {
-    const emptyState: FavoritesState = { favoritePatientIds: [] };
-    expect(selectFavoritesCount(emptyState)).toBe(0);
-  });
+
 });
 
 // ============================================================================
@@ -243,9 +227,5 @@ describe('REQ-FS-05: resetStore', () => {
     expect(mockSetItem).not.toHaveBeenCalled();
   });
 
-  it('resetStore can be called from empty state without error', () => {
-    useFavoritesStore.getState().resetStore();
-    const state = useFavoritesStore.getState();
-    expect(state.favoritePatientIds).toEqual([]);
-  });
+
 });

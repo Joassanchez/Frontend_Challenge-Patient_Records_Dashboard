@@ -30,15 +30,5 @@ describe('ErrorMessage', () => {
     expect(alert).not.toHaveAttribute('id');
   });
 
-  it('defaults to block variant', () => {
-    render(<ErrorMessage message="Block error" />);
-    const alert = screen.getByRole('alert');
-    expect(alert).toBeInTheDocument();
-  });
 
-  it('renders inline variant', () => {
-    render(<ErrorMessage message="Inline error" variant="inline" />);
-    const alert = screen.getByRole('alert');
-    expect(alert).toBeInTheDocument();
-  });
 });

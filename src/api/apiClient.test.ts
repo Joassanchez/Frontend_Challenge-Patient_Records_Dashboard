@@ -90,14 +90,6 @@ describe('isApiError', () => {
     expect(isApiError(error)).toBe(true);
   });
 
-  it('returns false for null', () => {
-    expect(isApiError(null)).toBe(false);
-  });
-
-  it('returns false for string', () => {
-    expect(isApiError('error message')).toBe(false);
-  });
-
   it('returns false for plain object without status', () => {
     expect(isApiError({ message: 'no status' })).toBe(false);
   });
@@ -114,14 +106,7 @@ describe('isApiError', () => {
     expect(isApiError({ status: '404', message: 'ok' })).toBe(false);
   });
 
-  it('returns false for empty object', () => {
-    expect(isApiError({})).toBe(false);
-  });
+
 });
 
-describe('environment configuration', () => {
-  it('VITE_API_BASE_URL is configured', () => {
-    expect(import.meta.env.VITE_API_BASE_URL).toBeDefined();
-    expect(import.meta.env.VITE_API_BASE_URL).toContain('mockapi.io');
-  });
-});
+

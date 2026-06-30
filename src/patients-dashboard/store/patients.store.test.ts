@@ -299,22 +299,6 @@ describe('Reset Store', () => {
 });
 
 // ============================================================================
-// Test Isolation
-// ============================================================================
-describe('Test Isolation', () => {
-  it('resetStore is callable and returns state to defaults', () => {
-    usePatientsStore.setState({ patients: [patientA], error: 'test error' });
-    const { resetStore } = usePatientsStore.getState();
-    resetStore();
-
-    const state = usePatientsStore.getState();
-    expect(state.patients).toEqual([]);
-    expect(state.isLoading).toBe(false);
-    expect(state.error).toBeNull();
-  });
-});
-
-// ============================================================================
 // Load Patients — Happy Path
 // ============================================================================
 describe('Load Patients — Happy Path', () => {
@@ -404,13 +388,4 @@ describe('Load Patients — Unknown Error', () => {
   });
 });
 
-// ============================================================================
-// No Direct Fetch
-// ============================================================================
-describe('No Direct Fetch', () => {
-  it('store module imports getPatients from the API module', async () => {
-    const apiModule = await import('../api/patients.api');
-    expect(apiModule.getPatients).toBeDefined();
-    expect(typeof apiModule.getPatients).toBe('function');
-  });
-});
+

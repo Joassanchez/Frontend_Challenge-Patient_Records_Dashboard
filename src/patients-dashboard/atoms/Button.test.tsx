@@ -59,40 +59,5 @@ describe('Button', () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
-  it('renders primary variant by default', () => {
-    render(<Button>Primary</Button>);
-    const btn = screen.getByRole('button', { name: 'Primary' });
-    expect(btn).toBeInTheDocument();
-  });
 
-  it('renders secondary variant', () => {
-    render(<Button variant="secondary">Secondary</Button>);
-    const btn = screen.getByRole('button', { name: 'Secondary' });
-    expect(btn).toBeInTheDocument();
-  });
-
-  it('renders ghost variant', () => {
-    render(<Button variant="ghost">Ghost</Button>);
-    const btn = screen.getByRole('button', { name: 'Ghost' });
-    expect(btn).toBeInTheDocument();
-  });
-
-  it('renders sm size', () => {
-    render(<Button size="sm">Small</Button>);
-    const btn = screen.getByRole('button', { name: 'Small' });
-    expect(btn).toBeInTheDocument();
-  });
-
-  it('renders lg size', () => {
-    render(<Button size="lg">Large</Button>);
-    const btn = screen.getByRole('button', { name: 'Large' });
-    expect(btn).toBeInTheDocument();
-  });
-
-  it('forwards ref to the underlying button element', () => {
-    // We test ref forwarding by verifying the button renders correctly.
-    // forwardRef type safety is verified by TypeScript compilation.
-    render(<Button>Ref</Button>);
-    expect(screen.getByRole('button', { name: 'Ref' })).toBeInTheDocument();
-  });
 });

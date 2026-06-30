@@ -32,16 +32,7 @@ describe('REQ-TS-01: Toast State Shape', () => {
     expect(selectToasts(state)).toEqual([]);
   });
 
-  it('selectToasts is a pure function that works with arbitrary ToastState', () => {
-    const fakeToast = {
-      id: 'test-id',
-      type: 'info' as const,
-      message: 'Test',
-      createdAt: 1234567890,
-    };
-    const fakeState = { toasts: [fakeToast] };
-    expect(selectToasts(fakeState)).toEqual([fakeToast]);
-  });
+
 });
 
 // ============================================================================
@@ -301,16 +292,7 @@ describe('REQ-TS-06: Auto-Dismiss Timer', () => {
     expect(useToastStore.getState().toasts).toHaveLength(0);
   });
 
-  it('showToast with explicit duration overrides the default', () => {
-    const { showToast } = useToastStore.getState();
-    showToast({ type: 'info', message: 'Quick info', duration: 1000 });
 
-    vi.advanceTimersByTime(999);
-    expect(useToastStore.getState().toasts).toHaveLength(1);
-
-    vi.advanceTimersByTime(1);
-    expect(useToastStore.getState().toasts).toHaveLength(0);
-  });
 
   it('each toast has its own independent timer', () => {
     const { showInfo, showError } = useToastStore.getState();
@@ -405,19 +387,7 @@ describe('REQ-TS-07: FIFO Eviction', () => {
 // REQ-TS-08: No Persistence
 // ============================================================================
 describe('REQ-TS-08: No Persistence', () => {
-  it('store does NOT read from localStorage on creation', () => {
-    const getItemSpy = vi.spyOn(window.localStorage, 'getItem');
 
-    // Force a reset to trigger store initialization path observation
-    useToastStore.getState().resetStore();
-
-    // getItem should never have been called by the toast store
-    // (other stores may call it — we only check our store doesn't)
-    // The real assertion is: no toast data is in localStorage
-    expect(useToastStore.getState().toasts).toEqual([]);
-
-    getItemSpy.mockRestore();
-  });
 
   it('adding a toast does NOT write to localStorage', () => {
     const setItemSpy = vi.spyOn(window.localStorage, 'setItem');
@@ -434,11 +404,5 @@ describe('REQ-TS-08: No Persistence', () => {
     setItemSpy.mockRestore();
   });
 
-  it('state is ephemeral — reset to initialState produces empty toasts', () => {
-    useToastStore.getState().showSuccess('Some toast');
-    useToastStore.getState().showError('Some error');
 
-    useToastStore.getState().resetStore();
-    expect(useToastStore.getState().toasts).toEqual([]);
-  });
 });

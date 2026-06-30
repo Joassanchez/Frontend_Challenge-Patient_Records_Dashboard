@@ -89,7 +89,7 @@ function PatientModal() {
           <p className="text-text-muted text-sm">
             Paciente no encontrado
           </p>
-          <Button variant="secondary" size="sm" onClick={closeModal}>
+          <Button variant="secondary" size="sm" onClick={closeModal} data-testid="close-button">
             Cerrar
           </Button>
         </div>

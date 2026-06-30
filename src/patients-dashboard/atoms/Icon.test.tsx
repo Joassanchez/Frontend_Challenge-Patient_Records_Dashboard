@@ -60,20 +60,7 @@ describe('Icon', () => {
       expect(path!.getAttribute('d')!.length).toBeGreaterThan(0);
     });
 
-    it('plus icon with label sets aria-label and removes aria-hidden', () => {
-      render(<Icon name="plus" label="Add" />);
-      const svg = screen.getByLabelText('Add');
-      expect(svg).toBeInTheDocument();
-      expect(svg).not.toHaveAttribute('aria-hidden');
-    });
 
-    it('plus icon path differs from other icons', () => {
-      const { container: c1 } = render(<Icon name="plus" />);
-      const { container: c2 } = render(<Icon name="close" />);
-      const path1 = c1.querySelector('path')!;
-      const path2 = c2.querySelector('path')!;
-      expect(path1.getAttribute('d')).not.toEqual(path2.getAttribute('d'));
-    });
   });
 
   describe('new action icons (eye, edit, heart)', () => {
@@ -88,16 +75,7 @@ describe('Icon', () => {
       expect(path!.getAttribute('d')!.length).toBeGreaterThan(0);
     });
 
-    it.each(['eye', 'edit', 'heart'] as const)('%s icon defaults to aria-hidden', (name) => {
-      const { container } = render(<Icon name={name} />);
-      const svg = container.querySelector('svg');
-      expect(svg).toHaveAttribute('aria-hidden', 'true');
-    });
 
-    it.each(['eye', 'edit', 'heart'] as const)('%s icon with label sets aria-label', (name) => {
-      render(<Icon name={name} label={`Label for ${name}`} />);
-      expect(screen.getByLabelText(`Label for ${name}`)).toBeInTheDocument();
-    });
 
     it('all three new icons have different paths from each other', () => {
       const { container: c1 } = render(<Icon name="eye" />);

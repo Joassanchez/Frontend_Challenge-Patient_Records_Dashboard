@@ -70,18 +70,13 @@ describe('patientFormSchema', () => {
   });
 
   // --- Whitespace-only name fails (trim before min(1)) ---
-  it('rejects whitespace-only name after trim', () => {
-    const result = patientFormSchema.safeParse({
-      ...validPayload,
-      name: '   ',
-    });
+  it.each([
+    '   ',
+    '  \t  ',
+  ])('rejects whitespace-only name after trim', (name) => {
+    const result = patientFormSchema.safeParse({ name, description: 'Valid' });
     expect(result.success).toBe(false);
-    if (!result.success) {
-      const nameIssue = result.error.issues.find(
-        (i) => i.path?.[0] === 'name',
-      );
-      expect(nameIssue?.message).toBe('El nombre es obligatorio');
-    }
+    expect(result.error?.issues[0]?.message).toBe('El nombre es obligatorio');
   });
 
   // --- Whitespace-only description fails (trim before min(1)) ---
@@ -132,26 +127,11 @@ describe('patientFormSchema', () => {
     }
   });
 
-  // --- Empty name with whitespace then trim fails ---
-  it('rejects name that becomes empty after trim', () => {
-    const result = patientFormSchema.safeParse({
-      ...validPayload,
-      name: '  \t  ',
-    });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      const nameIssue = result.error.issues.find(
-        (i) => i.path?.[0] === 'name',
-      );
-      expect(nameIssue?.message).toBe('El nombre es obligatorio');
-    }
-  });
 });
 
 // ============================================================================
 // PatientFormData type narrowing
 // ============================================================================
-
 describe('PatientFormData type', () => {
   it('is inferred from patientFormSchema and contains all editable fields', () => {
     const result = patientFormSchema.safeParse(validPayload);

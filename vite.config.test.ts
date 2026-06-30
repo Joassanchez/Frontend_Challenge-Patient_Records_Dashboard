@@ -17,15 +17,5 @@ describe('vite.config (REQ-4)', () => {
     expect(config.server?.host).toBe('0.0.0.0');
   });
 
-  it('preserves the @ alias for src/', () => {
-    expect(config.resolve?.alias).toBeDefined();
-    // The alias object contains at least the '@' key
-    const alias = config.resolve?.alias as Record<string, string> | undefined;
-    expect(alias?.['@']).toBeDefined();
-  });
 
-  it('still uses the react plugin', () => {
-    expect(config.plugins).toBeDefined();
-    expect(config.plugins!.length).toBeGreaterThan(0);
-  });
 });

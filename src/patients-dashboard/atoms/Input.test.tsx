@@ -39,8 +39,5 @@ describe('Input', () => {
     expect(input).toBeInTheDocument();
   });
 
-  it('forwards ref to the underlying input', () => {
-    render(<Input />);
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
-  });
+
 });

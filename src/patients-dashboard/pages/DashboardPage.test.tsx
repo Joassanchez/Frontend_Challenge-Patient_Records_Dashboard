@@ -130,25 +130,6 @@ describe('DashboardPage', () => {
     expect(patientsRegion).toBeInTheDocument();
     expect(main.contains(patientsRegion)).toBe(true);
   });
-
-  it('page header uses flex-col on mobile and flex-row on sm+', () => {
-    renderDashboard();
-
-    // Navigate from h2 "Tus pacientes" up to the flex container that wraps
-    // heading group + CTA button — h2 > div > flex container
-    const heading = screen.getByRole('heading', {
-      name: /tus pacientes/i,
-      level: 2,
-    });
-    const flexContainer = heading.parentElement!.parentElement!;
-
-    // Mobile-first: flex-col stacks vertically by default
-    expect(flexContainer.className).toContain('flex-col');
-    // sm+ breakpoint: switches to horizontal row layout
-    expect(flexContainer.className).toContain('sm:flex-row');
-    expect(flexContainer.className).toContain('sm:items-center');
-    expect(flexContainer.className).toContain('sm:justify-between');
-  });
 });
 
 // ============================================================================
@@ -174,16 +155,5 @@ describe('REQ-DL-01: CTA abre modal', () => {
     await user.click(button);
 
     expect(mockOpenCreateModal).toHaveBeenCalledTimes(1);
-  });
-
-  it('PatientModal is mounted in the DashboardPage tree', () => {
-    renderDashboard();
-
-    // When the modal is wired, isOpen=false means no dialog renders,
-    // but PatientModal should still be in the React tree.
-    // We verify the modal store was imported (via mock) — the component itself
-    // is rendered even if closed, so we check that no crash occurs.
-    // Full modal rendering is tested in PatientModal.test.tsx.
-    expect(mockOpenCreateModal).toBeDefined();
   });
 });

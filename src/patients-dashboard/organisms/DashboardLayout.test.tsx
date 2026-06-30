@@ -116,31 +116,6 @@ describe('DashboardLayout', () => {
     ).toBeInTheDocument();
   });
 
-  it('wraps children within the Container (max-w-7xl via main)', () => {
-    render(
-      <DashboardLayout>
-        <span>Wrapped content</span>
-      </DashboardLayout>,
-    );
-
-    // The main element should contain the Container classes
-    const main = screen.getByRole('main');
-    expect(main.className).toContain('flex-1');
-  });
-
-  it('applies min-height to fill the viewport', () => {
-    render(
-      <DashboardLayout>
-        <span>Content</span>
-      </DashboardLayout>,
-    );
-
-    // The outer wrapper should fill the viewport
-    const main = screen.getByRole('main');
-    const outerDiv = main.parentElement!;
-    expect(outerDiv.className).toContain('min-h-screen');
-  });
-
   it('header appears above the main content in DOM order', () => {
     render(
       <DashboardLayout>

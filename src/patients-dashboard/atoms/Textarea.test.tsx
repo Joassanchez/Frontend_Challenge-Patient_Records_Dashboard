@@ -40,8 +40,5 @@ describe('Textarea', () => {
     expect(textarea).toBeDisabled();
   });
 
-  it('forwards ref to the underlying textarea', () => {
-    render(<Textarea />);
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
-  });
+
 });

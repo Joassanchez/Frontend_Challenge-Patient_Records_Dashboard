@@ -273,7 +273,7 @@ describe('Patient not found', () => {
 
     render(<PatientModal />);
 
-    await user.click(screen.getAllByRole('button', { name: /cerrar/i })[1]);
+    await user.click(screen.getByTestId('close-button'));
     expect(mockCloseModal).toHaveBeenCalledTimes(1);
   });
 });

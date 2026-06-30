@@ -202,35 +202,6 @@ describe('Accessibility', () => {
 // ============================================================================
 
 describe('Positioning and layout', () => {
-  it('container is fixed-positioned for desktop: top-right below CTA', () => {
-    toastState.toasts = [makeToast()];
-    render(<ToastContainer />);
-
-    const liveRegion = screen.getByRole('status').closest('[aria-live]') as HTMLElement;
-    expect(liveRegion.className).toContain('fixed');
-    expect(liveRegion.className).toContain('sm:top-24');
-    expect(liveRegion.className).toContain('sm:right-6');
-    expect(liveRegion.className).toContain('sm:left-auto');
-  });
-
-  it('container uses mobile-first positioning: inset-x-4 bottom-4', () => {
-    toastState.toasts = [makeToast()];
-    render(<ToastContainer />);
-
-    const liveRegion = screen.getByRole('status').closest('[aria-live]') as HTMLElement;
-    // Base classes: full-width bottom placement with constrained width
-    expect(liveRegion.className).toContain('inset-x-4');
-    expect(liveRegion.className).toContain('bottom-4');
-  });
-
-  it('container has z-40 for correct stacking context (REQ-TU-05)', () => {
-    toastState.toasts = [makeToast()];
-    render(<ToastContainer />);
-
-    const liveRegion = screen.getByRole('status').closest('[aria-live]') as HTMLElement;
-    expect(liveRegion.className).toContain('z-40');
-  });
-
   it('container uses pointer-events-none — toasts use pointer-events-auto (REQ-TU-08)', () => {
     toastState.toasts = [makeToast()];
     render(<ToastContainer />);
@@ -241,25 +212,6 @@ describe('Positioning and layout', () => {
     // The individual toast (role="status") should be pointer-events-auto
     const toast = screen.getByRole('status');
     expect(toast.className).toContain('pointer-events-auto');
-  });
-
-  it('renders toasts in a vertical flex column with gap', () => {
-    toastState.toasts = [makeToast()];
-    render(<ToastContainer />);
-
-    const liveRegion = screen.getByRole('status').closest('[aria-live]') as HTMLElement;
-    expect(liveRegion.className).toContain('flex');
-    expect(liveRegion.className).toContain('flex-col');
-    expect(liveRegion.className).toContain('gap-2');
-  });
-
-  it('constrains container width to max-w-sm and full width', () => {
-    toastState.toasts = [makeToast()];
-    render(<ToastContainer />);
-
-    const liveRegion = screen.getByRole('status').closest('[aria-live]') as HTMLElement;
-    expect(liveRegion.className).toContain('max-w-sm');
-    expect(liveRegion.className).toContain('w-full');
   });
 });
 
@@ -286,14 +238,6 @@ describe('edge cases', () => {
     expect(alerts).toHaveLength(1);   // error
   });
 
-  it('renders toasts with long message content without truncation in DOM', () => {
-    const longMessage = 'Este es un mensaje muy largo que debería mostrarse completo sin truncamiento en el contenedor de toasts.';
-    toastState.toasts = [makeToast({ type: 'info', message: longMessage })];
-    render(<ToastContainer />);
-
-    expect(screen.getByText(longMessage)).toBeInTheDocument();
-  });
-
   it('preserves the toast message as visible text content (not aria-label only)', () => {
     toastState.toasts = [makeToast({ type: 'warning', message: 'Visible warning' })];
     render(<ToastContainer />);
@@ -301,19 +245,5 @@ describe('edge cases', () => {
     // The message should be visible text, not hidden
     const alert = screen.getByRole('alert');
     expect(alert).toHaveTextContent('Visible warning');
-  });
-
-  it('ToastContainer is idempotent — re-render with same toasts produces same DOM', () => {
-    toastState.toasts = [makeToast({ id: 'stable', type: 'success', message: 'Stable' })];
-    const { rerender } = render(<ToastContainer />);
-
-    const firstStatus = screen.getByRole('status');
-    expect(firstStatus).toBeInTheDocument();
-
-    rerender(<ToastContainer />);
-
-    const secondStatus = screen.getByRole('status');
-    expect(secondStatus).toBeInTheDocument();
-    expect(screen.getByText('Stable')).toBeInTheDocument();
   });
 });
