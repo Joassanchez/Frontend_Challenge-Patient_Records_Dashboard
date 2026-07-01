@@ -24,8 +24,17 @@ export const patientFormSchema = z.object({
 });
 
 /**
- * Form input type — includes all editable patient fields.
+ * Raw form input type accepted by the Zod resolver.
+ *
+ * Because webpage/avatar use `.default('')`, Zod accepts them as optional input
+ * values and returns them as required strings after parsing.
+ */
+export type PatientFormInput = z.input<typeof patientFormSchema>;
+
+/**
+ * Parsed form output type used by submit handlers and stores.
+ *
  * In create mode, webpage and avatar default to '' and are replaced by the store.
  * In edit mode, they are pre-filled from the existing patient.
  */
-export type PatientFormData = z.infer<typeof patientFormSchema>;
+export type PatientFormData = z.output<typeof patientFormSchema>;

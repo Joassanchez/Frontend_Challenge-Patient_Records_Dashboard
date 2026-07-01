@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   patientFormSchema,
   type PatientFormData,
+  type PatientFormInput,
 } from '@/patients-dashboard/schemas/patient.schema';
 import Label from '@/patients-dashboard/atoms/Label';
 import Input from '@/patients-dashboard/atoms/Input';
@@ -39,7 +40,7 @@ function PatientForm({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<PatientFormData>({
+  } = useForm<PatientFormInput, unknown, PatientFormData>({
     resolver: zodResolver(patientFormSchema),
     defaultValues,
   });

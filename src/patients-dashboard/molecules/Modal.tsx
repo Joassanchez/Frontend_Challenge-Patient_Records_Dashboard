@@ -3,10 +3,6 @@ import { cn } from '@/shared/utils/cn';
 import Icon from '@/patients-dashboard/atoms/Icon';
 import Button from '@/patients-dashboard/atoms/Button';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -14,10 +10,6 @@ interface ModalProps {
   ariaLabel: string;
   children: ReactNode;
 }
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
   const titleId = useId();
