@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import PatientsSection from '@/patients-dashboard/organisms/PatientsSection';
 import { createPatient } from '@test/fixtures/patient.fixture';
 
@@ -19,9 +20,6 @@ vi.mock('@/patients-dashboard/organisms/PatientCard', () => ({
     ),
   ),
 }));
-
-// Re-import after mock to access the mocked version
-import PatientCard from '@/patients-dashboard/organisms/PatientCard';
 
 // Spy on the store's loadPatients so we can assert call count.
 const mockLoadPatients = vi.fn();
@@ -169,5 +167,29 @@ describe('PatientsSection', () => {
     });
     render(<PatientsSection />);
     expect(screen.getByText('Ana García')).toBeInTheDocument();
+  });
+
+
+  it('renders patients in client-side infinite-scroll batches', async () => {
+    const user = userEvent.setup();
+    setStoreState({
+      isLoading: false,
+      patients: Array.from({ length: 7 }, (_, index) =>
+        createPatient({
+          id: `p${index + 1}`,
+          name: `Patient ${index + 1}`,
+        }),
+      ),
+      error: null,
+    });
+    render(<PatientsSection />);
+
+    expect(screen.getAllByRole('article')).toHaveLength(6);
+    expect(screen.queryByText('Patient 7')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /cargar m.s pacientes/i }));
+
+    expect(screen.getAllByRole('article')).toHaveLength(7);
+    expect(screen.getByText('Patient 7')).toBeInTheDocument();
   });
 });

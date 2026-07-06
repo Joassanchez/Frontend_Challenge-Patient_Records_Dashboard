@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/shared/utils/cn';
+import Button from '@/patients-dashboard/atoms/Button';
 import { usePatientsStore } from '@/patients-dashboard/store/patients.store';
 import EmptyState from '@/patients-dashboard/molecules/EmptyState';
 import Spinner from '@/patients-dashboard/atoms/Spinner';
@@ -20,9 +21,12 @@ interface PatientsSectionProps {
 // Component
 // ---------------------------------------------------------------------------
 
+const PATIENTS_PAGE_SIZE = 6;
+
 function PatientsSection({ className }: PatientsSectionProps) {
   const headingId = 'patients-section-heading';
   const hasMounted = useRef(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // Selectors — PatientsSection is the SOLE store-connected component
   const patients = usePatientsStore((s) => s.patients);
@@ -32,6 +36,10 @@ function PatientsSection({ className }: PatientsSectionProps) {
 
   // Local search state (no debounce, per spec)
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleBatch, setVisibleBatch] = useState({
+    query: '',
+    count: PATIENTS_PAGE_SIZE,
+  });
 
   // Derived filtered list — case-insensitive match on name and description
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -50,6 +58,12 @@ function PatientsSection({ className }: PatientsSectionProps) {
   const showContent = !isLoading && !error;
   const hasPatients = patients.length > 0;
   const hasFilteredResults = filteredPatients.length > 0;
+  const visibleCount =
+    visibleBatch.query === normalizedQuery
+      ? visibleBatch.count
+      : PATIENTS_PAGE_SIZE;
+  const visiblePatients = filteredPatients.slice(0, visibleCount);
+  const hasMorePatients = visibleCount < filteredPatients.length;
 
   // Counter copy
   const count = filteredPatients.length;
@@ -65,6 +79,21 @@ function PatientsSection({ className }: PatientsSectionProps) {
       />
     ) : undefined;
 
+  const loadMorePatients = useCallback(() => {
+    setVisibleBatch((batch) => {
+      const currentCount =
+        batch.query === normalizedQuery ? batch.count : PATIENTS_PAGE_SIZE;
+
+      return {
+        query: normalizedQuery,
+        count: Math.min(
+          currentCount + PATIENTS_PAGE_SIZE,
+          filteredPatients.length,
+        ),
+      };
+    });
+  }, [filteredPatients.length, normalizedQuery]);
+
   // Mount-only fetch: guard ensures exactly-one execution
   useEffect(() => {
     if (!hasMounted.current) {
@@ -72,6 +101,35 @@ function PatientsSection({ className }: PatientsSectionProps) {
       loadPatients();
     }
   }, [loadPatients]);
+
+  useEffect(() => {
+    if (!showContent || !hasPatients || !hasMorePatients) return;
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    const target = loadMoreRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          loadMorePatients();
+        }
+      },
+      { rootMargin: '160px' },
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [
+    showContent,
+    hasPatients,
+    hasMorePatients,
+    filteredPatients.length,
+    loadMorePatients,
+  ]);
 
   return (
     <DashboardSection
@@ -116,7 +174,17 @@ function PatientsSection({ className }: PatientsSectionProps) {
 
       {/* ---- Success: responsive grid of PatientCards ---- */}
       {showContent && hasPatients && hasFilteredResults && (
-        <PatientCardsGrid patients={filteredPatients} />
+        <>
+          <PatientCardsGrid patients={visiblePatients} />
+
+          {hasMorePatients && (
+            <div ref={loadMoreRef} className="mt-4 flex justify-center">
+              <Button variant="secondary" onClick={loadMorePatients}>
+                Cargar más pacientes
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </DashboardSection>
   );

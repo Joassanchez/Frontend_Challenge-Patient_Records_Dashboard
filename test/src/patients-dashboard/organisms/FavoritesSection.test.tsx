@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import FavoritesSection from '@/patients-dashboard/organisms/FavoritesSection';
 import { createPatient } from '@test/fixtures/patient.fixture';
 
@@ -169,6 +170,28 @@ describe('FavoritesSection', () => {
     expect(cards).toHaveLength(2);
     expect(cards[0]).toHaveTextContent('Ana García');
     expect(cards[1]).toHaveTextContent('Juan Pérez');
+  });
+
+  it('paginates favorite patients client-side', async () => {
+    const user = userEvent.setup();
+    setFavoritesState(['p1', 'p2', 'p3', 'p4']);
+    setPatientsState([
+      createPatient({ id: 'p1', name: 'Ana' }),
+      createPatient({ id: 'p2', name: 'Juan' }),
+      createPatient({ id: 'p3', name: 'Mar?a' }),
+      createPatient({ id: 'p4', name: 'Luis' }),
+    ]);
+    render(<FavoritesSection />);
+
+    expect(screen.getAllByRole('article')).toHaveLength(3);
+    expect(screen.getByText(/p.gina 1 de 2/i)).toBeInTheDocument();
+    expect(screen.queryByText('Luis')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /siguiente/i }));
+
+    expect(screen.getByText(/p.gina 2 de 2/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    expect(screen.getByText('Luis')).toBeInTheDocument();
   });
 
   // ---- REQ-DL-09: Join between favorites and patients ----
