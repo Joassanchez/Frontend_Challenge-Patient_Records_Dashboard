@@ -5,7 +5,8 @@ import EmptyState from '@/patients-dashboard/molecules/EmptyState';
 import Spinner from '@/patients-dashboard/atoms/Spinner';
 import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
 import SearchInput from '@/patients-dashboard/molecules/SearchInput';
-import PatientCard from './PatientCard';
+import DashboardSection from './DashboardSection';
+import PatientCardsGrid from './PatientCardsGrid';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -54,6 +55,15 @@ function PatientsSection({ className }: PatientsSectionProps) {
   const count = filteredPatients.length;
   const counterText =
     count === 1 ? '1 registro encontrado' : `${count} registros encontrados`;
+  const sectionCounter = showContent && hasPatients ? counterText : undefined;
+  const sectionActions =
+    showContent && hasPatients ? (
+      <SearchInput
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Buscar por nombre o descripción"
+      />
+    ) : undefined;
 
   // Mount-only fetch: guard ensures exactly-one execution
   useEffect(() => {
@@ -64,32 +74,13 @@ function PatientsSection({ className }: PatientsSectionProps) {
   }, [loadPatients]);
 
   return (
-    <section
-      aria-labelledby={headingId}
+    <DashboardSection
+      headingId={headingId}
+      title="Pacientes"
+      counter={sectionCounter}
+      actions={sectionActions}
       className={cn('w-full', className)}
     >
-      {/* ---- Header row: heading + counter + search ---- */}
-      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-baseline gap-2">
-          <h2
-            id={headingId}
-            className="text-lg font-semibold text-slate-800"
-          >
-            Pacientes
-          </h2>
-          {showContent && hasPatients && (
-            <span className="text-sm text-text-muted">{counterText}</span>
-          )}
-        </div>
-        {showContent && hasPatients && (
-          <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Buscar por nombre o descripción"
-          />
-        )}
-      </div>
-
       {/* ---- Loading ---- */}
       {isLoading && (
         <div className="flex justify-center py-16">
@@ -125,20 +116,9 @@ function PatientsSection({ className }: PatientsSectionProps) {
 
       {/* ---- Success: responsive grid of PatientCards ---- */}
       {showContent && hasPatients && hasFilteredResults && (
-        <div
-          className={cn(
-            'grid gap-4',
-            'grid-cols-1',
-            'md:grid-cols-2',
-            'lg:grid-cols-3',
-          )}
-        >
-          {filteredPatients.map((patient) => (
-            <PatientCard key={patient.id} patient={patient} />
-          ))}
-        </div>
+        <PatientCardsGrid patients={filteredPatients} />
       )}
-    </section>
+    </DashboardSection>
   );
 }
 

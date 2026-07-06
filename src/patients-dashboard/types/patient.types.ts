@@ -11,7 +11,7 @@ export interface UserDto {
   id: string;
   name: string;
   description: string;
-  webpage: string;
+  website: string;
   avatar: string;
   createdAt?: string;
 }
