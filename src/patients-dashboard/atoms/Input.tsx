@@ -16,12 +16,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         aria-invalid={hasError ? 'true' : undefined}
         disabled={disabled}
         className={cn(
-          'w-full rounded-md border bg-white px-3 py-2 text-sm text-text transition-colors',
-          'placeholder:text-text-muted',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-primary',
+          'w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm transition-colors',
+          'placeholder:text-slate-400',
+          'focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20',
           hasError
             ? 'border-error ring-1 ring-error'
-            : 'border-border',
+            : 'border-slate-200',
           disabled && 'opacity-50 cursor-not-allowed',
           className,
         )}

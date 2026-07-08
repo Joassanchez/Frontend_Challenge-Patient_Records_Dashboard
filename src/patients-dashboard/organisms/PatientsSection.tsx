@@ -141,7 +141,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
     >
       {/* ---- Loading ---- */}
       {isLoading && (
-        <div className="flex justify-center py-16">
+        <div className="flex justify-center rounded-2xl border border-slate-200 bg-white py-16 shadow-sm">
           <Spinner size="lg" color="primary" />
         </div>
       )}
@@ -178,8 +178,12 @@ function PatientsSection({ className }: PatientsSectionProps) {
           <PatientCardsGrid patients={visiblePatients} />
 
           {hasMorePatients && (
-            <div ref={loadMoreRef} className="mt-4 flex justify-center">
-              <Button variant="secondary" onClick={loadMorePatients}>
+            <div ref={loadMoreRef} className="mt-5 flex justify-center">
+              <Button
+                variant="secondary"
+                className="rounded-full px-5"
+                onClick={loadMorePatients}
+              >
                 Cargar más pacientes
               </Button>
             </div>

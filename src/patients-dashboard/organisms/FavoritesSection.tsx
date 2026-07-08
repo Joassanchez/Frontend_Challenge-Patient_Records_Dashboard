@@ -84,23 +84,25 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
           {totalPages > 1 && (
             <nav
               aria-label="Paginación de favoritos"
-              className="mt-4 flex items-center justify-center gap-3"
+              className="mt-4 flex flex-wrap items-center justify-center gap-3"
             >
               <Button
                 variant="secondary"
                 size="sm"
                 disabled={safeCurrentPage === 1}
+                className="rounded-full disabled:bg-slate-50"
                 onClick={() => setCurrentPage((page) => page - 1)}
               >
                 Anterior
               </Button>
-              <span className="text-sm text-text-muted">
+              <span className="text-sm font-medium text-slate-500">
                 Página {safeCurrentPage} de {totalPages}
               </span>
               <Button
                 variant="secondary"
                 size="sm"
                 disabled={safeCurrentPage === totalPages}
+                className="rounded-full disabled:bg-slate-50"
                 onClick={() => setCurrentPage((page) => page + 1)}
               >
                 Siguiente

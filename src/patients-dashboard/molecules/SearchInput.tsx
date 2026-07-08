@@ -18,8 +18,8 @@ function SearchInput({
   ...rest
 }: SearchInputProps) {
   return (
-    <div className={cn('relative', className)}>
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
+    <div className={cn('relative w-full sm:w-80', className)}>
+      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
         <Icon name="search" size="sm" />
       </span>
       <Input
@@ -27,16 +27,17 @@ function SearchInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="pl-9 pr-9"
+        className="pl-10 pr-10"
         {...rest}
       />
       {value && (
-        <span className="absolute right-1 top-1/2 -translate-y-1/2">
+        <span className="absolute right-1.5 top-1/2 -translate-y-1/2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onChange('')}
             aria-label="Clear search"
+            className="h-7 w-7 rounded-full p-0"
           >
             <Icon name="close" size="sm" />
           </Button>

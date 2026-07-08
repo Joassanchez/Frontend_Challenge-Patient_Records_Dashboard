@@ -63,8 +63,8 @@ function PatientCard({ patient, className }: PatientCardProps) {
   return (
     <article
       className={cn(
-        'flex flex-col gap-3 rounded-xl border border-border bg-surface p-4',
-        'shadow-sm transition-shadow hover:shadow-md',
+        'group flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4',
+        'shadow-sm shadow-slate-200/70 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/80',
         className,
       )}
     >
@@ -76,14 +76,14 @@ function PatientCard({ patient, className }: PatientCardProps) {
           size="lg"
         />
 
-        <div className="flex flex-col gap-1 min-w-0 flex-1">
-          <h3 className="text-base font-semibold text-text truncate">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <h3 className="truncate text-base font-semibold text-slate-950">
             {patient.name}
           </h3>
           {patient.description && (
             <p
               className={cn(
-                'text-sm text-text-muted',
+                'text-sm leading-6 text-slate-500',
                 !isExpanded && 'line-clamp-2',
               )}
             >
@@ -100,9 +100,9 @@ function PatientCard({ patient, className }: PatientCardProps) {
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            'inline-flex items-center gap-1.5 self-start text-sm text-primary',
-            'hover:underline focus-visible:outline-none focus-visible:ring-2',
-            'focus-visible:ring-primary focus-visible:ring-offset-2 rounded',
+            'inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-sm font-medium text-slate-500',
+            'transition-colors hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2',
+            'focus-visible:ring-primary focus-visible:ring-offset-2',
           )}
         >
           <Icon name="eye" size="sm" />
@@ -111,7 +111,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
       )}
 
       {/* ---- Actions footer: Editar + Favorito + Ver más/menos in one row ---- */}
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
+      <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
         <Button
           variant="ghost"
           size="sm"
@@ -128,7 +128,10 @@ function PatientCard({ patient, className }: PatientCardProps) {
           aria-label="Favorito"
           aria-pressed={isFavorite}
           className={cn(
-            isFavorite && 'text-favorite bg-favorite/10 hover:bg-favorite/15',
+            'rounded-full border border-transparent px-3',
+            isFavorite
+              ? 'bg-favorite/10 text-favorite hover:bg-favorite/15'
+              : 'hover:bg-favorite/10 hover:text-favorite',
           )}
           onClick={handleFavoriteClick}
         >
@@ -137,11 +140,11 @@ function PatientCard({ patient, className }: PatientCardProps) {
         </Button>
 
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           aria-expanded={isExpanded}
           aria-controls={detailsId}
-          className="ml-auto"
+          className="ml-auto rounded-full border-primary/15 bg-primary/10 px-3 text-primary shadow-none hover:bg-primary/15 hover:text-primary"
           onClick={() => setIsExpanded((prev) => !prev)}
         >
           {isExpanded ? 'Ver menos' : 'Ver más'}
@@ -159,7 +162,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
       >
         <div className="overflow-hidden" aria-hidden={!isExpanded || undefined}>
           {patient.createdAt && (
-            <div className="bg-slate-50 rounded-lg px-4 py-3 mt-2">
+            <div className="mt-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
               <p className="text-sm text-slate-500">
                 Fecha de registro:{' '}
                 <span className="text-slate-700 font-medium">
