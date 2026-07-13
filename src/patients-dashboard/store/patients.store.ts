@@ -39,7 +39,7 @@ export interface PatientsState {
 export interface PatientsActions {
   loadPatients(): Promise<void>;
   addPatient(input: PatientFormData): Patient;
-  updatePatient(id: string, data: PatientFormData): void;
+  updatePatient(id: string, data: PatientFormData): boolean;
   clearError(): void;
   resetStore(): void;
 }
@@ -67,6 +67,7 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
   // --- Actions ---
 
   loadPatients: async () => {
+    if (get().isLoading) return;
     set({ isLoading: true, error: null });
     try {
       const patients = await getPatients();
@@ -90,14 +91,14 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
       avatar: '',
     };
     set((state) => ({
-      patients: [...state.patients, patient],
+      patients: [patient, ...state.patients],
     }));
     return patient;
   },
 
-  updatePatient: (id: string, data: PatientFormData) => {
+  updatePatient: (id: string, data: PatientFormData): boolean => {
     const existing = get().patients.find((p) => p.id === id);
-    if (!existing) return; // silent no-op — do not touch state
+    if (!existing) return false;
     set((state) => ({
       patients: state.patients.map((p) =>
         p.id === id
@@ -111,6 +112,7 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
           : p,
       ),
     }));
+    return true;
   },
 
   clearError: () => {

@@ -21,6 +21,15 @@ interface PatientCardProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
+function isValidWebUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 function formatWebsiteDisplay(url: string): string {
   try {
     const host = new URL(url).hostname;
@@ -28,6 +37,13 @@ function formatWebsiteDisplay(url: string): string {
   } catch {
     return url;
   }
+}
+
+function formatSafeDate(iso: string | undefined): string | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString('es-AR');
 }
 
 // ---------------------------------------------------------------------------
@@ -52,7 +68,8 @@ function PatientCard({ patient, className }: PatientCardProps) {
 
   function handleFavoriteClick() {
     const wasFavorite = isFavorite;
-    toggleFavorite(patient.id);
+    const persisted = toggleFavorite(patient.id);
+    if (!persisted) return;
     if (wasFavorite) {
       showInfo('Quitado de favoritos');
     } else {
@@ -94,7 +111,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
       </div>
 
       {/* ---- Website link ---- */}
-      {patient.webpage && (
+      {patient.webpage && isValidWebUrl(patient.webpage) ? (
         <a
           href={patient.webpage}
           target="_blank"
@@ -108,14 +125,19 @@ function PatientCard({ patient, className }: PatientCardProps) {
           <Icon name="eye" size="sm" />
           <span className="truncate max-w-[200px]">{websiteDisplay}</span>
         </a>
-      )}
+      ) : patient.webpage ? (
+        <span className="inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-sm text-slate-400">
+          <Icon name="eye" size="sm" />
+          <span className="truncate max-w-[200px]">{websiteDisplay}</span>
+        </span>
+      ) : null}
 
       {/* ---- Actions footer: Editar + Favorito + Ver más/menos in one row ---- */}
       <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
         <Button
           variant="ghost"
           size="sm"
-          aria-label="Editar"
+          aria-label={`Editar ${patient.name}`}
           onClick={() => openEditModal(patient.id)}
         >
           <Icon name="edit" size="sm" />
@@ -125,7 +147,11 @@ function PatientCard({ patient, className }: PatientCardProps) {
         <Button
           variant="ghost"
           size="sm"
-          aria-label="Favorito"
+          aria-label={
+            isFavorite
+              ? `Quitar ${patient.name} de favoritos`
+              : `Agregar ${patient.name} a favoritos`
+          }
           aria-pressed={isFavorite}
           className={cn(
             'rounded-full border border-transparent px-3',
@@ -155,22 +181,27 @@ function PatientCard({ patient, className }: PatientCardProps) {
       <div
         id={detailsId}
         role="region"
+        aria-label={`Detalles de ${patient.name}`}
         className={cn(
           'grid transition-[grid-template-rows] duration-300 ease-in-out',
           isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
         )}
       >
         <div className="overflow-hidden" aria-hidden={!isExpanded || undefined}>
-          {patient.createdAt && (
-            <div className="mt-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
-              <p className="text-sm text-slate-500">
-                Fecha de registro:{' '}
-                <span className="text-slate-700 font-medium">
-                  {new Date(patient.createdAt).toLocaleDateString('es-AR')}
-                </span>
-              </p>
-            </div>
-          )}
+          {(() => {
+            const formattedDate = formatSafeDate(patient.createdAt);
+            if (formattedDate === null) return null;
+            return (
+              <div className="mt-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                <p className="text-sm text-slate-500">
+                  Fecha de registro:{' '}
+                  <span className="text-slate-700 font-medium">
+                    {formattedDate}
+                  </span>
+                </p>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </article>

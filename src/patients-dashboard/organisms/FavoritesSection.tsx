@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/shared/utils/cn';
 import Button from '@/patients-dashboard/atoms/Button';
 import { useFavoritesStore, selectFavoriteIds } from '@/patients-dashboard/store/favorites.store';
@@ -34,6 +34,8 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
     favoritePatientIds.includes(p.id),
   );
 
+  const hasLoadedPatients = patients.length > 0;
+
   // Counter copy — singular/plural, uses MATCHED count (not localStorage count)
   const counterText =
     favoritePatients.length === 1
@@ -44,10 +46,11 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
     Math.ceil(favoritePatients.length / FAVORITES_PAGE_SIZE),
   );
   const safeCurrentPage = Math.min(currentPage, totalPages);
-  const paginatedFavoritePatients = useMemo(() => {
-    const start = (safeCurrentPage - 1) * FAVORITES_PAGE_SIZE;
-    return favoritePatients.slice(start, start + FAVORITES_PAGE_SIZE);
-  }, [safeCurrentPage, favoritePatients]);
+  const start = (safeCurrentPage - 1) * FAVORITES_PAGE_SIZE;
+  const paginatedFavoritePatients = favoritePatients.slice(
+    start,
+    start + FAVORITES_PAGE_SIZE,
+  );
 
   return (
     <DashboardSection
@@ -66,12 +69,20 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
         />
       )}
 
-      {/* ---- Graceful empty: favorites exist but patients not loaded ---- */}
+      {/* ---- Graceful empty: favorites exist but patients not loaded or no longer match ---- */}
       {favoritePatientIds.length > 0 && favoritePatients.length === 0 && (
         <EmptyState
           icon="inbox"
-          title="Tus favoritos aparecerán acá"
-          description="Tus favoritos aparecerán cuando la lista de pacientes esté disponible"
+          title={
+            hasLoadedPatients
+              ? 'Algunos favoritos ya no están disponibles'
+              : 'Tus favoritos aparecerán acá'
+          }
+          description={
+            hasLoadedPatients
+              ? 'Los pacientes guardados ya no existen en la lista actual'
+              : 'Tus favoritos aparecerán cuando la lista de pacientes esté disponible'
+          }
           variant="compact"
         />
       )}
@@ -95,7 +106,10 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
               >
                 Anterior
               </Button>
-              <span className="text-sm font-medium text-slate-500">
+              <span
+                aria-live="polite"
+                className="text-sm font-medium text-slate-500"
+              >
                 Página {safeCurrentPage} de {totalPages}
               </span>
               <Button

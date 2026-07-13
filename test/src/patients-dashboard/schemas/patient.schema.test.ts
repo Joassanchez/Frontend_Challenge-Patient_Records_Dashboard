@@ -39,6 +39,42 @@ describe('patientFormSchema', () => {
     }
   });
 
+  // --- Rejects invalid webpage URL (non-http protocol) ---
+  it('rejects webpage with a non-http protocol', () => {
+    const result = patientFormSchema.safeParse({
+      ...validPayload,
+      webpage: 'ftp://ana.example.com',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path?.[0] === 'webpage');
+      expect(issue?.message).toBe('La página web debe ser una URL válida');
+    }
+  });
+
+  // --- Rejects invalid avatar URL ---
+  it('rejects avatar that is not a valid URL', () => {
+    const result = patientFormSchema.safeParse({
+      ...validPayload,
+      avatar: 'not-a-url',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path?.[0] === 'avatar');
+      expect(issue?.message).toBe('El avatar debe ser una URL válida');
+    }
+  });
+
+  // --- Accepts empty webpage and avatar (create mode) ---
+  it('accepts empty webpage and avatar strings', () => {
+    const result = patientFormSchema.safeParse(validPayload);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.webpage).toBe('');
+      expect(result.data.avatar).toBe('');
+    }
+  });
+
   // --- Empty name fails with Spanish message ---
   it('rejects empty name with "El nombre es obligatorio"', () => {
     const result = patientFormSchema.safeParse({

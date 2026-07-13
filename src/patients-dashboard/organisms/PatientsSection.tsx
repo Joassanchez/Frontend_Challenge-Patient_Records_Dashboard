@@ -9,17 +9,9 @@ import SearchInput from '@/patients-dashboard/molecules/SearchInput';
 import DashboardSection from './DashboardSection';
 import PatientCardsGrid from './PatientCardsGrid';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 interface PatientsSectionProps {
   className?: string;
 }
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 const PATIENTS_PAGE_SIZE = 6;
 
@@ -28,27 +20,31 @@ function PatientsSection({ className }: PatientsSectionProps) {
   const hasMounted = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // Selectors — PatientsSection is the SOLE store-connected component
   const patients = usePatientsStore((s) => s.patients);
   const isLoading = usePatientsStore((s) => s.isLoading);
   const error = usePatientsStore((s) => s.error);
   const loadPatients = usePatientsStore((s) => s.loadPatients);
 
-  // Local search state (no debounce, per spec)
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleBatch, setVisibleBatch] = useState({
     query: '',
     count: PATIENTS_PAGE_SIZE,
   });
 
-  // Derived filtered list — case-insensitive match on name and description
-  const normalizedQuery = searchQuery.trim().toLowerCase();
+  // Normalizes diacritics and case so "alvaro" matches "Álvaro"
+  const normalizeText = (s: string): string =>
+    s
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+  const normalizedQuery = normalizeText(searchQuery.trim());
   const filteredPatients = useMemo(
     () =>
       normalizedQuery
         ? patients.filter((p) =>
             [p.name, p.description].some((v) =>
-              v.toLowerCase().includes(normalizedQuery),
+              normalizeText(v).includes(normalizedQuery),
             ),
           )
         : patients,
@@ -94,7 +90,8 @@ function PatientsSection({ className }: PatientsSectionProps) {
     });
   }, [filteredPatients.length, normalizedQuery]);
 
-  // Mount-only fetch: guard ensures exactly-one execution
+  // Prevents duplicate fetch on Strict Mode double-mount. Does not guard
+  // against multiple component instances — each instance calls loadPatients.
   useEffect(() => {
     if (!hasMounted.current) {
       hasMounted.current = true;

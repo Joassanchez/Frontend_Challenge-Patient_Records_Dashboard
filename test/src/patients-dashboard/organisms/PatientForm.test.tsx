@@ -228,7 +228,7 @@ describe('PatientForm submit', () => {
   it.each([
     ['Crear paciente', 'create'],
     ['Guardar cambios', 'edit'],
-  ])('renders submit button with label "%s" for %s mode', (label, _mode) => {
+  ])('renders submit button with label "%s" for %s mode', (label) => {
     render(<PatientForm onSubmit={vi.fn()} submitLabel={label} />);
     expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
   });

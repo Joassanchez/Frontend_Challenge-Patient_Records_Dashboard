@@ -60,7 +60,14 @@ describe('REQ-FS-01: Initial State', () => {
     expect(state.favoritePatientIds).toEqual([]);
   });
 
-
+  it('sanitizes hydrated IDs: removes empty strings and deduplicates', () => {
+    mockGetItem.mockReturnValue(['p1', '', '  ', 'p2', 'p1', 'p3']);
+    useFavoritesStore.getState().resetStore();
+    // resetStore clears the store — we need to re-create or call hydrateFavorites
+    useFavoritesStore.getState().hydrateFavorites();
+    const state = useFavoritesStore.getState();
+    expect(state.favoritePatientIds).toEqual(['p1', 'p2', 'p3']);
+  });
 });
 
 // ============================================================================
@@ -92,28 +99,33 @@ describe('REQ-FS-04: Hydration', () => {
 // ============================================================================
 
 describe('REQ-FS-02: toggleFavorite', () => {
-  it('adds an ID when it is not present', () => {
-    useFavoritesStore.getState().toggleFavorite('p1');
+  it('adds an ID and returns true when not present', () => {
+    const result = useFavoritesStore.getState().toggleFavorite('p1');
     const state = useFavoritesStore.getState();
+    expect(result).toBe(true);
     expect(state.favoritePatientIds).toEqual(['p1']);
   });
 
-  it('removes an ID when it is present', () => {
+  it('removes an ID and returns true when present', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1', 'p2'] });
-    useFavoritesStore.getState().toggleFavorite('p1');
+    const result = useFavoritesStore.getState().toggleFavorite('p1');
     const state = useFavoritesStore.getState();
+    expect(result).toBe(true);
     expect(state.favoritePatientIds).toEqual(['p2']);
   });
 
   it('does not create duplicate IDs', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1'] });
-    useFavoritesStore.getState().toggleFavorite('p1'); // removes
-    useFavoritesStore.getState().toggleFavorite('p1'); // re-adds
+    const r1 = useFavoritesStore.getState().toggleFavorite('p1'); // removes
+    expect(r1).toBe(true);
+    const r2 = useFavoritesStore.getState().toggleFavorite('p1'); // re-adds
+    expect(r2).toBe(true);
     const state = useFavoritesStore.getState();
     expect(state.favoritePatientIds).toEqual(['p1']);
   });
 
   it('persists state to localStorage after toggle (add)', () => {
+    mockSetItem.mockReturnValue(true);
     useFavoritesStore.getState().toggleFavorite('p99');
     expect(mockSetItem).toHaveBeenCalledWith(
       'app:favorites:patient-ids',
@@ -124,48 +136,71 @@ describe('REQ-FS-02: toggleFavorite', () => {
   it('persists state to localStorage after toggle (remove)', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1', 'p2'] });
     vi.clearAllMocks();
+    mockSetItem.mockReturnValue(true);
     useFavoritesStore.getState().toggleFavorite('p1');
     expect(mockSetItem).toHaveBeenCalledWith(
       'app:favorites:patient-ids',
       ['p2'],
     );
   });
+
+  it('returns false and does NOT mutate state when persist fails', () => {
+    useFavoritesStore.setState({ favoritePatientIds: ['p1', 'p2'] });
+    mockSetItem.mockReturnValue(false);
+    const result = useFavoritesStore.getState().toggleFavorite('p1');
+    expect(result).toBe(false);
+    const state = useFavoritesStore.getState();
+    expect(state.favoritePatientIds).toEqual(['p1', 'p2']); // unchanged
+  });
 });
 
 describe('REQ-FS-02: addFavorite', () => {
-  it('adds a new ID', () => {
-    useFavoritesStore.getState().addFavorite('p1');
+  it('adds a new ID and returns true', () => {
+    const result = useFavoritesStore.getState().addFavorite('p1');
     const state = useFavoritesStore.getState();
+    expect(result).toBe(true);
     expect(state.favoritePatientIds).toEqual(['p1']);
   });
 
-  it('does not add duplicate IDs (idempotent)', () => {
+  it('returns true without duplicating (idempotent)', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1'] });
-    useFavoritesStore.getState().addFavorite('p1');
+    const result = useFavoritesStore.getState().addFavorite('p1');
+    expect(result).toBe(true);
     const state = useFavoritesStore.getState();
     expect(state.favoritePatientIds).toEqual(['p1']);
   });
 
   it('persists state after adding', () => {
+    mockSetItem.mockReturnValue(true);
     useFavoritesStore.getState().addFavorite('p1');
     expect(mockSetItem).toHaveBeenCalledWith(
       'app:favorites:patient-ids',
       ['p1'],
     );
   });
+
+  it('returns false and does NOT mutate state when persist fails', () => {
+    mockSetItem.mockReturnValue(false);
+    const result = useFavoritesStore.getState().addFavorite('p1');
+    expect(result).toBe(false);
+    const state = useFavoritesStore.getState();
+    expect(state.favoritePatientIds).toEqual([]);
+  });
 });
 
 describe('REQ-FS-02: removeFavorite', () => {
-  it('removes an existing ID', () => {
+  it('removes an existing ID and returns true', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1', 'p2'] });
-    useFavoritesStore.getState().removeFavorite('p1');
+    const result = useFavoritesStore.getState().removeFavorite('p1');
+    expect(result).toBe(true);
     const state = useFavoritesStore.getState();
     expect(state.favoritePatientIds).toEqual(['p2']);
   });
 
-  it('is a no-op when the ID is not present', () => {
+  it('returns true without mutating when ID is not present (idempotent)', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1'] });
-    useFavoritesStore.getState().removeFavorite('p999');
+    const result = useFavoritesStore.getState().removeFavorite('p999');
+    expect(result).toBe(true);
     const state = useFavoritesStore.getState();
     expect(state.favoritePatientIds).toEqual(['p1']);
   });
@@ -173,11 +208,21 @@ describe('REQ-FS-02: removeFavorite', () => {
   it('persists state after removing', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1', 'p2'] });
     vi.clearAllMocks();
+    mockSetItem.mockReturnValue(true);
     useFavoritesStore.getState().removeFavorite('p1');
     expect(mockSetItem).toHaveBeenCalledWith(
       'app:favorites:patient-ids',
       ['p2'],
     );
+  });
+
+  it('returns false and does NOT mutate state when persist fails', () => {
+    useFavoritesStore.setState({ favoritePatientIds: ['p1', 'p2'] });
+    mockSetItem.mockReturnValue(false);
+    const result = useFavoritesStore.getState().removeFavorite('p1');
+    expect(result).toBe(false);
+    const state = useFavoritesStore.getState();
+    expect(state.favoritePatientIds).toEqual(['p1', 'p2']);
   });
 });
 

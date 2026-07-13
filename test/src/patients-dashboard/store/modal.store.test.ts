@@ -4,7 +4,6 @@ import {
   selectIsOpen,
   selectModalMode,
   selectSelectedPatientId,
-  initialState,
 } from '@/patients-dashboard/store/modal.store';
 
 // ---------------------------------------------------------------------------

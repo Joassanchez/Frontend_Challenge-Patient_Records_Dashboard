@@ -158,6 +158,26 @@ describe('FavoritesSection', () => {
     expect(section).toBeInTheDocument();
   });
 
+  it('shows "aparecerán acá" message when patients not yet loaded', () => {
+    setFavoritesState(['p1']);
+    setPatientsState([]); // no patients at all
+    render(<FavoritesSection />);
+
+    expect(
+      screen.getByText('Tus favoritos aparecerán acá'),
+    ).toBeInTheDocument();
+  });
+
+  it('shows "ya no están disponibles" when patients loaded but favorites orphaned', () => {
+    setFavoritesState(['orphan-1']);
+    setPatientsState([createPatient({ id: 'p1', name: 'Existing' })]);
+    render(<FavoritesSection />);
+
+    expect(
+      screen.getByText(/algunos favoritos ya no están disponibles/i),
+    ).toBeInTheDocument();
+  });
+
   // ---- REQ-DL-02: Grid of favorite patients ----
 
   it('renders a responsive grid of PatientCards when favorites exist', () => {
@@ -192,6 +212,20 @@ describe('FavoritesSection', () => {
     expect(screen.getByText(/p.gina 2 de 2/i)).toBeInTheDocument();
     expect(screen.getAllByRole('article')).toHaveLength(1);
     expect(screen.getByText('Luis')).toBeInTheDocument();
+  });
+
+  it('announces page changes with aria-live', () => {
+    setFavoritesState(['p1', 'p2', 'p3', 'p4']);
+    setPatientsState([
+      createPatient({ id: 'p1', name: 'Ana' }),
+      createPatient({ id: 'p2', name: 'Juan' }),
+      createPatient({ id: 'p3', name: 'María' }),
+      createPatient({ id: 'p4', name: 'Luis' }),
+    ]);
+    render(<FavoritesSection />);
+
+    const pageIndicator = screen.getByText(/p.gina 1 de 2/i);
+    expect(pageIndicator).toHaveAttribute('aria-live', 'polite');
   });
 
   // ---- REQ-DL-09: Join between favorites and patients ----

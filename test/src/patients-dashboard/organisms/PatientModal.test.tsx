@@ -53,14 +53,15 @@ vi.mock('@/patients-dashboard/store/modal.store', () => ({
 
 const { toastSpy } = vi.hoisted(() => {
   const showSuccess = vi.fn();
+  const showError = vi.fn();
   const toasts: unknown[] = [];
-  return { toastSpy: { showSuccess, toasts } };
+  return { toastSpy: { showSuccess, showError, toasts } };
 });
 
 vi.mock('@/patients-dashboard/store/toast.store', () => ({
   useToastStore: vi.fn(
-    (selector?: (s: { toasts: unknown[]; showSuccess: typeof toastSpy.showSuccess }) => unknown) => {
-      const state = { toasts: toastSpy.toasts, showSuccess: toastSpy.showSuccess };
+    (selector?: (s: { toasts: unknown[]; showSuccess: typeof toastSpy.showSuccess; showError: typeof toastSpy.showError }) => unknown) => {
+      const state = { toasts: toastSpy.toasts, showSuccess: toastSpy.showSuccess, showError: toastSpy.showError };
       if (typeof selector === 'function') return selector(state);
       return state;
     },
@@ -107,6 +108,7 @@ beforeEach(() => {
   patientsStoreState = defaultPatientsState();
   toastSpy.toasts = [];
   toastSpy.showSuccess = vi.fn();
+  toastSpy.showError = vi.fn();
 });
 
 // ============================================================================
@@ -168,13 +170,31 @@ describe('Create mode', () => {
     await user.click(screen.getByRole('button', { name: /crear paciente/i }));
 
     expect(mockAddPatient).toHaveBeenCalledTimes(1);
-    // addPatient receives full PatientFormData — store auto-generates webpage/avatar
     expect(mockAddPatient).toHaveBeenCalledWith({
       name: 'Nuevo Paciente',
       description: 'Cardiología',
       webpage: '',
       avatar: '',
     });
+    expect(mockCloseModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes modal after successful create submit', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'create',
+      selectedPatientId: null,
+    };
+    mockCloseModal.mockClear();
+
+    render(<PatientModal />);
+
+    await user.type(screen.getByLabelText(/nombre/i), 'Test');
+    await user.type(screen.getByLabelText(/descripción/i), 'Desc');
+    await user.click(screen.getByRole('button', { name: /crear paciente/i }));
+
     expect(mockCloseModal).toHaveBeenCalledTimes(1);
   });
 });
@@ -207,7 +227,7 @@ describe('Edit mode', () => {
     );
   });
 
-  it('calls updatePatient(id, formData) with all editable fields and closes modal', async () => {
+  it('calls updatePatient(id, formData) with all editable fields and closes modal on success', async () => {
     const user = userEvent.setup();
     modalStoreState = {
       ...defaultModalState(),
@@ -216,6 +236,7 @@ describe('Edit mode', () => {
       selectedPatientId: 'p1',
     };
     mockUpdatePatient.mockClear();
+    mockUpdatePatient.mockReturnValue(true);
     mockCloseModal.mockClear();
 
     render(<PatientModal />);
@@ -367,7 +388,7 @@ describe('Toast wiring on successful submit', () => {
     expect(mockCloseModal).toHaveBeenCalledTimes(1);
   });
 
-  it('calls showSuccess("Cambios guardados") after edit succeeds and modal closes', async () => {
+  it('calls showSuccess("Cambios guardados") after edit succeeds and closes modal', async () => {
     const user = userEvent.setup();
     modalStoreState = {
       ...defaultModalState(),
@@ -376,6 +397,7 @@ describe('Toast wiring on successful submit', () => {
       selectedPatientId: 'p1',
     };
     mockUpdatePatient.mockClear();
+    mockUpdatePatient.mockReturnValue(true);
     mockCloseModal.mockClear();
     toastSpy.showSuccess.mockClear();
 
@@ -392,6 +414,36 @@ describe('Toast wiring on successful submit', () => {
     expect(toastSpy.showSuccess).toHaveBeenCalledWith('Cambios guardados');
     expect(mockUpdatePatient).toHaveBeenCalledTimes(1);
     expect(mockCloseModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT close modal or show success when updatePatient returns false, shows error instead', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'edit',
+      selectedPatientId: 'p1',
+    };
+    mockUpdatePatient.mockClear();
+    mockUpdatePatient.mockReturnValue(false);
+    mockCloseModal.mockClear();
+    toastSpy.showSuccess.mockClear();
+    toastSpy.showError.mockClear();
+
+    render(<PatientModal />);
+
+    const nameInput = screen.getByLabelText(/nombre/i);
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Carlos Actualizado');
+
+    await user.click(
+      screen.getByRole('button', { name: /guardar cambios/i }),
+    );
+
+    expect(toastSpy.showSuccess).not.toHaveBeenCalled();
+    expect(toastSpy.showError).toHaveBeenCalledWith('No se pudo actualizar el paciente');
+    expect(mockUpdatePatient).toHaveBeenCalledTimes(1);
+    expect(mockCloseModal).not.toHaveBeenCalled();
   });
 });
 

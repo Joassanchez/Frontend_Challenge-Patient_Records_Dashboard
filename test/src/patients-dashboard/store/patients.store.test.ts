@@ -109,15 +109,15 @@ describe('Exported Selectors', () => {
 // addPatient — accepts PatientFormData, auto-generates hidden fields
 // ============================================================================
 describe('addPatient with PatientFormData', () => {
-  it('appends a full Patient from only name and description', () => {
+  it('prepends a full Patient from only name and description', () => {
     usePatientsStore.setState({ patients: [patientA] });
 
     const result = usePatientsStore.getState().addPatient(formDataB);
 
     const { patients } = usePatientsStore.getState();
     expect(patients).toHaveLength(2);
-    expect(patients[0]).toEqual(patientA);
-    expect(result).toEqual(patients[1]);
+    expect(result).toEqual(patients[0]);
+    expect(patients[1]).toEqual(patientA);
     // input fields preserved
     expect(result.name).toBe('Bob');
     expect(result.description).toBe('Patient B description');
@@ -212,17 +212,32 @@ describe('updatePatient updates all editable fields', () => {
     expect(updated.createdAt).toBe('2025-01-01T00:00:00Z');
   });
 
-  it('is a silent no-op for unknown id', () => {
+  it('returns true when patient is found and updated', () => {
+    usePatientsStore.setState({ patients: [patientA] });
+
+    const result = usePatientsStore.getState().updatePatient('1', {
+      name: 'Alice Updated',
+      description: 'New desc',
+      webpage: 'https://updated.example.com',
+      avatar: '',
+    });
+
+    expect(result).toBe(true);
+    expect(usePatientsStore.getState().patients[0].name).toBe('Alice Updated');
+  });
+
+  it('returns false and does not mutate state for unknown id', () => {
     usePatientsStore.setState({ patients: [patientA], error: null });
     const beforePatients = usePatientsStore.getState().patients;
 
-    usePatientsStore.getState().updatePatient('unknown', {
+    const result = usePatientsStore.getState().updatePatient('unknown', {
       name: 'Ghost',
       description: 'Nope',
       webpage: '',
       avatar: '',
     });
 
+    expect(result).toBe(false);
     const afterState = usePatientsStore.getState();
     // Patients reference unchanged (no new array)
     expect(afterState.patients).toBe(beforePatients);
@@ -302,6 +317,18 @@ describe('Reset Store', () => {
 // Load Patients — Happy Path
 // ============================================================================
 describe('Load Patients — Happy Path', () => {
+  it('does not start a second load when already loading', async () => {
+    const mockedGetPatients = vi.mocked(getPatients);
+    // Simulate an ongoing request
+    usePatientsStore.setState({ isLoading: true });
+
+    await usePatientsStore.getState().loadPatients();
+
+    // loadPatients should bail early — no API call, no state change
+    expect(mockedGetPatients).not.toHaveBeenCalled();
+    expect(usePatientsStore.getState().isLoading).toBe(true);
+  });
+
   it('populates patients on successful API call', async () => {
     const mockedGetPatients = vi.mocked(getPatients);
     mockedGetPatients.mockResolvedValue([patientA, patientB]);

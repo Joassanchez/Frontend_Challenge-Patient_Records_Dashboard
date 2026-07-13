@@ -192,4 +192,26 @@ describe('PatientsSection', () => {
     expect(screen.getAllByRole('article')).toHaveLength(7);
     expect(screen.getByText('Patient 7')).toBeInTheDocument();
   });
+
+  // ---- Search normalization ----
+
+  it('matches patients with accented names using unaccented queries', async () => {
+    const user = userEvent.setup();
+    setStoreState({
+      isLoading: false,
+      patients: [
+        createPatient({ id: '1', name: 'Álvaro Gómez', description: 'Cardiólogo' }),
+        createPatient({ id: '2', name: 'Andrea Pérez', description: 'Neurología' }),
+      ],
+      error: null,
+    });
+    render(<PatientsSection />);
+
+    const searchInput = screen.getByPlaceholderText(/buscar por nombre/i);
+    await user.type(searchInput, 'alvaro');
+
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    expect(screen.getByText('Álvaro Gómez')).toBeInTheDocument();
+    expect(screen.queryByText('Andrea Pérez')).not.toBeInTheDocument();
+  });
 });

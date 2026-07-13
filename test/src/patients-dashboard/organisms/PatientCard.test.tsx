@@ -37,12 +37,12 @@ vi.mock('@/patients-dashboard/store/toast.store', () => ({
 // Mocks — hoisted before component import
 // ---------------------------------------------------------------------------
 
-const mockToggleFavorite = vi.fn<(id: string) => void>();
+const mockToggleFavorite = vi.fn<(id: string) => boolean>();
 
 // Favorites store state used by the mock selector
 let favoritesStoreState: {
   favoritePatientIds: string[];
-  toggleFavorite: (id: string) => void;
+  toggleFavorite: (id: string) => boolean;
 } = {
   favoritePatientIds: [],
   toggleFavorite: mockToggleFavorite,
@@ -108,6 +108,21 @@ describe('PatientCard', () => {
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
+  it('renders non-http webpage as plain text instead of a link', () => {
+    render(
+      <PatientCard
+        patient={createPatient({ webpage: 'ftp://files.example.com' })}
+      />,
+    );
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByText(/files\.example\.com/i)).toBeInTheDocument();
+  });
+
+  it('renders no website element when webpage is empty', () => {
+    render(<PatientCard patient={createPatient({ webpage: '' })} />);
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
   // ---- Avatar fallback ----
 
   it('renders avatar image with alt text containing patient name when src is provided', () => {
@@ -130,9 +145,9 @@ describe('PatientCard', () => {
     expect(screen.queryByRole('button', { name: /ver detalle/i })).not.toBeInTheDocument();
   });
 
-  it('renders an "Editar" button', () => {
+  it('renders an "Editar" button with patient name in accessible label', () => {
     render(<PatientCard patient={createPatient()} />);
-    const button = screen.getByRole('button', { name: /editar/i });
+    const button = screen.getByRole('button', { name: /editar.*ana/i });
     expect(button).toBeInTheDocument();
   });
 
@@ -149,9 +164,9 @@ describe('PatientCard', () => {
     expect(mockOpenEditModal).toHaveBeenCalledWith('p1');
   });
 
-  it('renders a "Favorito" button', () => {
+  it('renders a "Favorito" button with descriptive accessible label', () => {
     render(<PatientCard patient={createPatient()} />);
-    const button = screen.getByRole('button', { name: /favorito/i });
+    const button = screen.getByRole('button', { name: /agregar.*ana.*favoritos/i });
     expect(button).toBeInTheDocument();
   });
 
@@ -169,7 +184,7 @@ describe('PatientCard', () => {
     const toggle = screen.getByRole('button', { name: /ver más/i });
     expect(toggle).toBeInTheDocument();
 
-    const region = screen.getByRole('region');
+    const region = screen.getByRole('region', { name: /detalles de ana/i });
     const innerContent = region.firstElementChild as HTMLElement;
     expect(innerContent).toHaveAttribute('aria-hidden', 'true');
   });
@@ -198,7 +213,7 @@ describe('PatientCard', () => {
     );
 
     const toggle = screen.getByRole('button', { name: /ver más/i });
-    const region = screen.getByRole('region');
+    const region = screen.getByRole('region', { name: /detalles de ana/i });
     const innerContent = region.firstElementChild as HTMLElement;
 
     await user.click(toggle);
@@ -260,7 +275,7 @@ describe('PatientCard', () => {
     render(<PatientCard patient={createPatient()} />);
 
     const toggle = screen.getByRole('button', { name: /ver más/i });
-    const region = screen.getByRole('region');
+    const region = screen.getByRole('region', { name: /detalles de ana/i });
 
     expect(toggle).toHaveAttribute('aria-controls');
     expect(region).toHaveAttribute('id');
@@ -278,6 +293,15 @@ describe('PatientCard', () => {
     expect(screen.queryByText(/fecha de registro/i)).not.toBeInTheDocument();
   });
 
+  it('renders no date when createdAt is an invalid date string', async () => {
+    const user = userEvent.setup();
+    render(
+      <PatientCard patient={createPatient({ createdAt: 'not-a-date' })} />,
+    );
+    await user.click(screen.getByRole('button', { name: /ver más/i }));
+    expect(screen.queryByText(/fecha de registro/i)).not.toBeInTheDocument();
+  });
+
   // =========================================================================
   // Favorite Button Behavior (preserved)
   // =========================================================================
@@ -287,7 +311,7 @@ describe('PatientCard', () => {
       favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
       render(<PatientCard patient={createPatient({ id: 'p1' })} />);
 
-      const button = screen.getByRole('button', { name: /favorito/i });
+      const button = screen.getByRole('button', { name: /agregar.*favoritos/i });
       expect(button).toHaveAttribute('aria-pressed', 'false');
     });
 
@@ -295,7 +319,7 @@ describe('PatientCard', () => {
       favoritesStoreState = { favoritePatientIds: ['p1'], toggleFavorite: mockToggleFavorite };
       render(<PatientCard patient={createPatient({ id: 'p1' })} />);
 
-      const button = screen.getByRole('button', { name: /favorito/i });
+      const button = screen.getByRole('button', { name: /quitar.*favoritos/i });
       expect(button).toHaveAttribute('aria-pressed', 'true');
     });
 
@@ -306,7 +330,7 @@ describe('PatientCard', () => {
 
       render(<PatientCard patient={createPatient({ id: 'p1' })} />);
 
-      const button = screen.getByRole('button', { name: /favorito/i });
+      const button = screen.getByRole('button', { name: /agregar.*favoritos/i });
       await user.click(button);
 
       expect(mockToggleFavorite).toHaveBeenCalledWith('p1');
@@ -323,13 +347,14 @@ describe('PatientCard', () => {
       toastSpies.showSuccess.mockClear();
       toastSpies.showInfo.mockClear();
       mockToggleFavorite.mockClear();
+      mockToggleFavorite.mockReturnValue(true);
 
       // Patient is NOT a favorite
       favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
 
       render(<PatientCard patient={createPatient({ id: 'p1' })} />);
 
-      const favButton = screen.getByRole('button', { name: /favorito/i });
+      const favButton = screen.getByRole('button', { name: /agregar.*favoritos/i });
       await user.click(favButton);
 
       expect(toastSpies.showSuccess).toHaveBeenCalledWith('Agregado a favoritos');
@@ -341,17 +366,36 @@ describe('PatientCard', () => {
       toastSpies.showSuccess.mockClear();
       toastSpies.showInfo.mockClear();
       mockToggleFavorite.mockClear();
+      mockToggleFavorite.mockReturnValue(true);
 
       // Patient IS a favorite
       favoritesStoreState = { favoritePatientIds: ['p1'], toggleFavorite: mockToggleFavorite };
 
       render(<PatientCard patient={createPatient({ id: 'p1' })} />);
 
-      const favButton = screen.getByRole('button', { name: /favorito/i });
+      const favButton = screen.getByRole('button', { name: /quitar.*favoritos/i });
       await user.click(favButton);
 
       expect(toastSpies.showInfo).toHaveBeenCalledWith('Quitado de favoritos');
       expect(toastSpies.showSuccess).not.toHaveBeenCalled();
+    });
+
+    it('does NOT call any toast when toggleFavorite returns false (persist failed)', async () => {
+      const user = userEvent.setup();
+      toastSpies.showSuccess.mockClear();
+      toastSpies.showInfo.mockClear();
+      mockToggleFavorite.mockClear();
+      mockToggleFavorite.mockReturnValue(false);
+
+      favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
+
+      render(<PatientCard patient={createPatient({ id: 'p1' })} />);
+
+      const favButton = screen.getByRole('button', { name: /agregar.*favoritos/i });
+      await user.click(favButton);
+
+      expect(toastSpies.showSuccess).not.toHaveBeenCalled();
+      expect(toastSpies.showInfo).not.toHaveBeenCalled();
     });
 
     it('does not call toast actions on Editar button click', async () => {

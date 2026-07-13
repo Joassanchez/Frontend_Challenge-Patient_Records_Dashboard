@@ -21,7 +21,6 @@ interface PatientFormProps {
   defaultValues: PatientFormData;
   onSubmit: (data: PatientFormData) => void;
   submitLabel: string;
-  isSubmitting?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -33,7 +32,6 @@ function PatientForm({
   defaultValues,
   onSubmit,
   submitLabel,
-  isSubmitting = false,
 }: PatientFormProps) {
   const {
     control,
@@ -175,12 +173,7 @@ function PatientForm({
       )}
 
       {/* Submit */}
-      <Button
-        type="submit"
-        variant="primary"
-        loading={isSubmitting}
-        className="self-end"
-      >
+      <Button type="submit" variant="primary" className="self-end">
         {submitLabel}
       </Button>
     </form>
