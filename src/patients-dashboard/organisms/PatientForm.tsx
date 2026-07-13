@@ -118,27 +118,27 @@ function PatientForm({
         <>
           {/* Página web */}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="patient-webpage">Página web</Label>
+            <Label htmlFor="patient-website">Página web</Label>
             <Controller
-              name="webpage"
+              name="website"
               control={control}
               render={({ field: { ref, ...field } }) => (
                 <Input
-                  id="patient-webpage"
+                  id="patient-website"
                   placeholder="https://ejemplo.com"
                   ref={ref}
-                  aria-invalid={errors.webpage ? 'true' : undefined}
+                  aria-invalid={errors.website ? 'true' : undefined}
                   aria-describedby={
-                    errors.webpage ? 'patient-webpage-error' : undefined
+                    errors.website ? 'patient-website-error' : undefined
                   }
                   {...field}
                 />
               )}
             />
-            {errors.webpage && (
+            {errors.website && (
               <ErrorMessage
-                id="patient-webpage-error"
-                message={errors.webpage.message!}
+                id="patient-website-error"
+                message={errors.website.message!}
               />
             )}
           </div>

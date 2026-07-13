@@ -4,7 +4,7 @@ export {
   selectPatientById,
   selectPatientsLoading,
   selectPatientsError,
-  initialState,
+  initialState as patientsInitialState,
 } from './patients.store';
 
 export type { PatientsState, PatientsActions, PatientsStore } from './patients.store';

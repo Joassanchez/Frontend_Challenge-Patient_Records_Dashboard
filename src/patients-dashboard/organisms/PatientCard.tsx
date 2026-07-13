@@ -51,7 +51,7 @@ function formatSafeDate(iso: string | undefined): string | null {
 // ---------------------------------------------------------------------------
 
 function PatientCard({ patient, className }: PatientCardProps) {
-  const websiteDisplay = formatWebsiteDisplay(patient.webpage);
+  const websiteDisplay = formatWebsiteDisplay(patient.website);
   const [isExpanded, setIsExpanded] = useState(false);
   const detailsId = `patient-details-${patient.id}`;
 
@@ -111,9 +111,9 @@ function PatientCard({ patient, className }: PatientCardProps) {
       </div>
 
       {/* ---- Website link ---- */}
-      {patient.webpage && isValidWebUrl(patient.webpage) ? (
+      {patient.website && isValidWebUrl(patient.website) ? (
         <a
-          href={patient.webpage}
+          href={patient.website}
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
@@ -125,7 +125,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
           <Icon name="eye" size="sm" />
           <span className="truncate max-w-[200px]">{websiteDisplay}</span>
         </a>
-      ) : patient.webpage ? (
+      ) : patient.website ? (
         <span className="inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-sm text-slate-400">
           <Icon name="eye" size="sm" />
           <span className="truncate max-w-[200px]">{websiteDisplay}</span>

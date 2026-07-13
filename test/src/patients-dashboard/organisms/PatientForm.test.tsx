@@ -11,14 +11,14 @@ import type { PatientFormData } from '@/patients-dashboard/schemas/patient.schem
 const emptyDefaults: PatientFormData = {
   name: '',
   description: '',
-  webpage: '',
+  website: '',
   avatar: '',
 };
 
 const validDefaults: PatientFormData = {
   name: 'Ana García',
   description: 'Cardiología',
-  webpage: 'https://ana.example.com',
+  website: 'https://ana.example.com',
   avatar: 'https://ana.example.com/avatar.jpg',
 };
 
@@ -55,7 +55,7 @@ describe('PatientForm render', () => {
     expect(screen.getByLabelText(/descripción/i)).toHaveValue('');
   });
 
-  it('does NOT render webpage or avatar inputs in create mode', () => {
+  it('does NOT render website or avatar inputs in create mode', () => {
     render(
       <PatientForm
         mode="create"
@@ -65,12 +65,12 @@ describe('PatientForm render', () => {
       />,
     );
 
-    // Only two form fields exist in create mode — no webpage, no avatar
+    // Only two form fields exist in create mode — no website, no avatar
     expect(screen.queryByLabelText(/página web/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/avatar/i)).not.toBeInTheDocument();
   });
 
-  it('renders webpage and avatar inputs in edit mode with patient values', () => {
+  it('renders website and avatar inputs in edit mode with patient values', () => {
     render(
       <PatientForm
         mode="edit"
@@ -186,7 +186,7 @@ describe('PatientForm submit', () => {
     expect(formData).toEqual({
       name: 'Ana García',
       description: 'Cardiología',
-      webpage: 'https://ana.example.com',
+      website: 'https://ana.example.com',
       avatar: 'https://ana.example.com/avatar.jpg',
     });
     // No id or createdAt leaked
@@ -194,7 +194,7 @@ describe('PatientForm submit', () => {
     expect(formData).not.toHaveProperty('createdAt');
   });
 
-  it('submits empty webpage and avatar in create mode', async () => {
+  it('submits empty website and avatar in create mode', async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
 
@@ -220,8 +220,8 @@ describe('PatientForm submit', () => {
     const submitted = onSubmit.mock.calls[0]?.[0] as PatientFormData;
     expect(submitted.name).toBe('Nuevo');
     expect(submitted.description).toBe('Desc');
-    // webpage and avatar default to '' in create mode
-    expect(submitted.webpage).toBe('');
+    // website and avatar default to '' in create mode
+    expect(submitted.website).toBe('');
     expect(submitted.avatar).toBe('');
   });
 

@@ -22,7 +22,7 @@ function generateCreatedAt(): string {
   return new Date().toISOString();
 }
 
-function generateWebpage(id: string): string {
+function generateWebsite(id: string): string {
   return `https://patient.local/${id}`;
 }
 
@@ -40,7 +40,6 @@ export interface PatientsActions {
   loadPatients(): Promise<void>;
   addPatient(input: PatientFormData): Patient;
   updatePatient(id: string, data: PatientFormData): boolean;
-  clearError(): void;
   resetStore(): void;
 }
 
@@ -87,7 +86,7 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
       description: input.description,
       id,
       createdAt: generateCreatedAt(),
-      webpage: generateWebpage(id),
+      website: generateWebsite(id),
       avatar: '',
     };
     set((state) => ({
@@ -106,17 +105,13 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
               ...p,
               name: data.name,
               description: data.description,
-              webpage: data.webpage,
+              website: data.website,
               avatar: data.avatar,
             }
           : p,
       ),
     }));
     return true;
-  },
-
-  clearError: () => {
-    set({ error: null });
   },
 
   resetStore: () => {

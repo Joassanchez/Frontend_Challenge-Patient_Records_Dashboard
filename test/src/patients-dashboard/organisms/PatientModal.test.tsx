@@ -12,7 +12,7 @@ const existingPatient = createPatient({
   id: 'p1',
   name: 'Carlos López',
   description: 'Neurología',
-  webpage: 'https://carlos.example.com',
+  website: 'https://carlos.example.com',
   avatar: 'https://carlos.example.com/avatar.jpg',
   createdAt: '2024-01-15T10:00:00Z',
 });
@@ -132,7 +132,7 @@ describe('Create mode', () => {
     expect(screen.getByLabelText(/descripción/i)).toHaveValue('');
   });
 
-  it('does NOT render webpage or avatar inputs in create mode', () => {
+  it('does NOT render website or avatar inputs in create mode', () => {
     modalStoreState = {
       ...defaultModalState(),
       isOpen: true,
@@ -146,7 +146,7 @@ describe('Create mode', () => {
     expect(screen.queryByLabelText(/avatar/i)).not.toBeInTheDocument();
   });
 
-  it('calls addPatient with PatientFormData (webpage/avatar default to empty) and closes modal on valid submit', async () => {
+  it('calls addPatient with PatientFormData (website/avatar default to empty) and closes modal on valid submit', async () => {
     const user = userEvent.setup();
     modalStoreState = {
       ...defaultModalState(),
@@ -173,7 +173,7 @@ describe('Create mode', () => {
     expect(mockAddPatient).toHaveBeenCalledWith({
       name: 'Nuevo Paciente',
       description: 'Cardiología',
-      webpage: '',
+      website: '',
       avatar: '',
     });
     expect(mockCloseModal).toHaveBeenCalledTimes(1);
@@ -254,7 +254,7 @@ describe('Edit mode', () => {
     expect(mockUpdatePatient).toHaveBeenCalledWith('p1', {
       name: 'Carlos Actualizado',
       description: 'Neurología',
-      webpage: 'https://carlos.example.com',
+      website: 'https://carlos.example.com',
       avatar: 'https://carlos.example.com/avatar.jpg',
     });
     expect(mockCloseModal).toHaveBeenCalledTimes(1);

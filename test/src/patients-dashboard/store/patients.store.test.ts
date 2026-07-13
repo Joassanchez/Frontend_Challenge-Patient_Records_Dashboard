@@ -19,7 +19,7 @@ const patientA = createPatient({
   id: '1',
   name: 'Alice',
   description: 'Patient A description',
-  webpage: 'https://alice.example.com',
+  website: 'https://alice.example.com',
   avatar: 'https://alice.example.com/avatar.jpg',
 });
 
@@ -27,7 +27,7 @@ const patientB = createPatient({
   id: '2',
   name: 'Bob',
   description: 'Patient B description',
-  webpage: 'https://bob.example.com',
+  website: 'https://bob.example.com',
   avatar: 'https://bob.example.com/avatar.jpg',
 });
 
@@ -35,21 +35,21 @@ const patientC = createPatient({
   id: '3',
   name: 'Charlie',
   description: 'Patient C description',
-  webpage: 'https://charlie.example.com',
+  website: 'https://charlie.example.com',
   avatar: 'https://charlie.example.com/avatar.jpg',
 });
 
 const formDataA: PatientFormData = {
   name: 'Alice',
   description: 'Patient A description',
-  webpage: '',
+  website: '',
   avatar: '',
 };
 
 const formDataB: PatientFormData = {
   name: 'Bob',
   description: 'Patient B description',
-  webpage: '',
+  website: '',
   avatar: '',
 };
 
@@ -141,24 +141,24 @@ describe('addPatient with PatientFormData', () => {
     expect(r1.id).not.toBe(r2.id);
   });
 
-  it('generates webpage derived from the new patient id', () => {
+  it('generates website derived from the new patient id', () => {
     const result = usePatientsStore.getState().addPatient(formDataA);
 
-    expect(typeof result.webpage).toBe('string');
-    expect(result.webpage).toContain(result.id);
+    expect(typeof result.website).toBe('string');
+    expect(result.website).toContain(result.id);
     // must be a well-formed URL-like string
-    expect(result.webpage.startsWith('https://')).toBe(true);
+    expect(result.website.startsWith('https://')).toBe(true);
   });
 
-  it('generates webpage deterministically from the id', () => {
+  it('generates website deterministically from the id', () => {
     const r1 = usePatientsStore.getState().addPatient(formDataA);
     const r2 = usePatientsStore.getState().addPatient(formDataA);
 
-    // Same input, different ids, different webpages
+    // Same input, different ids, different websites
     expect(r1.id).not.toBe(r2.id);
-    expect(r1.webpage).toContain(r1.id);
-    expect(r2.webpage).toContain(r2.id);
-    expect(r1.webpage).not.toBe(r2.webpage);
+    expect(r1.website).toContain(r1.id);
+    expect(r2.website).toContain(r2.id);
+    expect(r1.website).not.toBe(r2.website);
   });
 
   it('generates avatar as empty string', () => {
@@ -184,12 +184,12 @@ describe('addPatient with PatientFormData', () => {
 // preserves only id and createdAt
 // ============================================================================
 describe('updatePatient updates all editable fields', () => {
-  it('updates name, description, webpage, and avatar; preserves id and createdAt', () => {
+  it('updates name, description, website, and avatar; preserves id and createdAt', () => {
     const existing = createPatient({
       id: '1',
       name: 'Ana',
       description: 'Old desc',
-      webpage: 'https://ana.example.com',
+      website: 'https://ana.example.com',
       avatar: '',
       createdAt: '2025-01-01T00:00:00Z',
     });
@@ -198,14 +198,14 @@ describe('updatePatient updates all editable fields', () => {
     usePatientsStore.getState().updatePatient('1', {
       name: 'Ana María',
       description: 'Updated desc',
-      webpage: 'https://ana-nueva.example.com',
+      website: 'https://ana-nueva.example.com',
       avatar: 'https://ana-nueva.example.com/avatar.jpg',
     });
 
     const updated = usePatientsStore.getState().patients[0];
     expect(updated.name).toBe('Ana María');
     expect(updated.description).toBe('Updated desc');
-    expect(updated.webpage).toBe('https://ana-nueva.example.com');
+    expect(updated.website).toBe('https://ana-nueva.example.com');
     expect(updated.avatar).toBe('https://ana-nueva.example.com/avatar.jpg');
     // id and createdAt preserved
     expect(updated.id).toBe('1');
@@ -218,7 +218,7 @@ describe('updatePatient updates all editable fields', () => {
     const result = usePatientsStore.getState().updatePatient('1', {
       name: 'Alice Updated',
       description: 'New desc',
-      webpage: 'https://updated.example.com',
+      website: 'https://updated.example.com',
       avatar: '',
     });
 
@@ -233,7 +233,7 @@ describe('updatePatient updates all editable fields', () => {
     const result = usePatientsStore.getState().updatePatient('unknown', {
       name: 'Ghost',
       description: 'Nope',
-      webpage: '',
+      website: '',
       avatar: '',
     });
 
@@ -252,7 +252,7 @@ describe('updatePatient updates all editable fields', () => {
     usePatientsStore.getState().updatePatient('1', {
       name: 'Alice Updated',
       description: 'New desc',
-      webpage: 'https://updated.example.com',
+      website: 'https://updated.example.com',
       avatar: '',
     });
 
@@ -268,7 +268,7 @@ describe('updatePatient updates all editable fields', () => {
     usePatientsStore.getState().updatePatient('1', {
       name: 'Alice Updated',
       description: 'New desc',
-      webpage: 'https://updated.example.com',
+      website: 'https://updated.example.com',
       avatar: '',
     });
 
@@ -276,20 +276,6 @@ describe('updatePatient updates all editable fields', () => {
     expect(patients[0].name).toBe('Alice Updated');
     // patientB unchanged
     expect(patients[1].name).toBe('Bob');
-  });
-});
-
-// ============================================================================
-// Clear Error
-// ============================================================================
-describe('Clear Error', () => {
-  it('sets error to null', () => {
-    usePatientsStore.setState({ error: 'Server Error' });
-    expect(usePatientsStore.getState().error).toBe('Server Error');
-
-    usePatientsStore.getState().clearError();
-
-    expect(usePatientsStore.getState().error).toBeNull();
   });
 });
 

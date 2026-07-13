@@ -10,12 +10,12 @@ import type { Patient } from '@/patients-dashboard/types/patient.types';
 
 function toFormDefaults(patient?: Patient): PatientFormData {
   if (!patient) {
-    return { name: '', description: '', webpage: '', avatar: '' };
+    return { name: '', description: '', website: '', avatar: '' };
   }
   return {
     name: patient.name,
     description: patient.description,
-    webpage: patient.webpage,
+    website: patient.website,
     avatar: patient.avatar,
   };
 }

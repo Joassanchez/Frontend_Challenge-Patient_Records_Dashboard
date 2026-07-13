@@ -101,25 +101,25 @@ describe('PatientCard', () => {
     expect(screen.getByText('Paciente de neurología')).toBeInTheDocument();
   });
 
-  it('renders the webpage as a link with href and rel attributes', () => {
+  it('renders the website as a link with href and rel attributes', () => {
     render(<PatientCard patient={createPatient()} />);
     const link = screen.getByRole('link', { name: /example\.com/i });
     expect(link).toHaveAttribute('href', 'https://example.com/ana');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
-  it('renders non-http webpage as plain text instead of a link', () => {
+  it('renders non-http website as plain text instead of a link', () => {
     render(
       <PatientCard
-        patient={createPatient({ webpage: 'ftp://files.example.com' })}
+        patient={createPatient({ website: 'ftp://files.example.com' })}
       />,
     );
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(screen.getByText(/files\.example\.com/i)).toBeInTheDocument();
   });
 
-  it('renders no website element when webpage is empty', () => {
-    render(<PatientCard patient={createPatient({ webpage: '' })} />);
+  it('renders no website element when website is empty', () => {
+    render(<PatientCard patient={createPatient({ website: '' })} />);
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 

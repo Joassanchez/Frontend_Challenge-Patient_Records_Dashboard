@@ -37,7 +37,7 @@ vi.mock('@/patients-dashboard/store/favorites.store', () => ({
 
 // --- Patients store mock ---
 let patientsState: {
-  patients: Array<{ id: string; name: string; description: string; webpage: string; avatar: string }>;
+  patients: Array<{ id: string; name: string; description: string; website: string; avatar: string }>;
 } = {
   patients: [],
 };
@@ -78,7 +78,7 @@ function setFavoritesState(ids: string[]) {
   favoritesState = { favoritePatientIds: ids };
 }
 
-function setPatientsState(patients: Array<{ id: string; name: string; description: string; webpage: string; avatar: string }>) {
+function setPatientsState(patients: Array<{ id: string; name: string; description: string; website: string; avatar: string }>) {
   patientsState = { patients };
 }
 

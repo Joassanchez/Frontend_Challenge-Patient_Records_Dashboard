@@ -26,7 +26,7 @@ const mockLoadPatients = vi.fn();
 
 // Store state that PatientsSection reads via selectors.
 let storeState: {
-  patients: Array<{ id: string; name: string; description: string; webpage: string; avatar: string }>;
+  patients: Array<{ id: string; name: string; description: string; website: string; avatar: string }>;
   isLoading: boolean;
   error: string | null;
   loadPatients: () => Promise<void>;

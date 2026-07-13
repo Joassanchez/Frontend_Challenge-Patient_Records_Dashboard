@@ -4,7 +4,7 @@ const defaults: Patient = {
   id: 'patient-1',
   name: 'Ana García',
   description: 'Paciente de neurología',
-  webpage: 'https://example.com/ana',
+  website: 'https://example.com/ana',
   avatar: 'https://i.pravatar.cc/150?u=ana',
 };
 

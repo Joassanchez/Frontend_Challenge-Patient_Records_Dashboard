@@ -5,18 +5,18 @@ import type { PatientFormData } from '@/patients-dashboard/schemas/patient.schem
 const validPayload = {
   name: 'Ana',
   description: 'Doctora',
-  webpage: '',
+  website: '',
   avatar: '',
 };
 
 // ============================================================================
 // patientFormSchema — four-field validation (edit mode exposes all, create
-// defaults webpage/avatar to empty strings completed by the store)
+// defaults website/avatar to empty strings completed by the store)
 // ============================================================================
 
 describe('patientFormSchema', () => {
   // --- Valid four-field payload ---
-  it('accepts a valid payload with name, description, webpage, and avatar', () => {
+  it('accepts a valid payload with name, description, website, and avatar', () => {
     const result = patientFormSchema.safeParse(validPayload);
     expect(result.success).toBe(true);
     if (result.success) {
@@ -25,11 +25,11 @@ describe('patientFormSchema', () => {
   });
 
   // --- Valid edit payload with real URLs ---
-  it('accepts valid edit payload with real webpage and avatar URLs', () => {
+  it('accepts valid edit payload with real website and avatar URLs', () => {
     const editPayload = {
       name: 'Ana',
       description: 'Doctora',
-      webpage: 'https://ana.example.com',
+      website: 'https://ana.example.com',
       avatar: 'https://ana.example.com/avatar.jpg',
     };
     const result = patientFormSchema.safeParse(editPayload);
@@ -39,15 +39,15 @@ describe('patientFormSchema', () => {
     }
   });
 
-  // --- Rejects invalid webpage URL (non-http protocol) ---
-  it('rejects webpage with a non-http protocol', () => {
+  // --- Rejects invalid website URL (non-http protocol) ---
+  it('rejects website with a non-http protocol', () => {
     const result = patientFormSchema.safeParse({
       ...validPayload,
-      webpage: 'ftp://ana.example.com',
+      website: 'ftp://ana.example.com',
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      const issue = result.error.issues.find((i) => i.path?.[0] === 'webpage');
+      const issue = result.error.issues.find((i) => i.path?.[0] === 'website');
       expect(issue?.message).toBe('La página web debe ser una URL válida');
     }
   });
@@ -65,12 +65,12 @@ describe('patientFormSchema', () => {
     }
   });
 
-  // --- Accepts empty webpage and avatar (create mode) ---
-  it('accepts empty webpage and avatar strings', () => {
+  // --- Accepts empty website and avatar (create mode) ---
+  it('accepts empty website and avatar strings', () => {
     const result = patientFormSchema.safeParse(validPayload);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.webpage).toBe('');
+      expect(result.data.website).toBe('');
       expect(result.data.avatar).toBe('');
     }
   });
@@ -156,7 +156,7 @@ describe('patientFormSchema', () => {
     const result = patientFormSchema.safeParse(withExtra);
     expect(result.success).toBe(true);
     if (result.success) {
-      // webpage and avatar are now known fields — they survive
+      // website and avatar are now known fields — they survive
       expect(result.data).toEqual(validPayload);
       expect('id' in result.data).toBe(false);
       expect('createdAt' in result.data).toBe(false);
@@ -176,8 +176,8 @@ describe('PatientFormData type', () => {
       const formData: PatientFormData = result.data;
       expect(formData.name).toBe('Ana');
       expect(formData.description).toBe('Doctora');
-      // PatientFormData MUST have webpage and avatar (editable in edit mode)
-      expect(formData.webpage).toBe('');
+      // PatientFormData MUST have website and avatar (editable in edit mode)
+      expect(formData.website).toBe('');
       expect(formData.avatar).toBe('');
       // PatientFormData must NOT have id or createdAt
       expect('id' in formData).toBe(false);

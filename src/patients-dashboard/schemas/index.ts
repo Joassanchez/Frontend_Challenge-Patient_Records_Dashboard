@@ -1,2 +1,2 @@
-export { patientSchema, patientFormSchema } from './patient.schema';
+export { patientFormSchema, apiPatientSchema, apiResponseSchema } from './patient.schema';
 export type { PatientFormData, PatientFormInput } from './patient.schema';
