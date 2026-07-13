@@ -13,7 +13,7 @@ import Button from '@/patients-dashboard/atoms/Button';
 import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
 
 // ---------------------------------------------------------------------------
-// Types
+// Tipos
 // ---------------------------------------------------------------------------
 
 interface PatientFormProps {
@@ -24,7 +24,7 @@ interface PatientFormProps {
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Componente
 // ---------------------------------------------------------------------------
 
 function PatientForm({
@@ -43,7 +43,7 @@ function PatientForm({
     defaultValues,
   });
 
-  // Reset form when defaultValues change
+  // Reinicia el formulario cuando cambian los valores por defecto
   useEffect(() => {
     reset(defaultValues);
   }, [defaultValues, reset]);
@@ -113,7 +113,7 @@ function PatientForm({
         )}
       </div>
 
-      {/* Webpage + Avatar — edit mode only */}
+      {/* Página web + Avatar — solo en modo edición */}
       {mode === 'edit' && (
         <>
           {/* Página web */}
@@ -172,7 +172,7 @@ function PatientForm({
         </>
       )}
 
-      {/* Submit */}
+      {/* Enviar */}
       <Button type="submit" variant="primary" className="self-end">
         {submitLabel}
       </Button>

@@ -3,8 +3,8 @@ import Toast from '../atoms/Toast';
 import { useToastStore, selectToasts } from '../store/toast.store';
 
 // ---------------------------------------------------------------------------
-// ToastContainer — Organism
-// Reads the toast queue from the store and renders stacked Toast atoms.
+// ToastContainer — Organismo
+// Lee la cola de toasts del store y renderiza los Toast atoms apilados.
 // ---------------------------------------------------------------------------
 
 export function ToastContainer() {
@@ -18,7 +18,7 @@ export function ToastContainer() {
       className={cn(
         'fixed z-40 pointer-events-none',
         'inset-x-4 bottom-4',
-        'sm:top-10 sm:right-6 sm:left-auto sm:bottom-auto', // desktop: top-right, below CTA
+        'sm:top-10 sm:right-6 sm:left-auto sm:bottom-auto', // escritorio: esquina superior derecha, debajo del CTA
         'flex flex-col gap-2',
         'max-w-sm w-full',
       )}

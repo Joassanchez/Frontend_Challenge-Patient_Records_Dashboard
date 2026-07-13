@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 // ---------------------------------------------------------------------------
-// Helpers — ID generation (mirrors patients.store.ts:11-19)
+// Helpers — generación de ID (duplicado de patients.store.ts)
 // ---------------------------------------------------------------------------
 
 let idCounter = 0;
@@ -15,7 +15,7 @@ function generateId(): string {
 }
 
 // ---------------------------------------------------------------------------
-// Types
+// Tipos
 // ---------------------------------------------------------------------------
 
 export interface ToastMessage {
@@ -48,7 +48,7 @@ export interface ToastActions {
 export type ToastStore = ToastState & ToastActions;
 
 // ---------------------------------------------------------------------------
-// Initial State
+// Estado inicial
 // ---------------------------------------------------------------------------
 
 export const initialState: ToastState = {
@@ -56,7 +56,7 @@ export const initialState: ToastState = {
 };
 
 // ---------------------------------------------------------------------------
-// Default durations
+// Duraciones por defecto
 // ---------------------------------------------------------------------------
 
 const DEFAULT_DURATION_SUCCESS = 4000;
@@ -82,7 +82,7 @@ function resolveDuration(
 }
 
 // ---------------------------------------------------------------------------
-// Timer management (module-scoped, private to store)
+// Gestión de temporizadores (ámbito del módulo, privado al store)
 // ---------------------------------------------------------------------------
 
 const toastTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -107,10 +107,10 @@ function clearAllTimers(): void {
 // ---------------------------------------------------------------------------
 
 export const useToastStore = create<ToastStore>()((set, get) => ({
-  // --- State ---
+  // --- Estado ---
   ...initialState,
 
-  // --- Actions ---
+  // --- Acciones ---
 
   showToast: (input) => {
     const toast: ToastMessage = {
@@ -123,7 +123,7 @@ export const useToastStore = create<ToastStore>()((set, get) => ({
 
     const { toasts } = get();
 
-    // FIFO eviction: if at max capacity (3), evict oldest
+    // Evicción FIFO: si se alcanza la capacidad máxima (3), elimina el más antiguo
     let nextToasts: ToastMessage[];
     if (toasts.length >= 3) {
       const [oldest] = toasts;
@@ -135,10 +135,10 @@ export const useToastStore = create<ToastStore>()((set, get) => ({
 
     set({ toasts: nextToasts });
 
-    // Schedule auto-dismiss
+    // Programar cierre automático
     const duration = resolveDuration(toast.type, input.duration);
     const timer = setTimeout(() => {
-      // Use internal dismiss — clear timer map + filter from state
+      // Usa dismiss interno — limpia el mapa de timers y filtra del estado
       clearTimer(toast.id);
       set((state) => ({
         toasts: state.toasts.filter((t) => t.id !== toast.id),
@@ -182,7 +182,7 @@ export const useToastStore = create<ToastStore>()((set, get) => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Selectors (pure functions outside the store)
+// Selectores (funciones puras fuera del store)
 // ---------------------------------------------------------------------------
 
 export function selectToasts(state: ToastState): ToastMessage[] {

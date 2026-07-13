@@ -3,7 +3,7 @@ import Icon, { type IconName } from './Icon';
 import type { ToastMessage } from '../store/toast.store';
 
 // ---------------------------------------------------------------------------
-// Types
+// Tipos
 // ---------------------------------------------------------------------------
 
 interface ToastProps {
@@ -12,7 +12,7 @@ interface ToastProps {
 }
 
 // ---------------------------------------------------------------------------
-// Locked mappings — from design.md section 2
+// Mapeos fijos — según design.md sección 2
 // ---------------------------------------------------------------------------
 
 type ToastVariant = ToastMessage['type'];
@@ -39,7 +39,7 @@ const VARIANT_ROLE: Record<ToastVariant, 'status' | 'alert'> = {
 };
 
 // ---------------------------------------------------------------------------
-// Toast Atom — Presentational
+// Toast Atom — Presentacional
 // ---------------------------------------------------------------------------
 
 function Toast({ toast, onDismiss }: ToastProps) {
@@ -58,15 +58,14 @@ function Toast({ toast, onDismiss }: ToastProps) {
         variantClass,
       )}
     >
-      {/* Variant icon — left-aligned, visually hidden label via aria-hidden */}
+      {/* Ícono de variante — alineado a la izquierda, oculto de lectores de pantalla */}
       <span aria-hidden="true">
         <Icon name={icon} size="md" />
       </span>
 
-      {/* Message text */}
       <span className="flex-1 text-sm font-medium">{message}</span>
 
-      {/* Close button — top-right */}
+      {/* Botón de cierre */}
       <button
         type="button"
         onClick={() => onDismiss(id)}

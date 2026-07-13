@@ -32,14 +32,14 @@ export async function request<T>(
     } satisfies ApiError;
   }
 
-  // --- Non-OK HTTP response ---
+  // --- Respuesta HTTP no exitosa ---
   if (!response.ok) {
     let bodyMessage: string | undefined;
     try {
       const body = await response.json() as Record<string, unknown>;
       if (typeof body.message === 'string') bodyMessage = body.message;
     } catch {
-      // Body is not JSON or empty — use statusText
+      // El cuerpo no es JSON o está vacío — se usa statusText
     }
 
     throw {
@@ -49,7 +49,7 @@ export async function request<T>(
     } satisfies ApiError;
   }
 
-  // --- OK response — parse JSON ---
+  // --- Respuesta exitosa — parsear JSON ---
   try {
     return (await response.json()) as T;
   } catch (error: unknown) {

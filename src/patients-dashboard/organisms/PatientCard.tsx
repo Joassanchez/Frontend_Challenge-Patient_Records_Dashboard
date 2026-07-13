@@ -9,7 +9,7 @@ import Icon from '@/patients-dashboard/atoms/Icon';
 import type { Patient } from '@/patients-dashboard/types/patient.types';
 
 // ---------------------------------------------------------------------------
-// Types
+// Tipos
 // ---------------------------------------------------------------------------
 
 interface PatientCardProps {
@@ -47,7 +47,7 @@ function formatSafeDate(iso: string | undefined): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Componente
 // ---------------------------------------------------------------------------
 
 function PatientCard({ patient, className }: PatientCardProps) {
@@ -55,14 +55,14 @@ function PatientCard({ patient, className }: PatientCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const detailsId = `patient-details-${patient.id}`;
 
-  // Favorites store — wired to real toggle
+  // Store de favoritos — conectado al toggle real (persistido)
   const isFavorite = useFavoritesStore(selectIsFavorite(patient.id));
   const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
 
-  // Modal store — wire "Editar" button
+  // Store del modal — conecta el botón "Editar"
   const openEditModal = useModalStore((s) => s.openEditModal);
 
-  // Toast store — wired to favorite toggle
+  // Store de toasts — conectado al toggle de favoritos
   const showSuccess = useToastStore((s) => s.showSuccess);
   const showInfo = useToastStore((s) => s.showInfo);
 
@@ -85,7 +85,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
         className,
       )}
     >
-      {/* ---- Identity: avatar + name ---- */}
+      {/* ---- Identidad: avatar + nombre ---- */}
       <div className="flex items-start gap-4">
         <Avatar
           name={patient.name}
@@ -110,7 +110,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
         </div>
       </div>
 
-      {/* ---- Website link ---- */}
+      {/* ---- Enlace al sitio web ---- */}
       {patient.website && isValidWebUrl(patient.website) ? (
         <a
           href={patient.website}
@@ -132,7 +132,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
         </span>
       ) : null}
 
-      {/* ---- Actions footer: Editar + Favorito + Ver más/menos in one row ---- */}
+      {/* ---- Footer de acciones: Editar + Favorito + Ver más/menos ---- */}
       <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
         <Button
           variant="ghost"
@@ -177,7 +177,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
         </Button>
       </div>
 
-      {/* ---- Expandable details panel ---- */}
+      {/* ---- Panel de detalles expandible ---- */}
       <div
         id={detailsId}
         role="region"

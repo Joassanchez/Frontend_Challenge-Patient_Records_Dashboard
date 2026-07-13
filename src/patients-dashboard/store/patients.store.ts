@@ -27,7 +27,7 @@ function generateWebsite(id: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// State & Actions types
+// Tipos de estado y acciones
 // ---------------------------------------------------------------------------
 
 export interface PatientsState {
@@ -46,7 +46,7 @@ export interface PatientsActions {
 export type PatientsStore = PatientsState & PatientsActions;
 
 // ---------------------------------------------------------------------------
-// Initial State
+// Estado inicial
 // ---------------------------------------------------------------------------
 
 export const initialState: PatientsState = {
@@ -60,10 +60,10 @@ export const initialState: PatientsState = {
 // ---------------------------------------------------------------------------
 
 export const usePatientsStore = create<PatientsStore>()((set, get) => ({
-  // --- State ---
+  // --- Estado ---
   ...initialState,
 
-  // --- Actions ---
+  // --- Acciones ---
 
   loadPatients: async () => {
     if (get().isLoading) return;
@@ -120,7 +120,7 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Selectors (pure functions accepting store state)
+// Selectores (funciones puras que reciben el estado del store)
 // ---------------------------------------------------------------------------
 
 export function selectPatients(state: PatientsState): Patient[] {

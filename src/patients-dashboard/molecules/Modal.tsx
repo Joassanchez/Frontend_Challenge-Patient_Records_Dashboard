@@ -15,14 +15,14 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
   const titleId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // --- Focus close button when modal opens ---
+  // --- Enfocar botón de cierre al abrir el modal ---
   useEffect(() => {
     if (isOpen) {
       closeButtonRef.current?.focus();
     }
   }, [isOpen]);
 
-  // --- Keyboard: Escape to close ---
+  // --- Teclado: Escape para cerrar ---
   useEffect(() => {
     if (!isOpen) return;
 
@@ -36,7 +36,6 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // --- Don't render anything when closed ---
   if (!isOpen) return null;
 
   return (
@@ -48,7 +47,7 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
       )}
       onClick={onClose}
     >
-      {/* Panel — stops click propagation to avoid closing on inner clicks */}
+      {/* Panel — evita la propagación del clic para no cerrar al hacer clic adentro */}
       <div
         role="dialog"
         aria-modal="true"
@@ -61,7 +60,7 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ---- Header ---- */}
+        {/* ---- Encabezado ---- */}
         <header className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 id={titleId} className="text-lg font-semibold text-text">{title}</h2>
           <Button
@@ -75,7 +74,7 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
           </Button>
         </header>
 
-        {/* ---- Body ---- */}
+        {/* ---- Cuerpo ---- */}
         <div className="overflow-y-auto px-6 py-5">{children}</div>
       </div>
     </div>

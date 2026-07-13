@@ -31,7 +31,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
     count: PATIENTS_PAGE_SIZE,
   });
 
-  // Normalizes diacritics and case so "alvaro" matches "Álvaro"
+  // Normaliza diacríticos y mayúsculas para que "alvaro" coincida con "Álvaro"
   const normalizeText = (s: string): string =>
     s
       .normalize('NFD')
@@ -61,7 +61,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
   const visiblePatients = filteredPatients.slice(0, visibleCount);
   const hasMorePatients = visibleCount < filteredPatients.length;
 
-  // Counter copy
+  // Texto del contador (singular/plural)
   const count = filteredPatients.length;
   const counterText =
     count === 1 ? '1 registro encontrado' : `${count} registros encontrados`;
@@ -90,8 +90,8 @@ function PatientsSection({ className }: PatientsSectionProps) {
     });
   }, [filteredPatients.length, normalizedQuery]);
 
-  // Prevents duplicate fetch on Strict Mode double-mount. Does not guard
-  // against multiple component instances — each instance calls loadPatients.
+  // Evita fetch duplicado por el doble montaje de Strict Mode. No protege
+  // contra múltiples instancias del componente — cada instancia llama a loadPatients.
   useEffect(() => {
     if (!hasMounted.current) {
       hasMounted.current = true;
@@ -136,7 +136,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
       actions={sectionActions}
       className={cn('w-full', className)}
     >
-      {/* ---- Loading ---- */}
+      {/* ---- Cargando ---- */}
       {isLoading && (
         <div className="flex justify-center rounded-2xl border border-slate-200 bg-white py-16 shadow-sm">
           <Spinner size="lg" color="primary" />
@@ -150,7 +150,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
         </div>
       )}
 
-      {/* ---- Empty: no patients loaded ---- */}
+      {/* ---- Vacío: sin pacientes cargados ---- */}
       {showContent && !hasPatients && (
         <EmptyState
           icon="user"
@@ -159,7 +159,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
         />
       )}
 
-      {/* ---- Filtered empty: patients exist but none match search ---- */}
+      {/* ---- Vacío por filtro: hay pacientes pero ninguno coincide ---- */}
       {showContent && hasPatients && !hasFilteredResults && (
         <EmptyState
           icon="search"
@@ -169,7 +169,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
         />
       )}
 
-      {/* ---- Success: responsive grid of PatientCards ---- */}
+      {/* ---- Éxito: grilla responsive de PatientCards ---- */}
       {showContent && hasPatients && hasFilteredResults && (
         <>
           <PatientCardsGrid patients={visiblePatients} />

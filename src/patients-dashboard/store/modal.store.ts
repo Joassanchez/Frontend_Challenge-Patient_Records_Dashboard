@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 // ---------------------------------------------------------------------------
-// State & Actions types
+// Tipos de estado y acciones
 // ---------------------------------------------------------------------------
 
 export type ModalMode = 'create' | 'edit';
@@ -22,7 +22,7 @@ export interface ModalActions {
 export type ModalStore = ModalState & ModalActions;
 
 // ---------------------------------------------------------------------------
-// Initial State
+// Estado inicial
 // ---------------------------------------------------------------------------
 
 export const initialState: ModalState = {
@@ -36,10 +36,10 @@ export const initialState: ModalState = {
 // ---------------------------------------------------------------------------
 
 export const useModalStore = create<ModalStore>()((set) => ({
-  // --- State ---
+  // --- Estado ---
   ...initialState,
 
-  // --- Actions ---
+  // --- Acciones ---
 
   openCreateModal: () => {
     set({ isOpen: true, mode: 'create', selectedPatientId: null });
@@ -59,7 +59,7 @@ export const useModalStore = create<ModalStore>()((set) => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Selectors (pure functions accepting store state)
+// Selectores (funciones puras que reciben el estado del store)
 // ---------------------------------------------------------------------------
 
 export function selectIsOpen(state: ModalState): boolean {

@@ -3,7 +3,7 @@ import { getItem, setItem, isStringArray } from '@/shared/utils/localStorage';
 import { FAVORITES_KEY } from '@/shared/utils/storageKeys';
 
 // ---------------------------------------------------------------------------
-// State & Actions types
+// Tipos de estado y acciones
 // ---------------------------------------------------------------------------
 
 export interface FavoritesState {
@@ -16,7 +16,7 @@ export interface FavoritesActions {
 }
 
 // ---------------------------------------------------------------------------
-// Initial State
+// Estado inicial
 // ---------------------------------------------------------------------------
 
 export const initialState: FavoritesState = {
@@ -29,23 +29,22 @@ export const initialState: FavoritesState = {
 
 export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
   (set, get) => {
-    // ---- Internal persist helper ----
+    // ---- Helper interno de persistencia ----
     const persist = (ids: string[]) => {
       return setItem(FAVORITES_KEY, ids);
     };
 
-    /** Sanitizes raw IDs from localStorage: removes empty/whitespace-only entries and deduplicates. */
+    /** Sanea los IDs crudos de localStorage: elimina entradas vacías o con solo espacios y remueve duplicados. */
     function sanitizeIds(raw: string[]): string[] {
       if (!Array.isArray(raw)) return [];
       return [...new Set(raw.filter((id) => id.trim().length > 0))];
     }
 
-    // ---- Hydrate initial state from localStorage ----
+    // ---- Hidratar estado inicial desde localStorage ----
     const savedIds = sanitizeIds(
       getItem(FAVORITES_KEY, [] as string[], isStringArray),
     );
 
-    // ---- Return store ----
     return {
       favoritePatientIds: savedIds,
 
@@ -62,14 +61,14 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
 
       resetStore: () => {
         set(initialState);
-        // MUST NOT touch localStorage per REQ-FS-05
+        // NO debe tocar localStorage según REQ-FS-05
       },
     };
   },
 );
 
 // ---------------------------------------------------------------------------
-// Selectors (pure functions accepting store state)
+// Selectores (funciones puras que reciben el estado del store)
 // ---------------------------------------------------------------------------
 
 export function selectFavoriteIds(state: FavoritesState): string[] {

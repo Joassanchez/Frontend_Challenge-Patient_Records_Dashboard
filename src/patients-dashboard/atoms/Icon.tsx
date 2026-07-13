@@ -24,7 +24,7 @@ const SIZE_MAP: Record<NonNullable<IconProps['size']>, number> = {
   lg: 24,
 };
 
-// Minimal SVG paths — one distinct path per icon name.
+// Paths SVG mínimos — un path distinto por cada nombre de ícono.
 const PATH_MAP: Record<IconName, string> = {
   search:
     'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35',

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Runtime validator: isStringArray
+// Validador en tiempo de ejecución: isStringArray
 // ---------------------------------------------------------------------------
 
 export function isStringArray(data: unknown): data is string[] {
@@ -7,7 +7,7 @@ export function isStringArray(data: unknown): data is string[] {
 }
 
 // ---------------------------------------------------------------------------
-// getItem – safe localStorage read with fallback and runtime validation
+// getItem — lectura segura de localStorage con valor por defecto y validación
 // ---------------------------------------------------------------------------
 
 export function getItem<T>(
@@ -37,7 +37,7 @@ export function getItem<T>(
 }
 
 // ---------------------------------------------------------------------------
-// setItem – safe localStorage write, returns success boolean
+// setItem — escritura segura en localStorage, devuelve booleano de éxito
 // ---------------------------------------------------------------------------
 
 export function setItem<T>(key: string, value: T): boolean {

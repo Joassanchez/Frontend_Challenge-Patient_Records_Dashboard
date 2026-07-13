@@ -32,20 +32,19 @@ function PatientModal() {
   const showSuccess = useToastStore((s) => s.showSuccess);
   const showError = useToastStore((s) => s.showError);
 
-  // Stabilize defaultValues based on mode and selectedPatient.
-  // selectedPatient captures changes from selectedPatientId transitively,
-  // keeping the dependency list clean for ESLint exhaustive-deps.
+  // Estabiliza defaultValues según el modo y selectedPatient.
+  // selectedPatient captura cambios de selectedPatientId transitivamente,
+  // manteniendo limpia la lista de dependencias para ESLint exhaustive-deps.
   const defaultValues = useMemo(
     () => toFormDefaults(mode === 'edit' ? selectedPatient : undefined),
     [mode, selectedPatient],
   );
 
-  // ---- Determine title and submit label ----
+  // ---- Determinar título y etiqueta del botón ----
   const isCreate = mode === 'create';
   const title = isCreate ? 'Nuevo paciente' : 'Editar paciente';
   const submitLabel = isCreate ? 'Crear paciente' : 'Guardar cambios';
 
-  // ---- Handler ----
   function handleSubmit(data: PatientFormData) {
     if (isCreate) {
       addPatient(data);
@@ -62,7 +61,7 @@ function PatientModal() {
     }
   }
 
-  // ---- "Not found" state for edit with unknown patient ----
+  // ---- Estado "no encontrado" para edición con paciente desconocido ----
   const showNotFound = mode === 'edit' && selectedPatientId && !selectedPatient;
 
   return (

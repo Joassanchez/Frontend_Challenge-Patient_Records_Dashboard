@@ -8,7 +8,7 @@ import DashboardSection from './DashboardSection';
 import PatientCardsGrid from './PatientCardsGrid';
 
 // ---------------------------------------------------------------------------
-// Types
+// Tipos
 // ---------------------------------------------------------------------------
 
 interface FavoritesSectionProps {
@@ -16,7 +16,7 @@ interface FavoritesSectionProps {
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Componente
 // ---------------------------------------------------------------------------
 
 const FAVORITES_PAGE_SIZE = 3;
@@ -25,18 +25,18 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
   const headingId = 'favorites-section-heading';
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Selectors — derive favorite patients from both stores
+  // Selectores — derivan pacientes favoritos de ambos stores
   const favoritePatientIds = useFavoritesStore(selectFavoriteIds);
   const patients = usePatientsStore((s) => s.patients);
 
-  // Inline join: only show patients that exist in both stores
+  // Join en memoria: solo muestra pacientes que existen en ambos stores
   const favoritePatients = patients.filter((p) =>
     favoritePatientIds.includes(p.id),
   );
 
   const hasLoadedPatients = patients.length > 0;
 
-  // Counter copy — singular/plural, uses MATCHED count (not localStorage count)
+  // Texto del contador — singular/plural, usa la cuenta COINCIDENTE (no la de localStorage)
   const counterText =
     favoritePatients.length === 1
       ? '1 paciente guardado'
@@ -59,7 +59,7 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
       counter={counterText}
       className={cn('w-full', className)}
     >
-      {/* ---- Empty: no favorites at all ---- */}
+      {/* ---- Vacío: sin favoritos ---- */}
       {favoritePatientIds.length === 0 && (
         <EmptyState
           icon="inbox"
@@ -69,7 +69,7 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
         />
       )}
 
-      {/* ---- Graceful empty: favorites exist but patients not loaded or no longer match ---- */}
+      {/* ---- Vacío controlado: hay favoritos guardados pero los pacientes no están cargados o ya no coinciden ---- */}
       {favoritePatientIds.length > 0 && favoritePatients.length === 0 && (
         <EmptyState
           icon="inbox"
@@ -87,7 +87,7 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
         />
       )}
 
-      {/* ---- Success: responsive grid of favorite PatientCards ---- */}
+      {/* ---- Éxito: grilla responsive de PatientCards favoritos ---- */}
       {favoritePatientIds.length > 0 && favoritePatients.length > 0 && (
         <>
           <PatientCardsGrid patients={paginatedFavoritePatients} />
