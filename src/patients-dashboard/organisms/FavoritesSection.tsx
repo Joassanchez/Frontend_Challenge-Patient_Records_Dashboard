@@ -7,17 +7,9 @@ import EmptyState from '@/patients-dashboard/molecules/EmptyState';
 import DashboardSection from './DashboardSection';
 import PatientCardsGrid from './PatientCardsGrid';
 
-// ---------------------------------------------------------------------------
-// Tipos
-// ---------------------------------------------------------------------------
-
 interface FavoritesSectionProps {
   className?: string;
 }
-
-// ---------------------------------------------------------------------------
-// Componente
-// ---------------------------------------------------------------------------
 
 const FAVORITES_PAGE_SIZE = 3;
 

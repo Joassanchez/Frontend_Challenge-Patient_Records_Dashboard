@@ -1,30 +1,18 @@
 import { z } from 'zod';
 
-// ---------------------------------------------------------------------------
-// Helpers reutilizables
-// ---------------------------------------------------------------------------
-
-/** Acepta cadena vacía O una URL http/https válida. */
+/** Permite una URL HTTP/HTTPS o una cadena vacía. */
 const optionalUrl = (message: string) =>
-  z.string().refine((val) => val === '' || /^https?:\/\/.+/.test(val), {
+  z.string().refine((value) => value === '' || /^https?:\/\/.+/.test(value), {
     message,
   });
 
-/** Convierte valores no string (ej. objetos vacíos de MockAPI) a ''. */
+/** Normaliza cualquier valor que no sea texto como una cadena vacía. */
 const stringOrEmpty = z.preprocess(
-  (val) => (typeof val === 'string' ? val : ''),
+  (value) => (typeof value === 'string' ? value : ''),
   z.string(),
 );
 
-// ---------------------------------------------------------------------------
-// Schemas
-// ---------------------------------------------------------------------------
-
-/**
- * Schema de respuesta de la API — valida que MockAPI /users devuelva la forma
- * esperada. Algunos registros tienen `avatar: {}` en vez de un string; el
- * preprocesador normaliza valores no string a ''.
- */
+/** Valida la estructura de un paciente recibido desde la API. */
 export const apiPatientSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -34,15 +22,10 @@ export const apiPatientSchema = z.object({
   createdAt: z.string().optional(),
 });
 
+/** Valida una lista de pacientes recibida desde la API. */
 export const apiResponseSchema = z.array(apiPatientSchema);
 
-/**
- * Schema del formulario — en modo creación solo recolecta nombre + descripción
- * (website/avatar los completa el store). En modo edición expone los cuatro
- * campos para que el usuario pueda modificar también website y avatar.
- *
- * website y avatar aceptan cadena vacía o una URL http/https válida.
- */
+/** Valida y normaliza los datos del formulario de paciente. */
 export const patientFormSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio'),
   description: z.string().trim().min(1, 'La descripción es obligatoria'),
@@ -50,18 +33,8 @@ export const patientFormSchema = z.object({
   avatar: optionalUrl('El avatar debe ser una URL válida').default(''),
 });
 
-/**
- * Tipo de entrada crudo del formulario aceptado por el resolver de Zod.
- *
- * Como website/avatar usan `.default('')`, Zod los acepta como valores de
- * entrada opcionales y los devuelve como strings requeridos después del parseo.
- */
+/** Datos que puede recibir el schema antes de aplicar valores por defecto. */
 export type PatientFormInput = z.input<typeof patientFormSchema>;
 
-/**
- * Tipo de salida del formulario usado por los handlers de submit y stores.
- *
- * En modo creación, website y avatar son '' por defecto y los reemplaza el
- * store. En modo edición, vienen precargados del paciente existente.
- */
+/** Datos validados y normalizados que devuelve el schema. */
 export type PatientFormData = z.output<typeof patientFormSchema>;
