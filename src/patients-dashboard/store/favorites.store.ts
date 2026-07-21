@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { getItem, setItem, isStringArray } from '@/shared/utils/localStorage';
 import { FAVORITES_KEY } from '@/shared/utils/storageKeys';
+import { handleError } from '@/shared/errors';
+import { useToastStore } from './toast.store';
 
 // ---------------------------------------------------------------------------
 // Tipos de estado y acciones
@@ -41,9 +43,15 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
     }
 
     // ---- Hidratar estado inicial desde localStorage ----
-    const savedIds = sanitizeIds(
-      getItem(FAVORITES_KEY, [] as string[], isStringArray),
-    );
+    let savedIds: string[] = [];
+    try {
+      savedIds = sanitizeIds(
+        getItem(FAVORITES_KEY, [] as string[], isStringArray),
+      );
+    } catch (err: unknown) {
+      handleError(err, { display: 'silent', context: 'favorite-load' });
+      savedIds = [];
+    }
 
     return {
       favoritePatientIds: savedIds,
@@ -54,7 +62,14 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
         const next = exists
           ? favoritePatientIds.filter((fid) => fid !== id)
           : [...favoritePatientIds, id];
-        if (!persist(next)) return false;
+        if (!persist(next)) {
+          handleError(new Error('persist failed'), {
+            display: 'toast',
+            context: 'favorite-toggle',
+            showToast: useToastStore.getState().showError,
+          });
+          return false;
+        }
         set({ favoritePatientIds: next });
         return true;
       },

@@ -441,7 +441,9 @@ describe('Toast wiring on successful submit', () => {
     );
 
     expect(toastSpy.showSuccess).not.toHaveBeenCalled();
-    expect(toastSpy.showError).toHaveBeenCalledWith('No se pudo actualizar el paciente');
+    expect(toastSpy.showError).toHaveBeenCalledWith(
+      'No se pudo actualizar el paciente. Intentá de nuevo.',
+    );
     expect(mockUpdatePatient).toHaveBeenCalledTimes(1);
     expect(mockCloseModal).not.toHaveBeenCalled();
   });

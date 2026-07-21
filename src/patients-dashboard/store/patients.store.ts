@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { getPatientsPage } from '../api/patients.api';
-import { isApiError } from '../../api/types';
+import { handleError } from '@/shared/errors';
 import type { Patient } from '../types/patient.types';
 import type { PatientFormData } from '../schemas/patient.schema';
 
@@ -134,12 +134,13 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
       });
     } catch (error: unknown) {
       if (seq !== requestSeq) return;
-      const message = isApiError(error)
-        ? error.message
-        : 'Error al cargar pacientes';
+      const message = handleError(error, {
+        display: 'inline',
+        context: 'load-patients',
+      });
       // Limpia también isLoadingMore: si esta búsqueda reemplazó un
       // loadNextPatientsPage en vuelo, su flag no debe quedar trabado.
-      set({ error: message, isLoading: false, isLoadingMore: false });
+      set({ error: message ?? null, isLoading: false, isLoadingMore: false });
     }
   },
 
@@ -183,10 +184,11 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => ({
     } catch (error: unknown) {
       // Descarta errores de requests viejos también.
       if (seq !== requestSeq) return;
-      const message = isApiError(error)
-        ? error.message
-        : 'Error al cargar más pacientes';
-      set({ error: message, isLoadingMore: false });
+      const message = handleError(error, {
+        display: 'inline',
+        context: 'load-more-patients',
+      });
+      set({ error: message ?? null, isLoadingMore: false });
     }
   },
 

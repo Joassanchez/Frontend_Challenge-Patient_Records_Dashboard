@@ -1,5 +1,5 @@
 import { request } from '../../api/apiClient';
-import { isApiError } from '../../api/types';
+import { isApiError, ApiErrorError } from '../../api/types';
 import { apiResponseSchema } from '../schemas/patient.schema';
 import type { Patient } from '../types/patient.types';
 
@@ -43,11 +43,11 @@ export async function getPatientsPage({
 
   const result = apiResponseSchema.safeParse(raw);
   if (!result.success) {
-    throw {
-      status: 200,
-      message: 'La respuesta de la API no coincide con el esquema esperado',
-      code: 'INVALID_RESPONSE',
-    };
+    throw new ApiErrorError(
+      'La respuesta de la API no coincide con el esquema esperado',
+      200,
+      'INVALID_RESPONSE',
+    );
   }
 
   return result.data as Patient[];

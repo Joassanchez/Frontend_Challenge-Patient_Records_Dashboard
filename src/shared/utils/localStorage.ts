@@ -31,7 +31,8 @@ export function getItem<T>(
     }
 
     return parsed;
-  } catch {
+  } catch (err) {
+    console.warn(`[localStorage.getItem] Error reading key "${key}":`, err);
     return fallback;
   }
 }
@@ -49,7 +50,8 @@ export function setItem<T>(key: string, value: T): boolean {
     const serialized = JSON.stringify(value);
     window.localStorage.setItem(key, serialized);
     return true;
-  } catch {
+  } catch (err) {
+    console.warn(`[localStorage.setItem] Error writing key "${key}":`, err);
     return false;
   }
 }

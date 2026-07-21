@@ -4,6 +4,7 @@ import PatientForm from '@/patients-dashboard/organisms/PatientForm';
 import { useModalStore, selectIsOpen, selectModalMode, selectSelectedPatientId, } from '@/patients-dashboard/store/modal.store';
 import { usePatientsStore, selectPatientById, } from '@/patients-dashboard/store/patients.store';
 import { useToastStore } from '@/patients-dashboard/store/toast.store';
+import { handleError } from '@/shared/errors';
 import Button from '@/patients-dashboard/atoms/Button';
 import type { PatientFormData } from '@/patients-dashboard/schemas/patient.schema';
 import type { Patient } from '@/patients-dashboard/types/patient.types';
@@ -56,7 +57,11 @@ function PatientModal() {
         showSuccess('Cambios guardados');
         closeModal();
       } else {
-        showError('No se pudo actualizar el paciente');
+        handleError(new Error('update failed'), {
+          display: 'toast',
+          context: 'patient-update',
+          showToast: showError,
+        });
       }
     }
   }

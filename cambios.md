@@ -1,5 +1,5 @@
-Animaciones
-Api paginada
+Animaciones - Done
+Api paginada - Done
 Storybook
-Centralizar errores
+Centralizar errores - Done
 Segmemtar y limpiar codigo

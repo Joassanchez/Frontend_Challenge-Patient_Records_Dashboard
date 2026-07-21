@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/shared/utils/cn';
 import { usePatientsStore } from '@/patients-dashboard/store/patients.store';
 import EmptyState from '@/patients-dashboard/molecules/EmptyState';
-import Spinner from '@/patients-dashboard/atoms/Spinner';
 import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
 import SearchInput from '@/patients-dashboard/molecules/SearchInput';
+import Spinner from '@/patients-dashboard/atoms/Spinner';
+import Button from '@/patients-dashboard/atoms/Button';
 import DashboardSection from './DashboardSection';
 import PatientCardsGrid from './PatientCardsGrid';
 
@@ -113,8 +114,15 @@ function PatientsSection({ className }: PatientsSectionProps) {
 
       {/* ---- Error ---- */}
       {!isLoading && error && (
-        <div className="py-8">
+        <div className="flex flex-col items-center gap-4 py-8">
           <ErrorMessage message={error} />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => loadPatients(searchInput.trim())}
+          >
+            Intentar de nuevo
+          </Button>
         </div>
       )}
 
