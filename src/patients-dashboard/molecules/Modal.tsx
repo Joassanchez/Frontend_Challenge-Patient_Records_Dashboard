@@ -1,7 +1,9 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@/shared/utils/cn';
 import Icon from '@/patients-dashboard/atoms/Icon';
 import Button from '@/patients-dashboard/atoms/Button';
+import { useReducedMotionTransition } from '@/shared/motion/motion-presets';
 
 interface ModalProps {
   isOpen: boolean;
@@ -14,6 +16,7 @@ interface ModalProps {
 function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
   const titleId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const reducedTransition = useReducedMotionTransition();
 
   // --- Enfocar botón de cierre al abrir el modal ---
   useEffect(() => {
@@ -36,48 +39,58 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      data-testid="modal-overlay"
-      className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center',
-        'bg-slate-950/50 backdrop-blur-sm',
-      )}
-      onClick={onClose}
-    >
-      {/* Panel — evita la propagación del clic para no cerrar al hacer clic adentro */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={title ? titleId : undefined}
-        aria-label={!title ? ariaLabel : undefined}
-        className={cn(
-          'relative w-full max-w-2xl mx-4 rounded-2xl',
-          'border border-slate-200 bg-white shadow-xl',
-          'flex flex-col max-h-[90vh]',
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* ---- Encabezado ---- */}
-        <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 id={titleId} className="text-lg font-semibold text-text">{title}</h2>
-          <Button
-            ref={closeButtonRef}
-            variant="ghost"
-            size="sm"
-            aria-label="Cerrar"
-            onClick={onClose}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          data-testid="modal-overlay"
+          className={cn(
+            'fixed inset-0 z-50 flex items-center justify-center',
+            'bg-slate-950/50 backdrop-blur-sm',
+          )}
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: reducedTransition.duration }}
+        >
+          {/* Panel — evita la propagación del clic para no cerrar al hacer clic adentro */}
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? titleId : undefined}
+            aria-label={!title ? ariaLabel : undefined}
+            className={cn(
+              'relative w-full max-w-2xl mx-4 rounded-2xl',
+              'border border-slate-200 bg-white shadow-xl',
+              'flex flex-col max-h-[90vh]',
+            )}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: reducedTransition.duration }}
           >
-            <Icon name="close" size="sm" />
-          </Button>
-        </header>
+            {/* ---- Encabezado ---- */}
+            <header className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h2 id={titleId} className="text-lg font-semibold text-text">{title}</h2>
+              <Button
+                ref={closeButtonRef}
+                variant="ghost"
+                size="sm"
+                aria-label="Cerrar"
+                onClick={onClose}
+              >
+                <Icon name="close" size="sm" />
+              </Button>
+            </header>
 
-        {/* ---- Cuerpo ---- */}
-        <div className="overflow-y-auto px-6 py-5">{children}</div>
-      </div>
-    </div>
+            {/* ---- Cuerpo ---- */}
+            <div className="overflow-y-auto px-6 py-5">{children}</div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

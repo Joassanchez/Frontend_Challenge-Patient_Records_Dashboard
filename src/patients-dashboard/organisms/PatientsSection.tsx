@@ -138,7 +138,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
       {/* Éxito: grilla */}
       {showContent && hasPatients && (
         <>
-          <PatientCardsGrid patients={patients} />
+          <PatientCardsGrid patients={patients} isLoading={false} />
 
           {hasMore && (
             <div ref={loadMoreRef} className="mt-5 flex justify-center">

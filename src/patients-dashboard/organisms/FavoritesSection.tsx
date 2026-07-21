@@ -82,7 +82,7 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
       {/* ---- Éxito: grilla responsive de PatientCards favoritos ---- */}
       {favoritePatientIds.length > 0 && favoritePatients.length > 0 && (
         <>
-          <PatientCardsGrid patients={paginatedFavoritePatients} />
+          <PatientCardsGrid patients={paginatedFavoritePatients} isLoading={false} />
 
           {totalPages > 1 && (
             <nav

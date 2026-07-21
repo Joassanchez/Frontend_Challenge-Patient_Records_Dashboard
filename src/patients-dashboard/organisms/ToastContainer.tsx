@@ -1,6 +1,8 @@
+import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@/shared/utils/cn';
 import Toast from '../atoms/Toast';
 import { useToastStore, selectToasts } from '../store/toast.store';
+import { DUR, useReducedMotionTransition } from '@/shared/motion/motion-presets';
 
 // ---------------------------------------------------------------------------
 // ToastContainer — Organismo
@@ -10,6 +12,7 @@ import { useToastStore, selectToasts } from '../store/toast.store';
 export function ToastContainer() {
   const toasts = useToastStore(selectToasts);
   const dismissToast = useToastStore((state) => state.dismissToast);
+  const reducedTransition = useReducedMotionTransition();
 
   if (toasts.length === 0) return null;
 
@@ -24,11 +27,20 @@ export function ToastContainer() {
       )}
       aria-live="polite"
     >
-      {toasts.map((toast) => (
-        <div key={toast.id} className="pointer-events-auto">
-          <Toast toast={toast} onDismiss={(id) => dismissToast(id)} />
-        </div>
-      ))}
+      <AnimatePresence>
+        {toasts.map((toast) => (
+          <motion.div
+            key={toast.id}
+            className="pointer-events-auto"
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            transition={{ duration: reducedTransition.duration || DUR.toast }}
+          >
+            <Toast toast={toast} onDismiss={(id) => dismissToast(id)} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

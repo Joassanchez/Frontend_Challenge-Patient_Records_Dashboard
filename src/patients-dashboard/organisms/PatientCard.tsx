@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'motion/react';
 import { cn } from '@/shared/utils/cn';
 import { useFavoritesStore, selectIsFavorite } from '@/patients-dashboard/store/favorites.store';
 import { useModalStore } from '@/patients-dashboard/store/modal.store';
@@ -7,6 +8,7 @@ import Avatar from '@/patients-dashboard/atoms/Avatar';
 import Button from '@/patients-dashboard/atoms/Button';
 import Icon from '@/patients-dashboard/atoms/Icon';
 import type { Patient } from '@/patients-dashboard/types/patient.types';
+import { DUR, useReducedMotionTransition } from '@/shared/motion/motion-presets';
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -53,7 +55,9 @@ function formatSafeDate(iso: string | undefined): string | null {
 function PatientCard({ patient, className }: PatientCardProps) {
   const websiteDisplay = formatWebsiteDisplay(patient.website);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [bounceTrigger, setBounceTrigger] = useState(0);
   const detailsId = `patient-details-${patient.id}`;
+  const reducedTransition = useReducedMotionTransition();
 
   // Store de favoritos — conectado al toggle real (persistido)
   const isFavorite = useFavoritesStore(selectIsFavorite(patient.id));
@@ -70,6 +74,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
     const wasFavorite = isFavorite;
     const persisted = toggleFavorite(patient.id);
     if (!persisted) return;
+    setBounceTrigger((prev) => prev + 1);
     if (wasFavorite) {
       showInfo('Quitado de favoritos');
     } else {
@@ -144,26 +149,40 @@ function PatientCard({ patient, className }: PatientCardProps) {
           Editar
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-label={
-            isFavorite
-              ? `Quitar ${patient.name} de favoritos`
-              : `Agregar ${patient.name} a favoritos`
-          }
-          aria-pressed={isFavorite}
-          className={cn(
-            'rounded-full border border-transparent px-3',
-            isFavorite
-              ? 'bg-favorite/10 text-favorite hover:bg-favorite/15'
-              : 'hover:bg-favorite/10 hover:text-favorite',
-          )}
-          onClick={handleFavoriteClick}
+        <motion.div
+          key={bounceTrigger}
+          animate={{
+            scale: reducedTransition.duration === 0
+              ? 1
+              : [0.85, 1.15, 1],
+          }}
+          transition={{
+            duration: reducedTransition.duration || DUR.enter,
+            times: [0, 0.5, 1],
+          }}
+          style={{ display: 'inline-flex' }}
         >
-          <Icon name="heart" size="sm" />
-          Favorito
-        </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={
+              isFavorite
+                ? `Quitar ${patient.name} de favoritos`
+                : `Agregar ${patient.name} a favoritos`
+            }
+            aria-pressed={isFavorite}
+            className={cn(
+              'rounded-full border border-transparent px-3',
+              isFavorite
+                ? 'bg-favorite/10 text-favorite hover:bg-favorite/15'
+                : 'hover:bg-favorite/10 hover:text-favorite',
+            )}
+            onClick={handleFavoriteClick}
+          >
+            <Icon name="heart" size="sm" />
+            Favorito
+          </Button>
+        </motion.div>
 
         <Button
           variant="secondary"
@@ -183,7 +202,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
         role="region"
         aria-label={`Detalles de ${patient.name}`}
         className={cn(
-          'grid transition-[grid-template-rows] duration-300 ease-in-out',
+          'grid transition-[grid-template-rows] duration-200 ease-in-out',
           isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
         )}
       >

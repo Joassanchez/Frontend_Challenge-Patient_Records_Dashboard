@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
 @theme {
   --color-primary: #2563eb;
   --color-success: #16a34a;
