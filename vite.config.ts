@@ -10,7 +10,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@test': resolve(__dirname, 'test'),
     },
   },
   server: {
@@ -19,5 +18,6 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts', './test/setup/motion-mock.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'test/src/**/*.test.{ts,tsx}'],
   },
 });

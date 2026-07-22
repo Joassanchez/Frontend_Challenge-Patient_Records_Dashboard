@@ -14,7 +14,7 @@ import {
 } from '@/patients-dashboard/store/patients.store';
 import type { Patient } from '@/patients-dashboard/types/patient.types';
 import type { PatientFormData } from '@/patients-dashboard/schemas/patient.schema';
-import { createPatient } from '@test/fixtures/patient.fixture';
+import { createPatient } from '../../../fixtures/patient.fixture';
 
 // Mock the API module before any imports that use it
 vi.mock('@/patients-dashboard/api/patients.api');
