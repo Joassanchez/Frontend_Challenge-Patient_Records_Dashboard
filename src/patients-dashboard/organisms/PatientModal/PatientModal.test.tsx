@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PatientModal from '@/patients-dashboard/organisms/PatientModal';
+import type { Patient } from '@/patients-dashboard/types';
+import type { ModalMode } from '@/patients-dashboard/store/modal.store';
 import { createPatient } from '../../../../test/fixtures/patient.fixture';
 
 // ---------------------------------------------------------------------------
@@ -26,7 +28,7 @@ const mockCloseModal = vi.fn();
 function defaultModalState() {
   return {
     isOpen: false,
-    mode: 'create' as const,
+    mode: 'create' as ModalMode,
     selectedPatientId: null as string | null,
     closeModal: mockCloseModal,
   };
