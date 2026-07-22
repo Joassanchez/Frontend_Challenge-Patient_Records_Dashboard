@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PatientsSection from '@/patients-dashboard/organisms/PatientsSection';
-import { createPatient } from '@test/fixtures/patient.fixture';
+import { createPatient } from '../../../../test/fixtures/patient.fixture';
 
 // ---------------------------------------------------------------------------
 // Mocks

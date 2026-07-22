@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { cn } from '@/shared/utils/cn';
 import type { Patient } from '@/patients-dashboard/types';
-import PatientCard from './PatientCard';
+import PatientCard from '../PatientCard';
 import SkeletonCard from '@/patients-dashboard/atoms/SkeletonCard';
 import { STAGGER_STEP, useReducedMotionTransition } from '@/shared/motion/motion-presets';
 

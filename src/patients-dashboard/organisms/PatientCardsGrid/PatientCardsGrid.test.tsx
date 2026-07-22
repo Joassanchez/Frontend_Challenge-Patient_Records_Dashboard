@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import PatientCardsGrid from '@/patients-dashboard/organisms/PatientCardsGrid';
-import { createPatient } from '@test/fixtures/patient.fixture';
+import { createPatient } from '../../../../test/fixtures/patient.fixture';
 
 // ---------------------------------------------------------------------------
 // Mocks de stores usados por PatientCard

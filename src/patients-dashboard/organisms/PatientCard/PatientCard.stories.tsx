@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import PatientCard from './PatientCard';
-import { useFavoritesStore } from '../store/favorites.store';
-import { useModalStore } from '../store/modal.store';
-import { useToastStore } from '../store/toast.store';
-import type { Patient } from '../types/patient.types';
+import { useFavoritesStore } from '../../store/favorites.store';
+import { useModalStore } from '../../store/modal.store';
+import { useToastStore } from '../../store/toast.store';
+import type { Patient } from '../../types/patient.types';
 
 const mockPatient: Patient = {
   id: 'p1',

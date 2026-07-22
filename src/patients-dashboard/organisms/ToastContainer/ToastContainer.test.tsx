@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ToastContainer from '@/patients-dashboard/organisms/ToastContainer';
 import type { ToastMessage } from '@/patients-dashboard/store/toast.store';
-import { makeToast } from '@test/helpers/toast.helper';
+import { makeToast } from '../../../../test/helpers/toast.helper';
 
 // ---------------------------------------------------------------------------
 // Mock — toast.store (stateful via vi.hoisted; factory inlined for hoist safety)

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ToastContainer } from './ToastContainer';
-import { useToastStore } from '../store/toast.store';
-import type { ToastMessage } from '../store/toast.store';
+import { useToastStore } from '../../store/toast.store';
+import type { ToastMessage } from '../../store/toast.store';
 
 const mockToasts: ToastMessage[] = [
   {

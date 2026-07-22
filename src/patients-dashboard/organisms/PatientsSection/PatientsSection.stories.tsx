@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import PatientsSection from './PatientsSection';
-import { usePatientsStore } from '../store/patients.store';
-import type { Patient } from '../types/patient.types';
+import { usePatientsStore } from '../../store/patients.store';
+import type { Patient } from '../../types/patient.types';
 
 const mockPatients: Patient[] = [
   {

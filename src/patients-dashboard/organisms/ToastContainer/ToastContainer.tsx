@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@/shared/utils/cn';
-import Toast from '../atoms/Toast';
-import { useToastStore, selectToasts } from '../store/toast.store';
+import Toast from '../../atoms/Toast';
+import { useToastStore, selectToasts } from '../../store/toast.store';
 import { DUR, useReducedMotionTransition } from '@/shared/motion/motion-presets';
 
 // ---------------------------------------------------------------------------

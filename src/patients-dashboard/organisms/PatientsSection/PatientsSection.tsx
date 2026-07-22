@@ -6,8 +6,8 @@ import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
 import SearchInput from '@/patients-dashboard/molecules/SearchInput';
 import Spinner from '@/patients-dashboard/atoms/Spinner';
 import Button from '@/patients-dashboard/atoms/Button';
-import DashboardSection from './DashboardSection';
-import PatientCardsGrid from './PatientCardsGrid';
+import DashboardSection from '../DashboardSection';
+import PatientCardsGrid from '../PatientCardsGrid';
 
 interface PatientsSectionProps {
   className?: string;

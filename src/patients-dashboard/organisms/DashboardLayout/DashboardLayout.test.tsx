@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import DashboardLayout from '@/patients-dashboard/organisms/DashboardLayout';
 import type { ToastMessage } from '@/patients-dashboard/store/toast.store';
-import { makeToast } from '@test/helpers/toast.helper';
+import { makeToast } from '../../../../test/helpers/toast.helper';
 
 // ---------------------------------------------------------------------------
 // Toast store mock (stateful via vi.hoisted)

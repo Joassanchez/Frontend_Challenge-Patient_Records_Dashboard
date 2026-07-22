@@ -4,8 +4,8 @@ import Button from '@/patients-dashboard/atoms/Button';
 import { useFavoritesStore, selectFavoriteIds } from '@/patients-dashboard/store/favorites.store';
 import { usePatientsStore } from '@/patients-dashboard/store/patients.store';
 import EmptyState from '@/patients-dashboard/molecules/EmptyState';
-import DashboardSection from './DashboardSection';
-import PatientCardsGrid from './PatientCardsGrid';
+import DashboardSection from '../DashboardSection';
+import PatientCardsGrid from '../PatientCardsGrid';
 
 interface FavoritesSectionProps {
   className?: string;

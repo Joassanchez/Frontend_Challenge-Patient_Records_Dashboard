@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PatientCard from '@/patients-dashboard/organisms/PatientCard';
-import { createPatient } from '@test/fixtures/patient.fixture';
+import { createPatient } from '../../../../test/fixtures/patient.fixture';
 
 // ---------------------------------------------------------------------------
 // Toast store mock (vi.hoisted spies, inline factory)

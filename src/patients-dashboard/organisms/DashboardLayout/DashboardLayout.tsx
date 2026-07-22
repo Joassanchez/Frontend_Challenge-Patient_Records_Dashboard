@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import Header from './Header';
+import Header from '../Header';
 import Container from '@/patients-dashboard/molecules/Container';
-import { ToastContainer } from './ToastContainer';
+import { ToastContainer } from '../ToastContainer';
 
 interface DashboardLayoutProps {
   children: ReactNode;
