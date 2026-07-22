@@ -6,11 +6,10 @@ import {
   type PatientFormData,
   type PatientFormInput,
 } from '@/patients-dashboard/schemas/patient.schema';
-import Label from '@/patients-dashboard/atoms/Label';
 import Input from '@/patients-dashboard/atoms/Input';
 import Textarea from '@/patients-dashboard/atoms/Textarea';
 import Button from '@/patients-dashboard/atoms/Button';
-import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
+import FormField from '@/patients-dashboard/molecules/FormField';
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -55,120 +54,94 @@ function PatientForm({
       noValidate
     >
       {/* Nombre */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="patient-name" required>
-          Nombre
-        </Label>
-        <Controller
-          name="name"
-          control={control}
-          render={({ field: { ref, ...field } }) => (
+      <Controller
+        name="name"
+        control={control}
+        render={({ field: { ref, ...field } }) => (
+          <FormField
+            label="Nombre"
+            htmlFor="patient-name"
+            error={errors.name?.message}
+            required
+          >
             <Input
               id="patient-name"
               placeholder="Nombre del paciente"
+              error={errors.name?.message}
               ref={ref}
-              aria-invalid={errors.name ? 'true' : undefined}
-              aria-describedby={
-                errors.name ? 'patient-name-error' : undefined
-              }
               {...field}
             />
-          )}
-        />
-        {errors.name && (
-          <ErrorMessage
-            id="patient-name-error"
-            message={errors.name.message!}
-          />
+          </FormField>
         )}
-      </div>
+      />
 
       {/* Descripción */}
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="patient-description" required>
-          Descripción
-        </Label>
-        <Controller
-          name="description"
-          control={control}
-          render={({ field: { ref, ...field } }) => (
+      <Controller
+        name="description"
+        control={control}
+        render={({ field: { ref, ...field } }) => (
+          <FormField
+            label="Descripción"
+            htmlFor="patient-description"
+            error={errors.description?.message}
+            required
+          >
             <Textarea
               id="patient-description"
               placeholder="Descripción del paciente"
               rows={3}
+              error={errors.description?.message}
               ref={ref}
-              aria-invalid={errors.description ? 'true' : undefined}
-              aria-describedby={
-                errors.description ? 'patient-description-error' : undefined
-              }
               {...field}
             />
-          )}
-        />
-        {errors.description && (
-          <ErrorMessage
-            id="patient-description-error"
-            message={errors.description.message!}
-          />
+          </FormField>
         )}
-      </div>
+      />
 
       {/* Página web + Avatar — solo en modo edición */}
       {mode === 'edit' && (
         <>
           {/* Página web */}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="patient-website">Página web</Label>
-            <Controller
-              name="website"
-              control={control}
-              render={({ field: { ref, ...field } }) => (
+          <Controller
+            name="website"
+            control={control}
+            render={({ field: { ref, ...field } }) => (
+              <FormField
+                label="Página web"
+                htmlFor="patient-website"
+                error={errors.website?.message}
+              >
                 <Input
                   id="patient-website"
                   placeholder="https://ejemplo.com"
+                  error={errors.website?.message}
                   ref={ref}
-                  aria-invalid={errors.website ? 'true' : undefined}
-                  aria-describedby={
-                    errors.website ? 'patient-website-error' : undefined
-                  }
                   {...field}
                 />
-              )}
-            />
-            {errors.website && (
-              <ErrorMessage
-                id="patient-website-error"
-                message={errors.website.message!}
-              />
+              </FormField>
             )}
-          </div>
+          />
 
           {/* Avatar */}
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="patient-avatar">Avatar</Label>
-            <Controller
-              name="avatar"
-              control={control}
-              render={({ field: { ref, ...field } }) => (
+          <Controller
+            name="avatar"
+            control={control}
+            render={({ field: { ref, ...field } }) => (
+              <FormField
+                label="Avatar"
+                htmlFor="patient-avatar"
+                error={errors.avatar?.message}
+              >
                 <Input
                   id="patient-avatar"
                   placeholder="https://ejemplo.com/avatar.jpg"
+                  error={errors.avatar?.message}
                   ref={ref}
-                  aria-invalid={errors.avatar ? 'true' : undefined}
-                  aria-describedby={
-                    errors.avatar ? 'patient-avatar-error' : undefined
-                  }
                   {...field}
                 />
-              )}
-            />
-            {errors.avatar && (
-              <ErrorMessage
-                id="patient-avatar-error"
-                message={errors.avatar.message!}
-              />
+              </FormField>
             )}
-          </div>
+          />
         </>
       )}
 

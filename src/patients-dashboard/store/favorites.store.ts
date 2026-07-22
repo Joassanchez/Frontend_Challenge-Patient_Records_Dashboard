@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { getItem, setItem, isStringArray } from '@/shared/utils/localStorage';
-import { FAVORITES_KEY } from '@/shared/utils/storageKeys';
 import { handleError } from '@/shared/errors';
-import { useToastStore } from './toast.store';
+
+export const FAVORITES_KEY = 'app:favorites:patient-ids' as const;
 
 // ---------------------------------------------------------------------------
 // Tipos de estado y acciones
@@ -13,7 +13,7 @@ export interface FavoritesState {
 }
 
 export interface FavoritesActions {
-  toggleFavorite(id: string): boolean;
+  toggleFavorite(id: string): { success: boolean; error?: string };
   resetStore(): void;
 }
 
@@ -56,7 +56,7 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
     return {
       favoritePatientIds: savedIds,
 
-      toggleFavorite: (id: string): boolean => {
+      toggleFavorite: (id: string) => {
         const { favoritePatientIds } = get();
         const exists = favoritePatientIds.includes(id);
         const next = exists
@@ -64,14 +64,13 @@ export const useFavoritesStore = create<FavoritesState & FavoritesActions>()(
           : [...favoritePatientIds, id];
         if (!persist(next)) {
           handleError(new Error('persist failed'), {
-            display: 'toast',
+            display: 'silent',
             context: 'favorite-toggle',
-            showToast: useToastStore.getState().showError,
           });
-          return false;
+          return { success: false, error: 'persist failed' };
         }
         set({ favoritePatientIds: next });
-        return true;
+        return { success: true };
       },
 
       resetStore: () => {

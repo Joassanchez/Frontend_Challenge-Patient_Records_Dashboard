@@ -37,12 +37,12 @@ vi.mock('@/patients-dashboard/store/toast.store', () => ({
 // Mocks — hoisted before component import
 // ---------------------------------------------------------------------------
 
-const mockToggleFavorite = vi.fn<(id: string) => boolean>();
+const mockToggleFavorite = vi.fn<(id: string) => { success: boolean; error?: string }>();
 
 // Favorites store state used by the mock selector
 let favoritesStoreState: {
   favoritePatientIds: string[];
-  toggleFavorite: (id: string) => boolean;
+  toggleFavorite: (id: string) => { success: boolean; error?: string };
 } = {
   favoritePatientIds: [],
   toggleFavorite: mockToggleFavorite,
@@ -347,7 +347,7 @@ describe('PatientCard', () => {
       toastSpies.showSuccess.mockClear();
       toastSpies.showInfo.mockClear();
       mockToggleFavorite.mockClear();
-      mockToggleFavorite.mockReturnValue(true);
+      mockToggleFavorite.mockReturnValue({ success: true });
 
       // Patient is NOT a favorite
       favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
@@ -366,7 +366,7 @@ describe('PatientCard', () => {
       toastSpies.showSuccess.mockClear();
       toastSpies.showInfo.mockClear();
       mockToggleFavorite.mockClear();
-      mockToggleFavorite.mockReturnValue(true);
+      mockToggleFavorite.mockReturnValue({ success: true });
 
       // Patient IS a favorite
       favoritesStoreState = { favoritePatientIds: ['p1'], toggleFavorite: mockToggleFavorite };
@@ -380,12 +380,12 @@ describe('PatientCard', () => {
       expect(toastSpies.showSuccess).not.toHaveBeenCalled();
     });
 
-    it('does NOT call any toast when toggleFavorite returns false (persist failed)', async () => {
+    it('does NOT call any toast when toggleFavorite returns success false (persist failed)', async () => {
       const user = userEvent.setup();
       toastSpies.showSuccess.mockClear();
       toastSpies.showInfo.mockClear();
       mockToggleFavorite.mockClear();
-      mockToggleFavorite.mockReturnValue(false);
+      mockToggleFavorite.mockReturnValue({ success: false });
 
       favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { cn } from '@/shared/utils/cn';
+import { cn, formatSafeDate, isValidWebUrl, formatWebsiteDisplay } from '@/shared/utils';
 import { useFavoritesStore, selectIsFavorite } from '@/patients-dashboard/store/favorites.store';
 import { useModalStore } from '@/patients-dashboard/store/modal.store';
 import { useToastStore } from '@/patients-dashboard/store/toast.store';
@@ -17,35 +17,6 @@ import { DUR, useReducedMotionTransition } from '@/shared/motion/motion-presets'
 interface PatientCardProps {
   patient: Patient;
   className?: string;
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function isValidWebUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
-function formatWebsiteDisplay(url: string): string {
-  try {
-    const host = new URL(url).hostname;
-    return host.replace(/^www\./, '');
-  } catch {
-    return url;
-  }
-}
-
-function formatSafeDate(iso: string | undefined): string | null {
-  if (!iso) return null;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString('es-AR');
 }
 
 // ---------------------------------------------------------------------------
@@ -72,8 +43,8 @@ function PatientCard({ patient, className }: PatientCardProps) {
 
   function handleFavoriteClick() {
     const wasFavorite = isFavorite;
-    const persisted = toggleFavorite(patient.id);
-    if (!persisted) return;
+    const result = toggleFavorite(patient.id);
+    if (!result.success) return;
     setBounceTrigger((prev) => prev + 1);
     if (wasFavorite) {
       showInfo('Quitado de favoritos');

@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/shared/utils/cn';
 import { usePatientsStore } from '@/patients-dashboard/store/patients.store';
 import EmptyState from '@/patients-dashboard/molecules/EmptyState';
@@ -8,17 +7,15 @@ import Spinner from '@/patients-dashboard/atoms/Spinner';
 import Button from '@/patients-dashboard/atoms/Button';
 import DashboardSection from '../DashboardSection';
 import PatientCardsGrid from '../PatientCardsGrid';
+import { usePatientsSearch } from './usePatientsSearch';
+import { useInfiniteScroll } from './useInfiniteScroll';
 
 interface PatientsSectionProps {
   className?: string;
 }
 
-const SEARCH_DEBOUNCE_MS = 300;
-
 function PatientsSection({ className }: PatientsSectionProps) {
   const headingId = 'patients-section-heading';
-  const isFirstRender = useRef(true);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const patients = usePatientsStore((s) => s.patients);
   const isLoading = usePatientsStore((s) => s.isLoading);
@@ -28,26 +25,12 @@ function PatientsSection({ className }: PatientsSectionProps) {
   const loadPatients = usePatientsStore((s) => s.loadPatients);
   const loadNextPatientsPage = usePatientsStore((s) => s.loadNextPatientsPage);
 
-  const [searchInput, setSearchInput] = useState('');
-
-  // Búsqueda con debounce. En el primer render llama a loadPatients
-  // inmediatamente; los cambios siguientes esperan 300ms.
-  useEffect(() => {
-    const trimmed = searchInput.trim();
-
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      loadPatients(trimmed);
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      loadPatients(trimmed);
-    }, SEARCH_DEBOUNCE_MS);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [searchInput, loadPatients]);
+  const { searchInput, setSearchInput } = usePatientsSearch();
+  const { loadMoreRef } = useInfiniteScroll(
+    hasMore,
+    isLoadingMore,
+    loadNextPatientsPage,
+  );
 
   const showContent = !isLoading && !error;
   const hasPatients = patients.length > 0;
@@ -66,36 +49,6 @@ function PatientsSection({ className }: PatientsSectionProps) {
       placeholder="Buscar por nombre o descripción"
     />
   ) : undefined;
-
-  // Observer que dispara la carga de la página siguiente al hacer scroll.
-  useEffect(() => {
-    if (!showContent || !hasPatients || !hasMore || isLoadingMore) return;
-    if (typeof IntersectionObserver === 'undefined') return;
-
-    const target = loadMoreRef.current;
-    if (!target) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          loadNextPatientsPage();
-        }
-      },
-      { rootMargin: '160px' },
-    );
-
-    observer.observe(target);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [
-    showContent,
-    hasPatients,
-    hasMore,
-    isLoadingMore,
-    loadNextPatientsPage,
-  ]);
 
   return (
     <DashboardSection

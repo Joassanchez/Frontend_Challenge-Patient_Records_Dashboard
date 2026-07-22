@@ -1,18 +1,5 @@
 import { create } from 'zustand';
-
-// ---------------------------------------------------------------------------
-// Helpers — generación de ID (duplicado de patients.store.ts)
-// ---------------------------------------------------------------------------
-
-let idCounter = 0;
-
-function generateId(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  idCounter += 1;
-  return `local-${idCounter}-${Date.now()}`;
-}
+import { generateId } from '@/shared/utils/id';
 
 // ---------------------------------------------------------------------------
 // Tipos

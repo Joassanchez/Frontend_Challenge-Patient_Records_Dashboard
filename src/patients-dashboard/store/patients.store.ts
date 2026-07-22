@@ -1,22 +1,9 @@
 import { create } from 'zustand';
 import { getPatientsPage } from '../api/patients.api';
 import { handleError } from '@/shared/errors';
+import { generateId } from '@/shared/utils/id';
 import type { Patient } from '../types/patient.types';
 import type { PatientFormData } from '../schemas/patient.schema';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-let idCounter = 0;
-
-function generateId(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  idCounter += 1;
-  return `local-${idCounter}-${Date.now()}`;
-}
 
 function generateCreatedAt(): string {
   return new Date().toISOString();

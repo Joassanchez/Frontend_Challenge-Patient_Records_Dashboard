@@ -17,10 +17,6 @@ vi.mock('@/shared/utils/localStorage', () => {
   };
 });
 
-vi.mock('@/shared/utils/storageKeys', () => ({
-  FAVORITES_KEY: 'app:favorites:patient-ids',
-}));
-
 // Re-import after mock
 import { getItem, setItem } from '@/shared/utils/localStorage';
 import {
@@ -63,27 +59,27 @@ describe('REQ-FS-01: Initial State', () => {
 // ============================================================================
 
 describe('REQ-FS-02: toggleFavorite', () => {
-  it('adds an ID and returns true when not present', () => {
+  it('adds an ID and returns success when not present', () => {
     const result = useFavoritesStore.getState().toggleFavorite('p1');
     const state = useFavoritesStore.getState();
-    expect(result).toBe(true);
+    expect(result).toEqual({ success: true });
     expect(state.favoritePatientIds).toEqual(['p1']);
   });
 
-  it('removes an ID and returns true when present', () => {
+  it('removes an ID and returns success when present', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1', 'p2'] });
     const result = useFavoritesStore.getState().toggleFavorite('p1');
     const state = useFavoritesStore.getState();
-    expect(result).toBe(true);
+    expect(result).toEqual({ success: true });
     expect(state.favoritePatientIds).toEqual(['p2']);
   });
 
   it('does not create duplicate IDs', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1'] });
     const r1 = useFavoritesStore.getState().toggleFavorite('p1');
-    expect(r1).toBe(true);
+    expect(r1).toEqual({ success: true });
     const r2 = useFavoritesStore.getState().toggleFavorite('p1');
-    expect(r2).toBe(true);
+    expect(r2).toEqual({ success: true });
     const state = useFavoritesStore.getState();
     expect(state.favoritePatientIds).toEqual(['p1']);
   });
@@ -108,11 +104,11 @@ describe('REQ-FS-02: toggleFavorite', () => {
     );
   });
 
-  it('returns false and does NOT mutate state when persist fails', () => {
+  it('returns success false and does NOT mutate state when persist fails', () => {
     useFavoritesStore.setState({ favoritePatientIds: ['p1', 'p2'] });
     mockSetItem.mockReturnValue(false);
     const result = useFavoritesStore.getState().toggleFavorite('p1');
-    expect(result).toBe(false);
+    expect(result).toEqual({ success: false, error: 'persist failed' });
     const state = useFavoritesStore.getState();
     expect(state.favoritePatientIds).toEqual(['p1', 'p2']);
   });

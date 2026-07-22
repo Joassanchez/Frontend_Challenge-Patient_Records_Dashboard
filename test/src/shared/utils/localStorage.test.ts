@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getItem, setItem, isStringArray } from '@/shared/utils/localStorage';
-import { FAVORITES_KEY } from '@/shared/utils/storageKeys';
+import { FAVORITES_KEY } from '@/patients-dashboard/store/favorites.store';
 
 // ---------------------------------------------------------------------------
 // Setup / Teardown

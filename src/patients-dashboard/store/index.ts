@@ -3,7 +3,11 @@ export {
   selectPatients,
   selectPatientById,
   selectPatientsLoading,
+  selectPatientsLoadingMore,
   selectPatientsError,
+  selectPatientsHasMore,
+  selectPatientsCurrentPage,
+  selectPatientsSearchQuery,
   initialState as patientsInitialState,
 } from './patients.store';
 
@@ -14,6 +18,7 @@ export {
   selectFavoriteIds,
   selectIsFavorite,
   selectFavoritesCount,
+  FAVORITES_KEY,
 } from './favorites.store';
 
 export type { FavoritesState } from './favorites.store';
