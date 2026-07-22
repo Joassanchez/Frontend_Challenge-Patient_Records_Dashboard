@@ -1,6 +1,6 @@
 import { cn } from '@/shared/utils/cn';
-import Icon, { type IconName } from './Icon';
-import type { ToastMessage } from '../store/toast.store';
+import Icon, { type IconName } from '../Icon';
+import type { ToastMessage } from '../../store/toast.store';
 
 // ---------------------------------------------------------------------------
 // Tipos

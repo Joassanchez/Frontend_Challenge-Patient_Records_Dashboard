@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/shared/utils/cn';
-import Spinner from './Spinner';
+import Spinner from '../Spinner';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost';

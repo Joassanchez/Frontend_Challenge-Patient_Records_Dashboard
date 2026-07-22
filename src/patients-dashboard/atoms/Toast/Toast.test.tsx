@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Toast from '@/patients-dashboard/atoms/Toast';
-import { makeToast } from '@test/helpers/toast.helper';
+import { makeToast } from '../../../../test/helpers/toast.helper';
 
 // ---------------------------------------------------------------------------
 // Tests

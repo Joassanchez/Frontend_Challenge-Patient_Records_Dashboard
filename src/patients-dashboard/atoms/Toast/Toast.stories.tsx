@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import Toast from './Toast';
-import type { ToastMessage } from '../store/toast.store';
+import type { ToastMessage } from '../../store/toast.store';
 
 const meta = {
   component: Toast,
