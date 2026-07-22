@@ -1,4 +1,4 @@
-import type { StoryFn } from '@storybook/react-vite';
+import type { Decorator } from '@storybook/react-vite';
 
 // ---------------------------------------------------------------------------
 // Module augmentation — adds disableMotion to Storybook Parameters
@@ -26,6 +26,6 @@ declare module '@storybook/react-vite' {
  * Stories that need deterministic motion can set `parameters.disableMotion: true`
  * and use the motion mock pattern from test/setup/motion-mock.ts.
  */
-export function withMotion(Story: StoryFn, context: { parameters: Record<string, unknown> }) {
-  return Story(context as never);
-}
+export const withMotion: Decorator = (Story) => {
+  return Story();
+};

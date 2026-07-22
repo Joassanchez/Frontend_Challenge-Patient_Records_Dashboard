@@ -6,11 +6,11 @@
     "noUnusedParameters": false
   },
   "include": [
-    ".storybook/**/*",
-    "src"
+    "**/*",
+    "../src"
   ],
   "exclude": [
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx"
+    "../src/**/*.test.ts",
+    "../src/**/*.test.tsx"
   ]
 }
