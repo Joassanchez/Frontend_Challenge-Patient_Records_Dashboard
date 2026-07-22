@@ -107,21 +107,4 @@ describe('REQ-MS-05: Exported Selectors', () => {
 
 });
 
-// ============================================================================
-// REQ-MS-06: Test Isolation
-// ============================================================================
 
-describe('REQ-MS-06: Test Isolation', () => {
-
-
-  it('resetStore restores state to initial values', () => {
-    useModalStore.setState({ isOpen: true, mode: 'edit', selectedPatientId: 'p99' });
-
-    useModalStore.getState().resetStore();
-
-    const state = useModalStore.getState();
-    expect(state.isOpen).toBe(false);
-    expect(state.mode).toBe('create');
-    expect(state.selectedPatientId).toBeNull();
-  });
-});

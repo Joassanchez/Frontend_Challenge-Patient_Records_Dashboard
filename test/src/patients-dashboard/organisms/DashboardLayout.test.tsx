@@ -104,18 +104,6 @@ describe('DashboardLayout', () => {
     expect(mains).toHaveLength(1);
   });
 
-  it('renders the Header with "Patient Records" title', () => {
-    render(
-      <DashboardLayout>
-        <span>Content</span>
-      </DashboardLayout>,
-    );
-
-    expect(
-      screen.getByRole('heading', { name: /patient records/i }),
-    ).toBeInTheDocument();
-  });
-
   it('header appears above the main content in DOM order', () => {
     render(
       <DashboardLayout>

@@ -2,7 +2,7 @@ import { cloneElement } from 'react';
 import type { ReactElement, InputHTMLAttributes } from 'react';
 import { cn } from '@/shared/utils/cn';
 import Label from '@/patients-dashboard/atoms/Label';
-import ErrorMessage from './ErrorMessage';
+import ErrorMessage from '../ErrorMessage';
 
 type FormFieldChildProps = Pick<
   InputHTMLAttributes<HTMLInputElement>,

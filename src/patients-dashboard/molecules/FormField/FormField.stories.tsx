@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import FormField from './FormField';
-import Input from '../atoms/Input';
+import Input from '../../atoms/Input';
 
 const meta = {
   component: FormField,
