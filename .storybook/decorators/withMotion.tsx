@@ -6,9 +6,25 @@ import type { Decorator } from '@storybook/react-vite';
 
 declare module '@storybook/react-vite' {
   interface Parameters {
+    /** When true, suppresses all CSS animations and transitions for deterministic screenshots. */
     disableMotion?: boolean;
   }
 }
+
+// ---------------------------------------------------------------------------
+// CSS reset — injected as <style> tag when disableMotion is active
+// ---------------------------------------------------------------------------
+
+const MOTION_RESET_CSS = `
+.sb-disable-motion *,
+.sb-disable-motion *::before,
+.sb-disable-motion *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+`;
 
 // ---------------------------------------------------------------------------
 // Decorator
@@ -17,15 +33,27 @@ declare module '@storybook/react-vite' {
 /**
  * Storybook decorator for motion/react handling.
  *
- * In Storybook's browser environment, motion animations run natively (unlike jsdom).
- * This decorator provides a `parameters.disableMotion` flag that stories can use
- * to opt into deterministic rendering. The actual motion mock is handled by
- * Storybook's Vite config aliasing or by individual stories.
+ * When `parameters.disableMotion` is true, injects a `<style>` tag that cancels
+ * all CSS animations and transitions, and wraps the story in a container with
+ * `class="sb-disable-motion"`. This produces deterministic, snapshot-ready output
+ * without modifying component code.
  *
- * For now, this is a passthrough decorator that preserves the story output.
- * Stories that need deterministic motion can set `parameters.disableMotion: true`
- * and use the motion mock pattern from test/setup/motion-mock.ts.
+ * When `disableMotion` is false or unset, the story renders with native motion
+ * animations intact.
  */
-export const withMotion: Decorator = (Story) => {
-  return Story();
+export const withMotion: Decorator = (Story, context) => {
+  const disable = context.parameters.disableMotion === true;
+
+  if (!disable) {
+    return Story(context);
+  }
+
+  return (
+    <>
+      <style>{MOTION_RESET_CSS}</style>
+      <div className="sb-disable-motion">
+        <Story {...context} />
+      </div>
+    </>
+  );
 };

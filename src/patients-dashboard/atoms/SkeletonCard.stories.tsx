@@ -17,3 +17,10 @@ export const CustomWidth: Story = {
     className: 'max-w-sm',
   },
 };
+
+/** El shimmer se detiene con prefers-reduced-motion. Usa el decorator withMotion. */
+export const ReducedMotion: Story = {
+  parameters: {
+    disableMotion: true,
+  },
+};
