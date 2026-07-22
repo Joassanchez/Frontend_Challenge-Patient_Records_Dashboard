@@ -5,14 +5,15 @@ import type { Decorator } from '@storybook/react-vite';
 // Types
 // ---------------------------------------------------------------------------
 
-interface ZustandStoreLike<T extends Record<string, unknown> = Record<string, unknown>> {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface ZustandStoreLike<T extends object = object> {
   getState(): T;
   setState(state: Partial<T>, replace?: boolean): void;
 }
 
 interface ZustandStoreParam {
-  store: ZustandStoreLike;
-  state: Record<string, unknown>;
+  store: ZustandStoreLike<object>;
+  state: object;
 }
 
 // ---------------------------------------------------------------------------
@@ -35,7 +36,7 @@ interface StoreInjectorProps {
 }
 
 function StoreInjector({ stores, children }: StoreInjectorProps) {
-  const snapshotsRef = useRef<Array<{ store: ZustandStoreLike; snap: Record<string, unknown> }>>([]);
+  const snapshotsRef = useRef<Array<{ store: ZustandStoreLike<object>; snap: object }>>([]);
 
   // Snapshot + apply on mount (runs synchronously before paint)
   if (snapshotsRef.current.length === 0) {
@@ -44,7 +45,7 @@ function StoreInjector({ stores, children }: StoreInjectorProps) {
       snap: { ...store.getState() },
     }));
     stores.forEach(({ store, state }) => {
-      store.setState(state as Record<string, unknown>, true);
+      store.setState(state as object, true);
     });
   }
 
@@ -52,7 +53,7 @@ function StoreInjector({ stores, children }: StoreInjectorProps) {
     return () => {
       // Restore original state on unmount
       snapshotsRef.current.forEach(({ store, snap }) => {
-        store.setState(snap as Record<string, unknown>, true);
+        store.setState(snap as object, true);
       });
     };
   }, []);
