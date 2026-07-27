@@ -1,6 +1,5 @@
 import { defineMain } from '@storybook/react-vite/node';
 import { mergeConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -11,8 +10,10 @@ export default defineMain({
   framework: '@storybook/react-vite',
   stories: ['../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   async viteFinal(config) {
+    // Storybook ya incluye @vitejs/plugin-react internamente.
+    // Solo agregamos tailwindcss y los aliases del proyecto.
     return mergeConfig(config, {
-      plugins: [react(), tailwindcss()],
+      plugins: [tailwindcss()],
       resolve: {
         alias: {
           '@': resolve(__dirname, '../src'),

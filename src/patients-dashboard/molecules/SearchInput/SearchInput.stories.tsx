@@ -8,7 +8,13 @@ const meta = {
   tags: ['autodocs'],
   render: function Render(args) {
     const [value, setValue] = useState(args.value);
-    return <SearchInput value={value} onChange={setValue} placeholder={args.placeholder} />;
+    return (
+      <SearchInput
+        value={value}
+        onChange={setValue}
+        placeholder={args.placeholder}
+      />
+    );
   },
 } satisfies Meta<typeof SearchInput>;
 
@@ -33,7 +39,7 @@ export const WithText: Story = {
 
 export const WithResults: Story = {
   args: {
-    value: 'cardiology',
+    value: 'Description',
     onChange: () => {},
     placeholder: 'Search by name or description',
   },

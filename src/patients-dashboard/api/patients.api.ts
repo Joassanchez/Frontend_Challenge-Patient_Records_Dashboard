@@ -6,7 +6,6 @@ import type { Patient } from '../types/patient.types';
 export interface GetPatientsPageParams {
   page: number;
   limit: number;
-  /** Término de búsqueda (opcional). */
   search?: string;
 }
 

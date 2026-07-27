@@ -3,6 +3,24 @@ import PatientsSection from './PatientsSection';
 import { usePatientsStore } from '../../store/patients.store';
 import type { Patient } from '../../types/patient.types';
 
+// ---------------------------------------------------------------------------
+// No-op actions — el decorador withZustandStore reemplaza el estado entero
+// con setState(..., true), lo que borra las acciones reales. Incluir
+// versiones no-op evita que usePatientsSearch → loadPatients('') explote.
+// ---------------------------------------------------------------------------
+const noop = (): void => undefined;
+const noopAsync = async (): Promise<void> => undefined;
+
+function makeStoreActions() {
+  return {
+    loadPatients: noopAsync,
+    loadNextPatientsPage: noopAsync,
+    addPatient: noop,
+    updatePatient: noop,
+    resetStore: noop,
+  };
+}
+
 const mockPatients: Patient[] = [
   {
     id: 'p1',
@@ -45,6 +63,7 @@ const meta = {
         currentPage: 1,
         searchQuery: '',
         error: null,
+        ...makeStoreActions(),
       },
     },
   },
@@ -67,6 +86,7 @@ export const Loading: Story = {
         currentPage: 0,
         searchQuery: '',
         error: null,
+        ...makeStoreActions(),
       },
     },
   },
@@ -84,6 +104,7 @@ export const Empty: Story = {
         currentPage: 0,
         searchQuery: '',
         error: null,
+        ...makeStoreActions(),
       },
     },
   },
@@ -101,6 +122,7 @@ export const WithError: Story = {
         currentPage: 0,
         searchQuery: '',
         error: 'Failed to load patients. Please try again.',
+        ...makeStoreActions(),
       },
     },
   },
