@@ -14,9 +14,9 @@ const VARIANT_CLASS: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary:
     'bg-primary text-white shadow-sm shadow-primary/20 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 focus-visible:ring-primary',
   secondary:
-    'bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-primary',
+    'bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300 focus-visible:ring-primary dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-700 dark:hover:border-slate-500',
   ghost:
-    'text-slate-500 hover:text-slate-900 hover:bg-slate-100 focus-visible:ring-primary',
+    'text-slate-500 hover:text-slate-900 hover:bg-slate-100 focus-visible:ring-primary dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-700',
 };
 
 const SIZE_CLASS: Record<NonNullable<ButtonProps['size']>, string> = {

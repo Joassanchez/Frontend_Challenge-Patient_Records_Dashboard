@@ -5,16 +5,27 @@ import { generateId } from '@/shared/utils/id';
 // Tipos
 // ---------------------------------------------------------------------------
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 export interface ToastMessage {
   id: string;
   type: 'success' | 'error' | 'info' | 'warning';
   message: string;
   duration?: number;
   createdAt: number;
+  action?: ToastAction;
 }
 
 export interface ToastState {
   toasts: ToastMessage[];
+}
+
+export interface ToastShowOptions {
+  duration?: number;
+  action?: ToastAction;
 }
 
 export interface ToastActions {
@@ -22,11 +33,12 @@ export interface ToastActions {
     type: ToastMessage['type'];
     message: string;
     duration?: number;
+    action?: ToastAction;
   }) => void;
-  showSuccess: (message: string, duration?: number) => void;
-  showError: (message: string, duration?: number) => void;
-  showInfo: (message: string, duration?: number) => void;
-  showWarning: (message: string, duration?: number) => void;
+  showSuccess: (message: string, options?: ToastShowOptions | number) => void;
+  showError: (message: string, options?: ToastShowOptions | number) => void;
+  showInfo: (message: string, options?: ToastShowOptions | number) => void;
+  showWarning: (message: string, options?: ToastShowOptions | number) => void;
   dismissToast: (id: string) => void;
   clearToasts: () => void;
   resetStore: () => void;
@@ -90,6 +102,18 @@ function clearAllTimers(): void {
 }
 
 // ---------------------------------------------------------------------------
+// Helper: normalizar opciones (backward compat con duration como number)
+// ---------------------------------------------------------------------------
+
+function normalizeOptions(
+  options?: ToastShowOptions | number,
+): ToastShowOptions | undefined {
+  if (options === undefined || options === null) return undefined;
+  if (typeof options === 'number') return { duration: options };
+  return options;
+}
+
+// ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
 
@@ -106,6 +130,7 @@ export const useToastStore = create<ToastStore>()((set, get) => ({
       message: input.message,
       duration: input.duration,
       createdAt: Date.now(),
+      action: input.action,
     };
 
     const { toasts } = get();
@@ -134,20 +159,24 @@ export const useToastStore = create<ToastStore>()((set, get) => ({
     toastTimers.set(toast.id, timer);
   },
 
-  showSuccess: (message, duration) => {
-    get().showToast({ type: 'success', message, duration });
+  showSuccess: (message, options) => {
+    const opts = normalizeOptions(options);
+    get().showToast({ type: 'success', message, duration: opts?.duration, action: opts?.action });
   },
 
-  showError: (message, duration) => {
-    get().showToast({ type: 'error', message, duration });
+  showError: (message, options) => {
+    const opts = normalizeOptions(options);
+    get().showToast({ type: 'error', message, duration: opts?.duration, action: opts?.action });
   },
 
-  showInfo: (message, duration) => {
-    get().showToast({ type: 'info', message, duration });
+  showInfo: (message, options) => {
+    const opts = normalizeOptions(options);
+    get().showToast({ type: 'info', message, duration: opts?.duration, action: opts?.action });
   },
 
-  showWarning: (message, duration) => {
-    get().showToast({ type: 'warning', message, duration });
+  showWarning: (message, options) => {
+    const opts = normalizeOptions(options);
+    get().showToast({ type: 'warning', message, duration: opts?.duration, action: opts?.action });
   },
 
   dismissToast: (id) => {

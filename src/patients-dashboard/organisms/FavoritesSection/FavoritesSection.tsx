@@ -11,7 +11,7 @@ interface FavoritesSectionProps {
   className?: string;
 }
 
-const FAVORITES_PAGE_SIZE = 3;
+const FAVORITES_PAGE_SIZE = 6;
 
 function FavoritesSection({ className }: FavoritesSectionProps) {
   const headingId = 'favorites-section-heading';
@@ -55,6 +55,13 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
           icon="inbox"
           title="No tienes Pacientes Favoritos"
           description="Marcá pacientes como favoritos para verlos acá"
+          action={{
+            label: 'Ver pacientes',
+            onClick: () => {
+              const target = document.getElementById('patients-section-heading');
+              target?.scrollIntoView({ behavior: 'smooth' });
+            },
+          }}
           variant="compact"
         />
       )}

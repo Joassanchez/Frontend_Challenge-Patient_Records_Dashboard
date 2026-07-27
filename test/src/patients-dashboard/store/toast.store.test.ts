@@ -384,6 +384,41 @@ describe('REQ-TS-07: FIFO Eviction', () => {
 });
 
 // ============================================================================
+// REQ-FAV-02: Toast Action Support
+// ============================================================================
+describe('REQ-FAV-02: Toast Action Support', () => {
+  it('showToast accepts an optional action with label and onClick', () => {
+    const { showToast } = useToastStore.getState();
+    const onClick = vi.fn();
+    showToast({ type: 'info', message: 'Quitado', action: { label: 'Deshacer', onClick } });
+
+    const { toasts } = useToastStore.getState();
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].action).toBeDefined();
+    expect(toasts[0].action?.label).toBe('Deshacer');
+    expect(toasts[0].action?.onClick).toBe(onClick);
+  });
+
+  it('toast without action has action as undefined', () => {
+    const { showInfo } = useToastStore.getState();
+    showInfo('Normal toast');
+
+    const { toasts } = useToastStore.getState();
+    expect(toasts[0].action).toBeUndefined();
+  });
+
+  it('showInfo accepts action as part of options', () => {
+    const { showInfo } = useToastStore.getState();
+    const onClick = vi.fn();
+    showInfo('Quitado de favoritos', { action: { label: 'Deshacer', onClick } });
+
+    const { toasts } = useToastStore.getState();
+    expect(toasts[0].action).toBeDefined();
+    expect(toasts[0].action?.label).toBe('Deshacer');
+  });
+});
+
+// ============================================================================
 // REQ-TS-08: No Persistence
 // ============================================================================
 describe('REQ-TS-08: No Persistence', () => {

@@ -62,16 +62,16 @@ describe('ErrorBoundary — catches child errors', () => {
 // ============================================================================
 
 describe('ErrorBoundary — fallback UI', () => {
-  it('renders fallback UI with error message when child throws', () => {
+  it('renders friendly fallback UI (not raw error) when child throws', () => {
     render(
       <ErrorBoundary>
         <Thrower message="Render failed" />
       </ErrorBoundary>,
     );
 
-    // El fallback debe mostrar el mensaje de error
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText(/Render failed/)).toBeInTheDocument();
+    // Friendly message, NOT the raw JS error
+    expect(screen.getByText(/algo salió mal/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Render failed/)).not.toBeInTheDocument();
   });
 
   it('renders a "Reload" button in the fallback UI', () => {
@@ -94,6 +94,16 @@ describe('ErrorBoundary — fallback UI', () => {
 
     expect(screen.getByTestId('safe-child')).toBeInTheDocument();
     expect(screen.getByText('Safe content')).toBeInTheDocument();
+  });
+
+  it('renders custom fallback when provided', () => {
+    render(
+      <ErrorBoundary fallback={<div data-testid="custom-fallback">Custom</div>}>
+        <Thrower />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByTestId('custom-fallback')).toBeInTheDocument();
   });
 });
 

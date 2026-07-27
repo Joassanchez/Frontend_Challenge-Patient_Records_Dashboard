@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { cn } from '@/shared/utils/cn';
-import { usePatientsStore } from '@/patients-dashboard/store/patients.store';
+import { usePatientsStore, type SortBy } from '@/patients-dashboard/store/patients.store';
 import EmptyState from '@/patients-dashboard/molecules/EmptyState';
 import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
 import SearchInput from '@/patients-dashboard/molecules/SearchInput';
@@ -8,6 +8,7 @@ import Spinner from '@/patients-dashboard/atoms/Spinner';
 import Button from '@/patients-dashboard/atoms/Button';
 import DashboardSection from '../DashboardSection';
 import PatientCardsGrid from '../PatientCardsGrid';
+import Banner from '../Banner';
 import { usePatientsSearch } from './usePatientsSearch';
 import { useInfiniteScroll } from './useInfiniteScroll';
 
@@ -17,6 +18,12 @@ const FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: 'all', label: 'Todos' },
   { value: 'active', label: 'Activos' },
   { value: 'inactive', label: 'Inactivos' },
+];
+
+const SORT_OPTIONS: { value: SortBy; label: string }[] = [
+  { value: 'name', label: 'Nombre' },
+  { value: 'date', label: 'Fecha' },
+  { value: 'status', label: 'Estado' },
 ];
 
 interface PatientsSectionProps {
@@ -33,8 +40,10 @@ function PatientsSection({ className }: PatientsSectionProps) {
   const hasMore = usePatientsStore((s) => s.hasMore);
   const error = usePatientsStore((s) => s.error);
   const totalLoadedCount = usePatientsStore((s) => s.totalLoadedCount);
+  const sortBy = usePatientsStore((s) => s.sortBy);
   const loadPatients = usePatientsStore((s) => s.loadPatients);
   const loadNextPatientsPage = usePatientsStore((s) => s.loadNextPatientsPage);
+  const setSortBy = usePatientsStore((s) => s.setSortBy);
 
   const { searchInput, setSearchInput } = usePatientsSearch();
   const { loadMoreRef } = useInfiniteScroll(
@@ -43,34 +52,53 @@ function PatientsSection({ className }: PatientsSectionProps) {
     loadNextPatientsPage,
   );
 
-  const showContent = !isLoading && !error;
+  // Filtrado local por status, luego ordenamiento
+  const filteredAndSortedPatients = useMemo(() => {
+    const filtered = patients.filter((p) => {
+      if (statusFilter === 'all') return true;
+      const patientStatus = p.status || 'active';
+      return patientStatus === statusFilter;
+    });
 
-  // Filtrado local por status
-  const filteredPatients = patients.filter((p) => {
-    if (statusFilter === 'all') return true;
-    const patientStatus = p.status || 'active';
-    return patientStatus === statusFilter;
-  });
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'date':
+          return (b.createdAt ?? '').localeCompare(a.createdAt ?? '');
+        case 'status': {
+          const statusA = a.status || 'active';
+          const statusB = b.status || 'active';
+          return statusA.localeCompare(statusB);
+        }
+        default:
+          return 0;
+      }
+    });
+  }, [patients, statusFilter, sortBy]);
 
-  // El sentinel de infinite scroll y la grilla dependen de patients (sin filtrar)
   const hasAnyPatients = patients.length > 0;
-  const hasFilteredResults = filteredPatients.length > 0;
+  const hasFilteredResults = filteredAndSortedPatients.length > 0;
+
+  // Error resilience: show stale data + banner when error with cached patients
+  const showErrorOnly = !isLoading && error && !hasAnyPatients;
+  const showStaleBanner = error && hasAnyPatients;
 
   // Contador principal: métrica de total de pacientes que existen
   const counterText = totalLoadedCount === 1
     ? '1 paciente en total'
     : `${totalLoadedCount} pacientes en total`;
-  const sectionCounter = showContent && hasAnyPatients ? counterText : undefined;
+  const sectionCounter = hasAnyPatients ? counterText : undefined;
 
-  // Buscador + filtros
-  const sectionActions = showContent ? (
+  // Buscador + filtros + sort — show in all states except error-only (no patients)
+  const sectionActions = !showErrorOnly ? (
     <div className="flex flex-wrap items-center gap-2">
       <SearchInput
         value={searchInput}
         onChange={setSearchInput}
         placeholder="Buscar por nombre o descripción"
       />
-      <div className="flex rounded-lg border border-slate-200 bg-white p-0.5" role="group" aria-label="Filtrar por estado">
+      <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 dark:border-slate-600 dark:bg-slate-800" role="group" aria-label="Filtrar por estado">
         {FILTER_OPTIONS.map((opt) => (
           <button
             key={opt.value}
@@ -80,13 +108,25 @@ function PatientsSection({ className }: PatientsSectionProps) {
               'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
               statusFilter === opt.value
                 ? 'bg-primary text-white shadow-sm'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50',
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-700',
             )}
           >
             {opt.label}
           </button>
         ))}
       </div>
+      <select
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value as SortBy)}
+        aria-label="Ordenar por"
+        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+      >
+        {SORT_OPTIONS.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
     </div>
   ) : undefined;
 
@@ -98,15 +138,11 @@ function PatientsSection({ className }: PatientsSectionProps) {
       actions={sectionActions}
       className={cn('w-full', className)}
     >
-      {/* ---- Cargando ---- */}
-      {isLoading && (
-        <div className="flex justify-center rounded-2xl border border-slate-200 bg-white py-16 shadow-sm">
-          <Spinner size="lg" color="primary" />
-        </div>
-      )}
+      {/* ---- Stale banner: error but cached data visible ---- */}
+      {showStaleBanner && <Banner isStale />}
 
-      {/* ---- Error ---- */}
-      {!isLoading && error && (
+      {/* ---- Error only: no cached data ---- */}
+      {showErrorOnly && (
         <div className="flex flex-col items-center gap-4 py-8">
           <ErrorMessage message={error} />
           <Button
@@ -119,8 +155,13 @@ function PatientsSection({ className }: PatientsSectionProps) {
         </div>
       )}
 
-      {/* Vacío: sin pacientes */}
-      {showContent && !hasAnyPatients && (
+      {/* ---- Cold loading: skeleton when no data yet ---- */}
+      {isLoading && !hasAnyPatients && (
+        <PatientCardsGrid patients={[]} isLoading />
+      )}
+
+      {/* Vacío: sin pacientes y sin error y sin loading */}
+      {!isLoading && !error && !hasAnyPatients && (
         <EmptyState
           icon={searchInput.trim() ? 'search' : 'user'}
           title={
@@ -136,11 +177,11 @@ function PatientsSection({ className }: PatientsSectionProps) {
         />
       )}
 
-      {/* Éxito: grilla — el sentinel usa hasAnyPatients para no romperse con filtros */}
-      {showContent && hasAnyPatients && (
+      {/* Éxito: grilla — el sentinel solo se muestra si hay resultados visibles */}
+      {hasAnyPatients && !showErrorOnly && (
         <>
           {hasFilteredResults ? (
-            <PatientCardsGrid patients={filteredPatients} isLoading={false} />
+            <PatientCardsGrid patients={filteredAndSortedPatients} isLoading={false} />
           ) : (
             <EmptyState
               icon="search"
@@ -150,11 +191,9 @@ function PatientsSection({ className }: PatientsSectionProps) {
             />
           )}
 
-          {hasMore && (
-            <div ref={loadMoreRef} className="mt-5 flex justify-center">
-              {isLoadingMore && <Spinner size="md" color="primary" />}
-            </div>
-          )}
+          <div ref={loadMoreRef} className={cn('mt-5 flex justify-center', !hasFilteredResults && 'hidden')}>
+            {isLoadingMore && <Spinner size="md" color="primary" />}
+          </div>
         </>
       )}
     </DashboardSection>

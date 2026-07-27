@@ -3,6 +3,7 @@ import { getPatientsPage } from '../api/patients.api';
 import { handleError } from '@/shared/errors';
 import { generateId } from '@/shared/utils/id';
 import { hydrateLocalPatients, persistLocalPatients } from '@/shared/utils/localStorage';
+import { matchesSearch } from '@/shared/utils/search';
 import type { Patient } from '../types/patient.types';
 import type { PatientFormData } from '../schemas/patient.schema';
 
@@ -35,6 +36,12 @@ export function hasMorePatientsPage(pagePatients: Patient[]): boolean {
 let requestSeq = 0;
 
 // ---------------------------------------------------------------------------
+// Sort types
+// ---------------------------------------------------------------------------
+
+export type SortBy = 'name' | 'date' | 'status';
+
+// ---------------------------------------------------------------------------
 // Tipos de estado y acciones
 // ---------------------------------------------------------------------------
 
@@ -49,6 +56,8 @@ export interface PatientsState {
   searchQuery: string;
   /** Total acumulado de pacientes únicos cargados hasta el momento. */
   totalLoadedCount: number;
+  /** Criterio de ordenamiento activo. */
+  sortBy: SortBy;
 }
 
 export interface PatientsActions {
@@ -65,6 +74,7 @@ export interface PatientsActions {
   addPatient(input: PatientFormData): Patient;
   updatePatient(id: string, data: PatientFormData): boolean;
   updatePatientStatus(id: string, status: 'active' | 'inactive'): boolean;
+  setSortBy(sortBy: SortBy): void;
   resetStore(): void;
 }
 
@@ -83,6 +93,7 @@ export const initialState: PatientsState = {
   hasMore: true,
   searchQuery: '',
   totalLoadedCount: 0,
+  sortBy: 'name',
 };
 
 // ---------------------------------------------------------------------------
@@ -133,7 +144,11 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => {
         if (seq !== requestSeq) return;
 
         // Merge: local patients + API results (dedup by id, local wins)
-        const currentLocal = get().patients.filter((p) => p._origin === 'local');
+        // Filter local patients by search term so they don't leak into unrelated searches
+        const currentLocal = get()
+          .patients
+          .filter((p) => p._origin === 'local')
+          .filter((p) => matchesSearch(p.name, p.description, normalizedSearch));
         const localIds = new Set(currentLocal.map((p) => p.id));
         const newApiPatients = apiPatients.filter((p) => !localIds.has(p.id));
         const merged = [...currentLocal, ...newApiPatients];
@@ -266,6 +281,10 @@ export const usePatientsStore = create<PatientsStore>()((set, get) => {
       return true;
     },
 
+    setSortBy: (sortBy: SortBy) => {
+      set({ sortBy });
+    },
+
     resetStore: () => {
       set(initialState);
     },
@@ -313,4 +332,8 @@ export function selectPatientsSearchQuery(state: PatientsState): string {
 
 export function selectTotalLoadedCount(state: PatientsState): number {
   return state.totalLoadedCount;
+}
+
+export function selectSortBy(state: PatientsState): SortBy {
+  return state.sortBy;
 }

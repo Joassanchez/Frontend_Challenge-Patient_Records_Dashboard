@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import ErrorMessage from '@/patients-dashboard/molecules/ErrorMessage';
+import Icon from '@/patients-dashboard/atoms/Icon';
 import Button from '@/patients-dashboard/atoms/Button';
 
 // ---------------------------------------------------------------------------
@@ -8,11 +8,12 @@ import Button from '@/patients-dashboard/atoms/Button';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
+  /** Optional custom fallback for nested boundary isolation. */
+  fallback?: ReactNode;
 }
 
 interface ErrorBoundaryState {
   hasError: boolean;
-  message: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -20,23 +21,21 @@ interface ErrorBoundaryState {
 // ---------------------------------------------------------------------------
 
 /**
- * ErrorBoundary de nivel de página.
- * Captura errores no manejados en el árbol de componentes hijo y muestra
- * una UI de fallback con el mensaje de error y un botón para recargar.
+ * ErrorBoundary de nivel de página o sección.
+ * Captura errores no manejados y muestra una UI amigable.
+ * Acepta un `fallback` opcional para boundaries anidados (aislamiento).
  */
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, message: '' };
+    this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    // Actualiza el estado para que el próximo render muestre el fallback
-    return { hasError: true, message: error.message };
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Registra el error con metadata del componente
     console.error(
       '[ErrorBoundary]',
       error.message,
@@ -53,9 +52,17 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   render(): ReactNode {
     if (this.state.hasError) {
+      // Custom fallback for nested boundaries
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 p-8">
-          <ErrorMessage message={this.state.message} />
+          <div role="alert" className="flex items-center gap-2 text-sm text-error">
+            <Icon name="alert-circle" size="sm" />
+            <span>Algo salió mal. Intentá recargar la página.</span>
+          </div>
           <Button
             variant="secondary"
             size="md"

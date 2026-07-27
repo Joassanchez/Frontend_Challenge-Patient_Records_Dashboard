@@ -8,3 +8,5 @@ export { default as PatientCardsGrid } from './PatientCardsGrid';
 export { default as PatientForm } from './PatientForm';
 export { default as PatientModal } from './PatientModal';
 export { default as ToastContainer } from './ToastContainer';
+export { default as Banner } from './Banner';
+export { default as DashboardStats } from './DashboardStats';

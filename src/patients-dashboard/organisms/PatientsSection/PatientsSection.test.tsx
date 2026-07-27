@@ -150,39 +150,44 @@ describe('PatientsSection', () => {
 
   // ---- Loading state ----
 
-  it('renders a loading indicator (Spinner) while isLoading is true', () => {
+  it('renders skeleton cards while isLoading is true with no patients', () => {
     setStoreState({ isLoading: true, patients: [], error: null });
     render(<PatientsSection />);
-    const spinner = screen.getByRole('status', { name: 'Loading' });
-    expect(spinner).toBeInTheDocument();
+    // Skeletons are rendered via PatientCardsGrid with isLoading prop
+    // They render aria-hidden divs, not role="status" spinners
+    const skeletonPlaceholders = document.querySelectorAll('[aria-hidden="true"]');
+    expect(skeletonPlaceholders.length).toBeGreaterThan(0);
   });
 
-  it('does NOT render patient cards while loading', () => {
+  it('renders patient cards while loading (stale-while-revalidate)', () => {
     setStoreState({
       isLoading: true,
       patients: [createPatient({ id: '1', name: 'Ana' })],
       error: null,
     });
     render(<PatientsSection />);
-    expect(screen.queryByRole('article')).not.toBeInTheDocument();
+    // Stale data is kept visible during loading
+    expect(screen.getByRole('article')).toBeInTheDocument();
   });
 
   // ---- Error state ----
 
-  it('renders the error message from the store as-is when error is set', () => {
+  it('renders the error message from the store as-is when error is set with no patients', () => {
     setStoreState({ isLoading: false, patients: [], error: 'Network error' });
     render(<PatientsSection />);
     expect(screen.getByText('Network error')).toBeInTheDocument();
   });
 
-  it('does NOT render patient cards when error is set', () => {
+  it('renders patient cards when error is set with cached data (stale-while-error)', () => {
     setStoreState({
       isLoading: false,
       patients: [createPatient({ id: '1', name: 'Ana' })],
       error: 'Network error',
     });
     render(<PatientsSection />);
-    expect(screen.queryByRole('article')).not.toBeInTheDocument();
+    // Stale data remains visible + banner shown
+    expect(screen.getByRole('article')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
   it('renders error with alert role for accessibility', () => {
@@ -509,9 +514,6 @@ describe('PatientsSection', () => {
   });
 
   it('renders the search input when a search yields no results', async () => {
-    // Simulate: user typed a search term, server returned zero matches.
-    // The component uses local `searchInput` state to decide the empty-state
-    // message, so we type into the input to set that local state.
     setStoreState({
       isLoading: false,
       patients: [],
@@ -534,16 +536,17 @@ describe('PatientsSection', () => {
     ).toBeInTheDocument();
   });
 
-  it('does NOT render the search input while the initial load is in progress', () => {
+  it('renders the search input while the initial load is in progress', () => {
     setStoreState({ isLoading: true, patients: [], error: null });
     render(<PatientsSection />);
 
+    // Search input is visible even during loading so user can type ahead
     expect(
-      screen.queryByPlaceholderText(/buscar por nombre/i),
-    ).not.toBeInTheDocument();
+      screen.getByPlaceholderText(/buscar por nombre/i),
+    ).toBeInTheDocument();
   });
 
-  it('does NOT render the search input when an error is present', () => {
+  it('does NOT render the search input when an error is present with no patients', () => {
     setStoreState({
       isLoading: false,
       patients: [],

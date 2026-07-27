@@ -361,7 +361,7 @@ describe('PatientCard', () => {
       expect(toastSpies.showInfo).not.toHaveBeenCalled();
     });
 
-    it('REQ-TW-04: calls showInfo("Quitado de favoritos") when favorite patient is unfavorited', async () => {
+    it('REQ-TW-04: calls showInfo("Quitado de favoritos") with undo action when unfavorited', async () => {
       const user = userEvent.setup();
       toastSpies.showSuccess.mockClear();
       toastSpies.showInfo.mockClear();
@@ -376,7 +376,10 @@ describe('PatientCard', () => {
       const favButton = screen.getByRole('button', { name: /quitar.*favoritos/i });
       await user.click(favButton);
 
-      expect(toastSpies.showInfo).toHaveBeenCalledWith('Quitado de favoritos');
+      expect(toastSpies.showInfo).toHaveBeenCalledWith(
+        'Quitado de favoritos',
+        expect.objectContaining({ duration: 5000, action: expect.objectContaining({ label: 'Deshacer' }) }),
+      );
       expect(toastSpies.showSuccess).not.toHaveBeenCalled();
     });
 

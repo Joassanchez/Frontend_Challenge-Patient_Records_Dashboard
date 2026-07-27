@@ -63,6 +63,7 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
             className={cn(
               'relative w-full max-w-2xl mx-4 rounded-2xl',
               'border border-slate-200 bg-white shadow-xl',
+              'dark:bg-slate-900 dark:border-slate-700',
               'flex flex-col max-h-[90vh]',
             )}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
@@ -72,8 +73,8 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
             transition={{ duration: reducedTransition.duration }}
           >
             {/* ---- Encabezado ---- */}
-            <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <h2 id={titleId} className="text-lg font-semibold text-text">{title}</h2>
+            <header className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h2 id={titleId} className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
               <Button
                 ref={closeButtonRef}
                 variant="ghost"

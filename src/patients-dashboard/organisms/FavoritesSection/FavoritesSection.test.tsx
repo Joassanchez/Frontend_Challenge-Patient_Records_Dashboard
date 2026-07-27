@@ -195,39 +195,47 @@ describe('FavoritesSection', () => {
     expect(cards[1]).toHaveTextContent('Juan Pérez');
   });
 
-  it('paginates favorite patients client-side', async () => {
+  it('paginates favorite patients client-side (6 per page)', async () => {
     const user = userEvent.setup();
-    setFavoritesState(['p1', 'p2', 'p3', 'p4']);
-    setPatientsState([
-      createPatient({ id: 'p1', name: 'Ana' }),
-      createPatient({ id: 'p2', name: 'Juan' }),
-      createPatient({ id: 'p3', name: 'Mar?a' }),
-      createPatient({ id: 'p4', name: 'Luis' }),
-    ]);
-    render(<FavoritesSection />);
-
-    expect(screen.getAllByRole('article')).toHaveLength(3);
-    expect(screen.getByText(/p.gina 1 de 2/i)).toBeInTheDocument();
-    expect(screen.queryByText('Luis')).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: /siguiente/i }));
-
-    expect(screen.getByText(/p.gina 2 de 2/i)).toBeInTheDocument();
-    expect(screen.getAllByRole('article')).toHaveLength(1);
-    expect(screen.getByText('Luis')).toBeInTheDocument();
-  });
-
-  it('announces page changes with aria-live', () => {
-    setFavoritesState(['p1', 'p2', 'p3', 'p4']);
+    setFavoritesState(['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7']);
     setPatientsState([
       createPatient({ id: 'p1', name: 'Ana' }),
       createPatient({ id: 'p2', name: 'Juan' }),
       createPatient({ id: 'p3', name: 'María' }),
       createPatient({ id: 'p4', name: 'Luis' }),
+      createPatient({ id: 'p5', name: 'Pedro' }),
+      createPatient({ id: 'p6', name: 'Sofía' }),
+      createPatient({ id: 'p7', name: 'Carla' }),
     ]);
     render(<FavoritesSection />);
 
-    const pageIndicator = screen.getByText(/p.gina 1 de 2/i);
+    // Page 1: 6 cards
+    expect(screen.getAllByRole('article')).toHaveLength(6);
+    expect(screen.getByText(/página 1 de 2/i)).toBeInTheDocument();
+    expect(screen.queryByText('Carla')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /siguiente/i }));
+
+    // Page 2: 1 card
+    expect(screen.getByText(/página 2 de 2/i)).toBeInTheDocument();
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    expect(screen.getByText('Carla')).toBeInTheDocument();
+  });
+
+  it('announces page changes with aria-live', () => {
+    setFavoritesState(['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7']);
+    setPatientsState([
+      createPatient({ id: 'p1', name: 'Ana' }),
+      createPatient({ id: 'p2', name: 'Juan' }),
+      createPatient({ id: 'p3', name: 'María' }),
+      createPatient({ id: 'p4', name: 'Luis' }),
+      createPatient({ id: 'p5', name: 'Pedro' }),
+      createPatient({ id: 'p6', name: 'Sofía' }),
+      createPatient({ id: 'p7', name: 'Carla' }),
+    ]);
+    render(<FavoritesSection />);
+
+    const pageIndicator = screen.getByText(/página 1 de 2/i);
     expect(pageIndicator).toHaveAttribute('aria-live', 'polite');
   });
 

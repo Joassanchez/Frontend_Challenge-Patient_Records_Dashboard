@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { cn } from '@/shared/utils/cn';
 import Modal from '@/patients-dashboard/molecules/Modal';
 import PatientForm from '@/patients-dashboard/organisms/PatientForm';
 import { useModalStore, selectIsOpen, selectModalMode, selectSelectedPatientId, } from '@/patients-dashboard/store/modal.store';
@@ -31,7 +30,6 @@ function PatientModal() {
   const selectedPatient = usePatientsStore(selectPatientById(selectedPatientId),);
   const addPatient = usePatientsStore((s) => s.addPatient);
   const updatePatient = usePatientsStore((s) => s.updatePatient);
-  const updatePatientStatus = usePatientsStore((s) => s.updatePatientStatus);
   const showSuccess = useToastStore((s) => s.showSuccess);
   const showError = useToastStore((s) => s.showError);
 
@@ -71,17 +69,6 @@ function PatientModal() {
   // ---- Estado "no encontrado" para edición con paciente desconocido ----
   const showNotFound = mode === 'edit' && selectedPatientId && !selectedPatient;
 
-  // ---- Estado actual del paciente para el toggle ----
-  const patientStatus: 'active' | 'inactive' = selectedPatient?.status || 'active';
-  const isActive = patientStatus === 'active';
-
-  function handleStatusToggle() {
-    if (!selectedPatient) return;
-    const nextStatus = isActive ? 'inactive' : 'active';
-    updatePatientStatus(selectedPatient.id, nextStatus);
-    showSuccess(nextStatus === 'active' ? 'Paciente activado' : 'Paciente inactivado');
-  }
-
   return (
     <Modal
       isOpen={isOpen}
@@ -100,32 +87,6 @@ function PatientModal() {
         </div>
       ) : (
         <>
-          {/* ---- Toggle Activo/Inactivo (solo edición) ---- */}
-          {mode === 'edit' && (
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 mb-5">
-              <span className="text-sm font-medium text-slate-700">Estado</span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={isActive}
-                aria-label={isActive ? 'Desactivar paciente' : 'Activar paciente'}
-                onClick={handleStatusToggle}
-                className={cn(
-                  'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-                  isActive ? 'bg-emerald-500' : 'bg-slate-300',
-                )}
-              >
-                <span
-                  className={cn(
-                    'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform duration-200',
-                    isActive ? 'translate-x-5' : 'translate-x-0',
-                  )}
-                />
-              </button>
-            </div>
-          )}
-
           <PatientForm
             mode={mode}
             defaultValues={defaultValues}

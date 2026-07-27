@@ -155,6 +155,41 @@ describe('Toast', () => {
   });
 
   // -----------------------------------------------------------------------
+  // REQ-FAV-02: Action Button
+  // -----------------------------------------------------------------------
+
+  describe('action button (REQ-FAV-02)', () => {
+    it('renders action button when toast has action', () => {
+      const onClick = vi.fn();
+      render(
+        <Toast
+          toast={makeToast({ action: { label: 'Deshacer', onClick } })}
+          onDismiss={onDismiss}
+        />,
+      );
+      expect(screen.getByRole('button', { name: 'Deshacer' })).toBeInTheDocument();
+    });
+
+    it('does not render action button when toast has no action', () => {
+      render(<Toast toast={makeToast()} onDismiss={onDismiss} />);
+      expect(screen.queryByRole('button', { name: 'Deshacer' })).toBeNull();
+    });
+
+    it('calls action.onClick when action button is clicked', async () => {
+      const user = userEvent.setup();
+      const onClick = vi.fn();
+      render(
+        <Toast
+          toast={makeToast({ action: { label: 'Deshacer', onClick } })}
+          onDismiss={onDismiss}
+        />,
+      );
+      await user.click(screen.getByRole('button', { name: 'Deshacer' }));
+      expect(onClick).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // -----------------------------------------------------------------------
   // Edge cases
   // -----------------------------------------------------------------------
 

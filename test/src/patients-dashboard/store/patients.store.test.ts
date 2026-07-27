@@ -1196,8 +1196,8 @@ describe('updatePatientStatus', () => {
 // REQ-LPP-04, REQ-LPP-05: loadPatients — merge with local patients
 // ============================================================================
 describe('loadPatients — merge with local patients', () => {
-  it('merges API results with local patients (local patients survive search)', async () => {
-    const localPatient = createPatient({ id: 'loc-1', name: 'Local', _origin: 'local' });
+  it('merges API results with local patients (local patients matching search survive)', async () => {
+    const localPatient = createPatient({ id: 'loc-1', name: 'Local SearchMatch', description: 'desc', _origin: 'local' });
     usePatientsStore.setState({ patients: [localPatient] });
 
     const apiPatient = createPatient({ id: 'api-1', name: 'API' });
@@ -1227,7 +1227,7 @@ describe('loadPatients — merge with local patients', () => {
   });
 
   it('requestSeq guard still discards stale responses after merge', async () => {
-    const localPatient = createPatient({ id: 'loc-1', _origin: 'local' });
+    const localPatient = createPatient({ id: 'loc-1', name: 'second local', description: 'desc', _origin: 'local' });
     usePatientsStore.setState({ patients: [localPatient] });
 
     let resolveFirst!: (v: Patient[]) => void;
@@ -1257,6 +1257,35 @@ describe('loadPatients — merge with local patients', () => {
     expect(patients.find(p => p.id === 'loc-1')).toBeTruthy();
     expect(patients.find(p => p.id === 'api-b')).toBeTruthy();
     expect(patients.find(p => p.id === 'api-a')).toBeFalsy();
+  });
+});
+
+// ============================================================================
+// REQ-SRT-01: Sort By State
+// ============================================================================
+describe('REQ-SRT-01: Sort By State', () => {
+  it('initial sortBy is "name"', () => {
+    usePatientsStore.getState().resetStore();
+    expect(usePatientsStore.getState().sortBy).toBe('name');
+  });
+
+  it('setSortBy changes sortBy to "date"', () => {
+    usePatientsStore.getState().resetStore();
+    usePatientsStore.getState().setSortBy('date');
+    expect(usePatientsStore.getState().sortBy).toBe('date');
+  });
+
+  it('setSortBy changes sortBy to "status"', () => {
+    usePatientsStore.getState().resetStore();
+    usePatientsStore.getState().setSortBy('status');
+    expect(usePatientsStore.getState().sortBy).toBe('status');
+  });
+
+  it('setSortBy cycles back to "name"', () => {
+    usePatientsStore.getState().resetStore();
+    usePatientsStore.getState().setSortBy('date');
+    usePatientsStore.getState().setSortBy('name');
+    expect(usePatientsStore.getState().sortBy).toBe('name');
   });
 });
 

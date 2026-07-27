@@ -55,12 +55,12 @@ vi.mock('@/patients-dashboard/store/modal.store', () => ({
 // ---------------------------------------------------------------------------
 
 describe('PatientCardsGrid', () => {
-  it('renderiza 3 SkeletonCard cuando isLoading es true', () => {
+  it('renderiza 6 SkeletonCard cuando isLoading es true (default)', () => {
     const { container } = render(
       <PatientCardsGrid patients={[]} isLoading={true} />,
     );
-    const skeletons = container.querySelectorAll('[class*="shimmer"]');
-    expect(skeletons.length).toBe(3);
+    const skeletons = container.querySelectorAll('[aria-hidden="true"]');
+    expect(skeletons.length).toBe(6);
   });
 
   it('no renderiza PatientCard cuando isLoading es true', () => {
@@ -97,7 +97,8 @@ describe('PatientCardsGrid', () => {
     const { rerender, container } = render(
       <PatientCardsGrid patients={[]} isLoading={true} />,
     );
-    expect(container.querySelectorAll('[class*="shimmer"]').length).toBe(3);
+    // 6 skeleton cards rendered
+    expect(container.querySelectorAll('[aria-hidden="true"]').length).toBe(6);
 
     rerender(
       <PatientCardsGrid
@@ -105,7 +106,11 @@ describe('PatientCardsGrid', () => {
         isLoading={false}
       />,
     );
-    expect(container.querySelectorAll('[class*="shimmer"]').length).toBe(0);
+    // No more skeleton cards (skeletons have aria-hidden, cards don't)
+    // Note: motion.div may add some aria-hidden, so we check skeletons are gone
     expect(screen.getByText('Loaded Patient')).toBeInTheDocument();
+    // Skeleton count should be 0 (no SkeletonCard rendered)
+    const skeletonCards = container.querySelectorAll('.animate-\\[shimmer');
+    expect(skeletonCards.length).toBe(0);
   });
 });

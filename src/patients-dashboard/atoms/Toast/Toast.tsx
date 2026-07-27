@@ -43,7 +43,7 @@ const VARIANT_ROLE: Record<ToastVariant, 'status' | 'alert'> = {
 // ---------------------------------------------------------------------------
 
 function Toast({ toast, onDismiss }: ToastProps) {
-  const { type, message, id } = toast;
+  const { type, message, id, action } = toast;
   const variantClass = VARIANT_CLASS[type];
   const icon = VARIANT_ICON[type];
   const role = VARIANT_ROLE[type];
@@ -55,6 +55,7 @@ function Toast({ toast, onDismiss }: ToastProps) {
         'pointer-events-auto flex items-start gap-3 rounded-lg border p-4 shadow-lg',
         'transition-all duration-300 ease-in-out',
         'hover:shadow-xl',
+        'dark:shadow-black/30',
         variantClass,
       )}
     >
@@ -64,6 +65,22 @@ function Toast({ toast, onDismiss }: ToastProps) {
       </span>
 
       <span className="flex-1 text-sm font-medium">{message}</span>
+
+      {/* Botón de acción opcional */}
+      {action && (
+        <button
+          type="button"
+          onClick={action.onClick}
+          aria-label={action.label}
+          className={cn(
+            'shrink-0 rounded px-2 py-1 text-sm font-semibold',
+            'hover:opacity-80 focus-visible:ring-2',
+            'transition-opacity',
+          )}
+        >
+          {action.label}
+        </button>
+      )}
 
       {/* Botón de cierre */}
       <button

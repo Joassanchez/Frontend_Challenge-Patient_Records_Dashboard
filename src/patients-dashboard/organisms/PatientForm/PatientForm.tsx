@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   patientFormSchema,
@@ -10,6 +10,7 @@ import Input from '@/patients-dashboard/atoms/Input';
 import Textarea from '@/patients-dashboard/atoms/Textarea';
 import Button from '@/patients-dashboard/atoms/Button';
 import FormField from '@/patients-dashboard/molecules/FormField';
+import AvatarPreview from '@/patients-dashboard/molecules/AvatarPreview';
 
 // ---------------------------------------------------------------------------
 // Tipos
@@ -27,7 +28,7 @@ interface PatientFormProps {
 // ---------------------------------------------------------------------------
 
 function PatientForm({
-  mode,
+  mode: _mode,
   defaultValues,
   onSubmit,
   submitLabel,
@@ -40,7 +41,12 @@ function PatientForm({
   } = useForm<PatientFormInput, unknown, PatientFormData>({
     resolver: zodResolver(patientFormSchema),
     defaultValues,
+    mode: 'onBlur',
   });
+
+  // Watch avatar field for preview
+  const avatarValue = useWatch({ control, name: 'avatar' });
+  const nameValue = useWatch({ control, name: 'name' });
 
   // Reinicia el formulario cuando cambian los valores por defecto
   useEffect(() => {
@@ -130,13 +136,21 @@ function PatientForm({
             htmlFor="patient-avatar"
             error={errors.avatar?.message}
           >
-            <Input
-              id="patient-avatar"
-              placeholder="https://ejemplo.com/avatar.jpg"
-              error={errors.avatar?.message}
-              ref={ref}
-              {...field}
-            />
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <Input
+                  id="patient-avatar"
+                  placeholder="https://ejemplo.com/avatar.jpg"
+                  error={errors.avatar?.message}
+                  ref={ref}
+                  {...field}
+                />
+              </div>
+              <AvatarPreview
+                src={avatarValue || ''}
+                name={nameValue || ''}
+              />
+            </div>
           </FormField>
         )}
       />

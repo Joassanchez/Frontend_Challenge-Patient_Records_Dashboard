@@ -8,10 +8,11 @@ export {
   selectPatientsHasMore,
   selectPatientsCurrentPage,
   selectPatientsSearchQuery,
+  selectSortBy,
   initialState as patientsInitialState,
 } from './patients.store';
 
-export type { PatientsState, PatientsActions, PatientsStore } from './patients.store';
+export type { PatientsState, PatientsActions, PatientsStore, SortBy } from './patients.store';
 
 export {
   useFavoritesStore,
@@ -39,4 +40,4 @@ export {
   initialState as toastInitialState,
 } from './toast.store';
 
-export type { ToastState, ToastActions, ToastStore, ToastMessage } from './toast.store';
+export type { ToastState, ToastActions, ToastStore, ToastMessage, ToastAction, ToastShowOptions } from './toast.store';

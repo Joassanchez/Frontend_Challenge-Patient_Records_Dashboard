@@ -8,6 +8,7 @@ import { STAGGER_STEP, useReducedMotionTransition } from '@/shared/motion/motion
 interface PatientCardsGridProps {
   patients: Patient[];
   isLoading?: boolean;
+  skeletonCount?: number;
 }
 
 // Contenedor: dispara stagger en cadena
@@ -30,7 +31,7 @@ const childVariants = {
   }),
 };
 
-function PatientCardsGrid({ patients, isLoading = false }: PatientCardsGridProps) {
+function PatientCardsGrid({ patients, isLoading = false, skeletonCount = 6 }: PatientCardsGridProps) {
   const reducedTransition = useReducedMotionTransition();
 
   if (isLoading) {
@@ -43,9 +44,9 @@ function PatientCardsGrid({ patients, isLoading = false }: PatientCardsGridProps
           'lg:grid-cols-3',
         )}
       >
-        <SkeletonCard />
-        <SkeletonCard />
-        <SkeletonCard />
+        {Array.from({ length: skeletonCount }, (_, i) => (
+          <SkeletonCard key={i} />
+        ))}
       </div>
     );
   }

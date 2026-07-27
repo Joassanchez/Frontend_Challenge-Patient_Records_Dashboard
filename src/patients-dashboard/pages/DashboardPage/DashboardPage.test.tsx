@@ -24,7 +24,6 @@ vi.mock('@/patients-dashboard/store/modal.store', () => ({
     s.selectedPatientId,
 }));
 
-
 vi.mock('@/patients-dashboard/store/toast.store', () => ({
   useToastStore: vi.fn((selector?: (state: unknown) => unknown) => {
     const state = {
@@ -42,6 +41,78 @@ vi.mock('@/patients-dashboard/store/toast.store', () => ({
   }),
   selectToasts: () => [],
 }));
+
+vi.mock('@/patients-dashboard/store/patients.store', () => ({
+  usePatientsStore: vi.fn((selector?: (s: unknown) => unknown) => {
+    const state = {
+      patients: [],
+      isLoading: false,
+      isLoadingMore: false,
+      hasMore: false,
+      error: null,
+      searchQuery: '',
+      totalLoadedCount: 0,
+      sortBy: 'name',
+      loadPatients: vi.fn(),
+      loadNextPatientsPage: vi.fn(),
+      setSortBy: vi.fn(),
+    };
+    if (typeof selector === 'function') return selector(state);
+    return state;
+  }),
+  selectPatients: (s: { patients: unknown[] }) => s.patients,
+  selectPatientById: () => () => undefined,
+  selectSortBy: (s: { sortBy: string }) => s.sortBy,
+}));
+
+vi.mock('@/patients-dashboard/store/favorites.store', () => ({
+  useFavoritesStore: vi.fn((selector?: (s: unknown) => unknown) => {
+    const state = {
+      favoritePatientIds: [],
+      toggleFavorite: vi.fn(),
+    };
+    if (typeof selector === 'function') return selector(state);
+    return state;
+  }),
+  selectFavoriteIds: (s: { favoritePatientIds: string[] }) => s.favoritePatientIds,
+  selectFavoritesCount: (s: { favoritePatientIds: string[] }) => s.favoritePatientIds.length,
+  selectIsFavorite: () => () => false,
+}));
+
+vi.mock('@/patients-dashboard/store/ui.store', () => ({
+  useUiStore: vi.fn((selector?: (s: unknown) => unknown) => {
+    const state = { isOnline: true, setOnline: vi.fn(), resetStore: vi.fn() };
+    if (typeof selector === 'function') return selector(state);
+    return state;
+  }),
+}));
+
+vi.mock('@/shared/theme/useTheme', () => ({
+  useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() }),
+}));
+
+vi.mock('@/shared/hooks/useOnlineStatus', () => ({
+  useOnlineStatus: vi.fn(),
+}));
+
+vi.mock('@/shared/hooks/useKeyboardShortcuts', () => ({
+  useKeyboardShortcuts: vi.fn(),
+}));
+
+vi.mock('@/patients-dashboard/organisms/PatientCard', () => ({
+  default: ({ patient }: { patient: { id: string; name: string } }) => (
+    <article data-testid={patient.id}>{patient.name}</article>
+  ),
+}));
+
+// IntersectionObserver mock for PatientsSection infinite scroll
+class MockIntersectionObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  constructor(_cb: IntersectionObserverCallback) {}
+}
+globalThis.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 describe('DashboardPage', () => {
   function renderDashboard() {
@@ -79,7 +150,7 @@ describe('DashboardPage', () => {
 
     const h1s = screen.getAllByRole('heading', { level: 1 });
     expect(h1s).toHaveLength(1);
-    expect(h1s[0]).toHaveTextContent('Patient Records');
+    expect(h1s[0]).toHaveTextContent('Registros de pacientes');
   });
 
   it('renders subtitle "Gestión de historias clínicas" visible', () => {

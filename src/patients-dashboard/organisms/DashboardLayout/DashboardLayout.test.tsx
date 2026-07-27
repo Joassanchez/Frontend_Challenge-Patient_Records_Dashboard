@@ -5,6 +5,14 @@ import type { ToastMessage } from '@/patients-dashboard/store/toast.store';
 import { makeToast } from '../../../../test/helpers/toast.helper';
 
 // ---------------------------------------------------------------------------
+// Mocks
+// ---------------------------------------------------------------------------
+
+vi.mock('@/shared/theme/useTheme', () => ({
+  useTheme: () => ({ theme: 'light', toggleTheme: vi.fn() }),
+}));
+
+// ---------------------------------------------------------------------------
 // Toast store mock (stateful via vi.hoisted)
 // ---------------------------------------------------------------------------
 

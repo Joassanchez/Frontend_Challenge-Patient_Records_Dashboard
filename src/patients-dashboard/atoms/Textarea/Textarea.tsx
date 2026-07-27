@@ -21,6 +21,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           'w-full rounded-md border bg-white px-3 py-2 text-sm text-text transition-colors',
           'placeholder:text-text-muted',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-primary',
+          'dark:bg-slate-800',
           hasError
             ? 'border-error ring-1 ring-error'
             : 'border-border',
