@@ -26,8 +26,6 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
     favoritePatientIds.includes(p.id),
   );
 
-  const hasLoadedPatients = patients.length > 0;
-
   // Texto del contador — singular/plural, usa la cuenta COINCIDENTE (no la de localStorage)
   const counterText =
     favoritePatients.length === 1
@@ -51,30 +49,12 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
       counter={counterText}
       className={cn('w-full', className)}
     >
-      {/* ---- Vacío: sin favoritos ---- */}
-      {favoritePatientIds.length === 0 && (
+      {/* ---- Vacío: sin favoritos visibles ---- */}
+      {favoritePatients.length === 0 && (
         <EmptyState
           icon="inbox"
-          title="Todavía no marcaste favoritos"
-          description="Guardá pacientes importantes para accederlos más rápido"
-          variant="compact"
-        />
-      )}
-
-      {/* ---- Vacío controlado: hay favoritos guardados pero los pacientes no están cargados o ya no coinciden ---- */}
-      {favoritePatientIds.length > 0 && favoritePatients.length === 0 && (
-        <EmptyState
-          icon="inbox"
-          title={
-            hasLoadedPatients
-              ? 'Algunos favoritos ya no están disponibles'
-              : 'Tus favoritos aparecerán acá'
-          }
-          description={
-            hasLoadedPatients
-              ? 'Los pacientes guardados ya no existen en la lista actual'
-              : 'Tus favoritos aparecerán cuando la lista de pacientes esté disponible'
-          }
+          title="No tienes Pacientes Favoritos"
+          description="Marcá pacientes como favoritos para verlos acá"
           variant="compact"
         />
       )}

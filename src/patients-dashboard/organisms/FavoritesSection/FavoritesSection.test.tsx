@@ -38,8 +38,10 @@ vi.mock('@/patients-dashboard/store/favorites.store', () => ({
 // --- Patients store mock ---
 let patientsState: {
   patients: Array<{ id: string; name: string; description: string; website: string; avatar: string }>;
+  searchQuery: string;
 } = {
   patients: [],
+  searchQuery: '',
 };
 
 vi.mock('@/patients-dashboard/store/patients.store', () => ({
@@ -48,6 +50,7 @@ vi.mock('@/patients-dashboard/store/patients.store', () => ({
     return patientsState;
   }),
   selectPatients: (state: typeof patientsState) => state.patients,
+  selectPatientsSearchQuery: (state: typeof patientsState) => state.searchQuery,
 }));
 
 // No-op toast.store mock — FavoritesSection does not use toasts directly,
@@ -78,8 +81,8 @@ function setFavoritesState(ids: string[]) {
   favoritesState = { favoritePatientIds: ids };
 }
 
-function setPatientsState(patients: Array<{ id: string; name: string; description: string; website: string; avatar: string }>) {
-  patientsState = { patients };
+function setPatientsState(patients: Array<{ id: string; name: string; description: string; website: string; avatar: string }>, searchQuery = '') {
+  patientsState = { patients, searchQuery };
 }
 
 // ---------------------------------------------------------------------------
@@ -135,7 +138,7 @@ describe('FavoritesSection', () => {
 
     // Descriptive message about no favorites still visible
     expect(
-      screen.getByText(/todavía no marcaste favoritos/i),
+      screen.getByText(/No tienes Pacientes Favoritos/i),
     ).toBeInTheDocument();
 
     // The inbox icon must be rendered
@@ -158,23 +161,23 @@ describe('FavoritesSection', () => {
     expect(section).toBeInTheDocument();
   });
 
-  it('shows "aparecerán acá" message when patients not yet loaded', () => {
+  it('shows empty state message when patients not yet loaded', () => {
     setFavoritesState(['p1']);
     setPatientsState([]); // no patients at all
     render(<FavoritesSection />);
 
     expect(
-      screen.getByText('Tus favoritos aparecerán acá'),
+      screen.getByText(/No tienes Pacientes Favoritos/i),
     ).toBeInTheDocument();
   });
 
-  it('shows "ya no están disponibles" when patients loaded but favorites orphaned', () => {
+  it('shows empty state when favorites are orphaned (no matching patients)', () => {
     setFavoritesState(['orphan-1']);
-    setPatientsState([createPatient({ id: 'p1', name: 'Existing' })]);
+    setPatientsState([createPatient({ id: 'p1', name: 'Existing' })], '');
     render(<FavoritesSection />);
 
     expect(
-      screen.getByText(/algunos favoritos ya no están disponibles/i),
+      screen.getByText(/No tienes Pacientes Favoritos/i),
     ).toBeInTheDocument();
   });
 
@@ -251,9 +254,9 @@ describe('FavoritesSection', () => {
     setPatientsState([]);
     render(<FavoritesSection />);
 
-    // Should show a graceful empty message heading (patients not loaded yet)
+    // Should show a graceful empty message heading
     expect(
-      screen.getByRole('heading', { name: /tus favoritos aparecerán acá/i }),
+      screen.getByRole('heading', { name: /No tienes Pacientes Favoritos/i }),
     ).toBeInTheDocument();
 
     // Counter must show 0 (matched count), NOT the localStorage count (2)
@@ -292,5 +295,36 @@ describe('FavoritesSection', () => {
     });
 
 
+  });
+
+  // ===========================================================================
+  // REQ-FOU: Orphan messaging — unified empty state
+  // ===========================================================================
+  describe('Orphan messaging — unified', () => {
+    it('shows unified empty state when favorites are orphaned regardless of search', () => {
+      setFavoritesState(['orphan-1']);
+      setPatientsState(
+        [createPatient({ id: 'p1', name: 'Existing' })],
+        'smith', // searchQuery is active
+      );
+      render(<FavoritesSection />);
+
+      expect(
+        screen.getByText(/No tienes Pacientes Favoritos/i),
+      ).toBeInTheDocument();
+    });
+
+    it('shows same unified message when no search is active', () => {
+      setFavoritesState(['orphan-1']);
+      setPatientsState(
+        [createPatient({ id: 'p1', name: 'Existing' })],
+        '', // no search
+      );
+      render(<FavoritesSection />);
+
+      expect(
+        screen.getByText(/No tienes Pacientes Favoritos/i),
+      ).toBeInTheDocument();
+    });
   });
 });

@@ -55,7 +55,7 @@ describe('PatientForm render', () => {
     expect(screen.getByLabelText(/descripción/i)).toHaveValue('');
   });
 
-  it('does NOT render website or avatar inputs in create mode', () => {
+  it('renders website and avatar inputs in create mode as optional fields', () => {
     render(
       <PatientForm
         mode="create"
@@ -65,9 +65,9 @@ describe('PatientForm render', () => {
       />,
     );
 
-    // Only two form fields exist in create mode — no website, no avatar
-    expect(screen.queryByLabelText(/página web/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/avatar/i)).not.toBeInTheDocument();
+    // Website and avatar are optional — they render but without required indicator
+    expect(screen.getByLabelText(/página web/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/avatar/i)).toBeInTheDocument();
   });
 
   it('renders website and avatar inputs in edit mode with patient values', () => {

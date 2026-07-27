@@ -31,6 +31,7 @@ let storeState: {
   hasMore: boolean;
   error: string | null;
   searchQuery: string;
+  totalLoadedCount: number;
   loadPatients: (search?: string) => Promise<void>;
   loadNextPatientsPage: () => Promise<void>;
 } = {
@@ -40,6 +41,7 @@ let storeState: {
   hasMore: true,
   error: null,
   searchQuery: '',
+  totalLoadedCount: 0,
   loadPatients: mockLoadPatients,
   loadNextPatientsPage: mockLoadNextPatientsPage,
 };
@@ -101,6 +103,7 @@ beforeEach(() => {
     hasMore: true,
     error: null,
     searchQuery: '',
+    totalLoadedCount: 0,
     loadPatients: mockLoadPatients,
     loadNextPatientsPage: mockLoadNextPatientsPage,
   };
@@ -551,5 +554,43 @@ describe('PatientsSection', () => {
     expect(
       screen.queryByPlaceholderText(/buscar por nombre/i),
     ).not.toBeInTheDocument();
+  });
+
+  // ===========================================================================
+  // REQ-CC-01, REQ-CC-02: Counter context
+  // ===========================================================================
+  describe('Counter context', () => {
+    it('shows "N pacientes en total" when hasMore is true', () => {
+      setStoreState({
+        isLoading: false,
+        patients: [
+          createPatient({ id: '1', name: 'Ana' }),
+          createPatient({ id: '2', name: 'Juan' }),
+        ],
+        totalLoadedCount: 2,
+        error: null,
+        hasMore: true,
+      });
+      render(<PatientsSection />);
+
+      expect(screen.getByText('2 pacientes en total')).toBeInTheDocument();
+    });
+
+    it('shows "N pacientes en total" (no +) when hasMore is false', () => {
+      setStoreState({
+        isLoading: false,
+        patients: [
+          createPatient({ id: '1', name: 'Ana' }),
+          createPatient({ id: '2', name: 'Juan' }),
+        ],
+        totalLoadedCount: 2,
+        error: null,
+        hasMore: false,
+      });
+      render(<PatientsSection />);
+
+      expect(screen.getByText('2 pacientes en total')).toBeInTheDocument();
+      expect(screen.queryByText(/2\+/)).not.toBeInTheDocument();
+    });
   });
 });

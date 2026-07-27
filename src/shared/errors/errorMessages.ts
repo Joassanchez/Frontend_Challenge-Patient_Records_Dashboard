@@ -11,6 +11,7 @@ export type ErrorContext =
   | 'load-more-patients'
   | 'favorite-toggle'
   | 'favorite-load'
+  | 'patient-hydration'
   | 'patient-update'
   | 'render';
 
@@ -26,6 +27,8 @@ export const errorMessages: Record<ErrorContext | 'default', string> = {
     'No se pudo actualizar el estado de favorito. Intentá de nuevo.',
   'favorite-load':
     'No se pudieron cargar los favoritos. Se usará la lista vacía.',
+  'patient-hydration':
+    'No se pudieron recuperar los pacientes locales. Se usará la lista vacía.',
   'patient-update': 'No se pudo actualizar el paciente. Intentá de nuevo.',
   render: 'Ocurrió un error inesperado al renderizar la página.',
   default: 'Ha ocurrido un error inesperado.',

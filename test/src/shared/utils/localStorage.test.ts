@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getItem, setItem, isStringArray } from '@/shared/utils/localStorage';
+import { hydrateLocalPatients, persistLocalPatients, LOCAL_PATIENTS_KEY } from '@/shared/utils/localStorage';
 import { FAVORITES_KEY } from '@/patients-dashboard/store/favorites.store';
+import type { Patient } from '@/patients-dashboard/types/patient.types';
 
 // ---------------------------------------------------------------------------
 // Setup / Teardown
@@ -154,5 +156,100 @@ describe('REQ-FP-04: environment guard', () => {
     }
 
     expect(result).toBe(false);
+  });
+});
+
+// ============================================================================
+// REQ-LPP-02, REQ-LPP-06: hydrateLocalPatients
+// ============================================================================
+
+describe('hydrateLocalPatients', () => {
+  const localPatient: Patient = {
+    id: 'loc-1',
+    name: 'Local Patient',
+    description: 'Test',
+    website: '',
+    avatar: '',
+    _origin: 'local',
+    status: 'active',
+  };
+
+  it('returns empty array when localStorage key is absent', () => {
+    expect(hydrateLocalPatients()).toEqual([]);
+  });
+
+  it('returns patients from valid versioned payload', () => {
+    localStorage.setItem(
+      LOCAL_PATIENTS_KEY,
+      JSON.stringify({ version: 1, patients: [localPatient] }),
+    );
+    const result = hydrateLocalPatients();
+    expect(result).toEqual([localPatient]);
+  });
+
+  it('returns empty array and warns on schema version mismatch', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    localStorage.setItem(
+      LOCAL_PATIENTS_KEY,
+      JSON.stringify({ version: 999, patients: [localPatient] }),
+    );
+    const result = hydrateLocalPatients();
+    expect(result).toEqual([]);
+    expect(warnSpy).toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it('returns empty array on corrupted JSON', () => {
+    localStorage.setItem(LOCAL_PATIENTS_KEY, 'not-json{{{');
+    expect(hydrateLocalPatients()).toEqual([]);
+  });
+
+  it('returns empty array when payload is not an object with version+patients', () => {
+    localStorage.setItem(LOCAL_PATIENTS_KEY, JSON.stringify([1, 2, 3]));
+    expect(hydrateLocalPatients()).toEqual([]);
+  });
+});
+
+// ============================================================================
+// REQ-LPP-01: persistLocalPatients
+// ============================================================================
+
+describe('persistLocalPatients', () => {
+  const localPatient: Patient = {
+    id: 'loc-1',
+    name: 'Local',
+    description: 'Test',
+    website: '',
+    avatar: '',
+    _origin: 'local',
+    status: 'active',
+  };
+
+  it('writes versioned envelope to localStorage', () => {
+    persistLocalPatients([localPatient]);
+    const raw = localStorage.getItem(LOCAL_PATIENTS_KEY);
+    expect(raw).toBeTruthy();
+    const parsed = JSON.parse(raw!);
+    expect(parsed.version).toBe(1);
+    expect(parsed.patients).toEqual([localPatient]);
+  });
+
+  it('does not throw when localStorage is unavailable', () => {
+    const windowBackup = (globalThis as Record<string, unknown>).window;
+    delete (globalThis as Record<string, unknown>).window;
+
+    expect(() => persistLocalPatients([localPatient])).not.toThrow();
+
+    if (windowBackup !== undefined) {
+      (globalThis as Record<string, unknown>).window = windowBackup;
+    }
+  });
+
+  it('does not throw on quota exceeded', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => {
+      throw new DOMException('QuotaExceededError', 'QuotaExceededError');
+    });
+
+    expect(() => persistLocalPatients([localPatient])).not.toThrow();
   });
 });

@@ -98,52 +98,48 @@ function PatientForm({
         )}
       />
 
-      {/* Página web + Avatar — solo en modo edición */}
-      {mode === 'edit' && (
-        <>
-          {/* Página web */}
-          <Controller
-            name="website"
-            control={control}
-            render={({ field: { ref, ...field } }) => (
-              <FormField
-                label="Página web"
-                htmlFor="patient-website"
-                error={errors.website?.message}
-              >
-                <Input
-                  id="patient-website"
-                  placeholder="https://ejemplo.com"
-                  error={errors.website?.message}
-                  ref={ref}
-                  {...field}
-                />
-              </FormField>
-            )}
-          />
+      {/* Página web + Avatar — opcionales */}
+      {/* Página web */}
+      <Controller
+        name="website"
+        control={control}
+        render={({ field: { ref, ...field } }) => (
+          <FormField
+            label="Página web"
+            htmlFor="patient-website"
+            error={errors.website?.message}
+          >
+            <Input
+              id="patient-website"
+              placeholder="https://ejemplo.com"
+              error={errors.website?.message}
+              ref={ref}
+              {...field}
+            />
+          </FormField>
+        )}
+      />
 
-          {/* Avatar */}
-          <Controller
-            name="avatar"
-            control={control}
-            render={({ field: { ref, ...field } }) => (
-              <FormField
-                label="Avatar"
-                htmlFor="patient-avatar"
-                error={errors.avatar?.message}
-              >
-                <Input
-                  id="patient-avatar"
-                  placeholder="https://ejemplo.com/avatar.jpg"
-                  error={errors.avatar?.message}
-                  ref={ref}
-                  {...field}
-                />
-              </FormField>
-            )}
-          />
-        </>
-      )}
+      {/* Avatar */}
+      <Controller
+        name="avatar"
+        control={control}
+        render={({ field: { ref, ...field } }) => (
+          <FormField
+            label="Avatar"
+            htmlFor="patient-avatar"
+            error={errors.avatar?.message}
+          >
+            <Input
+              id="patient-avatar"
+              placeholder="https://ejemplo.com/avatar.jpg"
+              error={errors.avatar?.message}
+              ref={ref}
+              {...field}
+            />
+          </FormField>
+        )}
+      />
 
       {/* Enviar */}
       <Button type="submit" variant="primary" className="self-end">

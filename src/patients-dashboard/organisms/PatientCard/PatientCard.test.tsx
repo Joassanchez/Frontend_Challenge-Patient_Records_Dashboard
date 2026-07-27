@@ -37,7 +37,7 @@ vi.mock('@/patients-dashboard/store/toast.store', () => ({
 // Mocks — hoisted before component import
 // ---------------------------------------------------------------------------
 
-const mockToggleFavorite = vi.fn<(id: string) => { success: boolean; error?: string }>();
+const mockToggleFavorite = vi.fn<(id: string) => { success: boolean; error?: string }>().mockReturnValue({ success: true });
 
 // Favorites store state used by the mock selector
 let favoritesStoreState: {
@@ -430,6 +430,26 @@ describe('PatientCard', () => {
 
       expect(toastSpies.showSuccess).not.toHaveBeenCalled();
       expect(toastSpies.showInfo).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // REQ-PSM-04: Status badge
+  // =========================================================================
+  describe('Status badge', () => {
+    it('renders "Activo" badge when status is active', () => {
+      render(<PatientCard patient={createPatient({ status: 'active' })} />);
+      expect(screen.getByText(/activo/i)).toBeInTheDocument();
+    });
+
+    it('renders "Inactivo" badge when status is inactive', () => {
+      render(<PatientCard patient={createPatient({ status: 'inactive' })} />);
+      expect(screen.getByText(/inactivo/i)).toBeInTheDocument();
+    });
+
+    it('defaults to "Activo" when status is undefined', () => {
+      render(<PatientCard patient={createPatient({ status: undefined })} />);
+      expect(screen.getByText(/activo/i)).toBeInTheDocument();
     });
   });
 });

@@ -20,6 +20,7 @@ export const apiPatientSchema = z.object({
   website: z.string(),
   avatar: stringOrEmpty,
   createdAt: z.string().optional(),
+  status: z.enum(['active', 'inactive']).optional(),
 });
 
 /** Valida una lista de pacientes recibida desde la API. */

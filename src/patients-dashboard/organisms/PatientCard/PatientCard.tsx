@@ -70,9 +70,21 @@ function PatientCard({ patient, className }: PatientCardProps) {
         />
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h3 className="truncate text-base font-semibold text-slate-950">
-            {patient.name}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="truncate text-base font-semibold text-slate-950">
+              {patient.name}
+            </h3>
+            <span
+              className={cn(
+                'inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                patient.status === 'inactive'
+                  ? 'bg-slate-100 text-slate-500'
+                  : 'bg-emerald-50 text-emerald-700',
+              )}
+            >
+              {patient.status === 'inactive' ? 'Inactivo' : 'Activo'}
+            </span>
+          </div>
           {patient.description && (
             <p
               className={cn(

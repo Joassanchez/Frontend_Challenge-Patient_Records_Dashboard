@@ -134,7 +134,7 @@ describe('Create mode', () => {
     expect(screen.getByLabelText(/descripción/i)).toHaveValue('');
   });
 
-  it('does NOT render website or avatar inputs in create mode', () => {
+  it('renders website and avatar inputs in create mode as optional fields', () => {
     modalStoreState = {
       ...defaultModalState(),
       isOpen: true,
@@ -144,8 +144,8 @@ describe('Create mode', () => {
 
     render(<PatientModal />);
 
-    expect(screen.queryByLabelText(/página web/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/avatar/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/página web/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/avatar/i)).toBeInTheDocument();
   });
 
   it('calls addPatient with PatientFormData (website/avatar default to empty) and closes modal on valid submit', async () => {

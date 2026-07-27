@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { patientFormSchema } from '@/patients-dashboard/schemas/patient.schema';
+import { patientFormSchema, apiPatientSchema } from '@/patients-dashboard/schemas/patient.schema';
 import type { PatientFormData } from '@/patients-dashboard/schemas/patient.schema';
 
 const validPayload = {
@@ -183,5 +183,53 @@ describe('PatientFormData type', () => {
       expect('id' in formData).toBe(false);
       expect('createdAt' in formData).toBe(false);
     }
+  });
+});
+
+// ============================================================================
+// REQ-PSM-02: apiPatientSchema — optional status field
+// ============================================================================
+describe('apiPatientSchema — optional status', () => {
+  const baseApiPatient = {
+    id: '1',
+    name: 'Ana',
+    description: 'Paciente',
+    website: 'https://ana.com',
+    avatar: '',
+  };
+
+  it('accepts a patient without status field (backward compatible)', () => {
+    const result = apiPatientSchema.safeParse(baseApiPatient);
+    expect(result.success).toBe(true);
+  });
+
+  it('accepts status "active"', () => {
+    const result = apiPatientSchema.safeParse({
+      ...baseApiPatient,
+      status: 'active',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.status).toBe('active');
+    }
+  });
+
+  it('accepts status "inactive"', () => {
+    const result = apiPatientSchema.safeParse({
+      ...baseApiPatient,
+      status: 'inactive',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.status).toBe('inactive');
+    }
+  });
+
+  it('rejects invalid status values', () => {
+    const result = apiPatientSchema.safeParse({
+      ...baseApiPatient,
+      status: 'deleted',
+    });
+    expect(result.success).toBe(false);
   });
 });
