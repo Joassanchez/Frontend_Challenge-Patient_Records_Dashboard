@@ -102,40 +102,46 @@ function PatientModal() {
             Cerrar
           </Button>
         </div>
-      ) : confirmDiscardOpen ? (
-        <div className="flex flex-col items-center gap-4 py-4" role="alertdialog" aria-label="Confirmar descarte de cambios">
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Tenés cambios sin guardar. ¿Querés descartarlos?
-          </p>
-          <div className="flex gap-3">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                setConfirmDiscardOpen(false);
-                closeModal();
-              }}
-            >
-              Descartar cambios
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setConfirmDiscardOpen(false)}
-            >
-              Seguir editando
-            </Button>
-          </div>
-        </div>
       ) : (
         <>
-          <PatientForm
-            dirtyRef={isDirtyRef}
-            mode={mode}
-            defaultValues={defaultValues}
-            onSubmit={handleSubmit}
-            submitLabel={submitLabel}
-          />
+          {/* PatientForm se mantiene montado siempre — oculto con hidden cuando
+              el diálogo de confirmación está visible, para no perder el estado
+              del formulario (react-hook-form resetearía los datos al montar). */}
+          <div className={confirmDiscardOpen ? 'hidden' : ''}>
+            <PatientForm
+              dirtyRef={isDirtyRef}
+              mode={mode}
+              defaultValues={defaultValues}
+              onSubmit={handleSubmit}
+              submitLabel={submitLabel}
+            />
+          </div>
+          {confirmDiscardOpen && (
+            <div className="flex flex-col items-center gap-4 py-4" role="alertdialog" aria-label="Confirmar descarte de cambios">
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                Tenés cambios sin guardar. ¿Querés descartarlos?
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setConfirmDiscardOpen(false);
+                    closeModal();
+                  }}
+                >
+                  Descartar cambios
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setConfirmDiscardOpen(false)}
+                >
+                  Seguir editando
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </Modal>
