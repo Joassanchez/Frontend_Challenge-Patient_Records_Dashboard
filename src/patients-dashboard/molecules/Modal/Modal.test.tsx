@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useRef } from 'react';
 import Modal from '@/patients-dashboard/molecules/Modal';
 
 // ---------------------------------------------------------------------------
@@ -139,5 +140,79 @@ describe('REQ-MC-05: Click en panel no cierra', () => {
     await user.click(closeButton);
 
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ============================================================================
+// REQ-MA-01, REQ-MA-02: Focus trap
+// ============================================================================
+
+function ModalWithTrigger({ isOpen = true }: { isOpen?: boolean }) {
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  return (
+    <div>
+      <button ref={triggerRef} data-testid="trigger">
+        Open modal
+      </button>
+      <Modal
+        isOpen={isOpen}
+        onClose={vi.fn()}
+        title="Test modal"
+        ariaLabel="Test modal"
+        triggerRef={triggerRef}
+      >
+        <input data-testid="input-a" type="text" />
+        <input data-testid="input-b" type="text" />
+        <button data-testid="action-btn">Action</button>
+      </Modal>
+    </div>
+  );
+}
+
+describe('REQ-MA-01: Focus trap — Tab stays in modal', () => {
+  it('Tab on last focusable element wraps to first focusable element', async () => {
+    const user = userEvent.setup();
+    render(<ModalWithTrigger />);
+
+    const actionBtn = screen.getByTestId('action-btn');
+    const closeButton = screen.getByRole('button', { name: /cerrar/i });
+
+    // Focus the last element in the modal body
+    actionBtn.focus();
+    expect(document.activeElement).toBe(actionBtn);
+
+    // Tab should wrap to the close button (first focusable)
+    await user.tab();
+    expect(document.activeElement).toBe(closeButton);
+  });
+});
+
+describe('REQ-MA-02: Focus trap — Shift+Tab wraps', () => {
+  it('Shift+Tab on first focusable element wraps to last', async () => {
+    const user = userEvent.setup();
+    render(<ModalWithTrigger />);
+
+    const closeButton = screen.getByRole('button', { name: /cerrar/i });
+    const actionBtn = screen.getByTestId('action-btn');
+
+    // Close button is focused on open
+    expect(document.activeElement).toBe(closeButton);
+
+    // Shift+Tab should wrap to the last focusable element
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(actionBtn);
+  });
+});
+
+describe('REQ-MA-02: Focus restores to trigger on close', () => {
+  it('focus returns to the trigger button when modal closes', () => {
+    const { rerender } = render(<ModalWithTrigger />);
+
+    const trigger = screen.getByTestId('trigger');
+
+    // Close the modal
+    rerender(<ModalWithTrigger isOpen={false} />);
+
+    expect(document.activeElement).toBe(trigger);
   });
 });

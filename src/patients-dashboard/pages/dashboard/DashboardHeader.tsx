@@ -1,6 +1,6 @@
 import Button from '@/patients-dashboard/atoms/Button';
 import Icon from '@/patients-dashboard/atoms/Icon';
-import { useToastStore } from '@/patients-dashboard/store/toast.store';
+import { cn } from '@/shared/utils/cn';
 
 interface DashboardHeaderProps {
   onCreatePatient: () => void;
@@ -8,13 +8,8 @@ interface DashboardHeaderProps {
 }
 
 export default function DashboardHeader({ onCreatePatient, isOffline }: DashboardHeaderProps) {
-  const showInfo = useToastStore((s) => s.showInfo);
-
   function handleClick() {
-    if (isOffline) {
-      showInfo('No disponible sin conexión');
-      return;
-    }
+    if (isOffline) return;
     onCreatePatient();
   }
 
@@ -30,8 +25,12 @@ export default function DashboardHeader({ onCreatePatient, isOffline }: Dashboar
       </div>
       <Button
         variant="primary"
-        className="w-full rounded-lg px-4 shadow-primary/25 sm:w-auto"
+        className={cn(
+          'w-full rounded-lg px-4 shadow-primary/25 sm:w-auto',
+          isOffline && 'opacity-50 cursor-not-allowed',
+        )}
         onClick={handleClick}
+        aria-disabled={isOffline || undefined}
       >
         <Icon name="plus" size="sm" />
         Nuevo paciente

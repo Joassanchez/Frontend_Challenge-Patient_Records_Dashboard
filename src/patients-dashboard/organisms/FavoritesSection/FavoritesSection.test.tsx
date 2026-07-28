@@ -53,8 +53,7 @@ vi.mock('@/patients-dashboard/store/patients.store', () => ({
   selectPatientsSearchQuery: (state: typeof patientsState) => state.searchQuery,
 }));
 
-// No-op toast.store mock — FavoritesSection does not use toasts directly,
-// but it renders components (PatientCard) that may read the store.
+// No-op toast.store mock
 vi.mock('@/patients-dashboard/store/toast.store', () => ({
   useToastStore: vi.fn((selector?: (state: unknown) => unknown) => {
     const state = {
@@ -89,14 +88,11 @@ function setPatientsState(patients: Array<{ id: string; name: string; descriptio
 // Tests
 // ---------------------------------------------------------------------------
 
-// Reset mock call history between tests
 beforeEach(() => {
   vi.mocked(PatientCard).mockClear();
 });
 
 describe('FavoritesSection', () => {
-  // ---- Accessibility (preserved from existing tests) ----
-
   it('renders an accessible section landmark with name "Favoritos"', () => {
     setFavoritesState([]);
     setPatientsState([]);
@@ -105,10 +101,7 @@ describe('FavoritesSection', () => {
     const section = screen.getByRole('region', { name: 'Favoritos' });
     expect(section).toBeInTheDocument();
 
-    const heading = screen.getByRole('heading', {
-      name: 'Favoritos',
-      level: 2,
-    });
+    const heading = screen.getByRole('heading', { name: 'Favoritos', level: 2 });
     expect(heading).toBeInTheDocument();
     expect(section.contains(heading)).toBe(true);
   });
@@ -119,34 +112,24 @@ describe('FavoritesSection', () => {
     render(<FavoritesSection />);
 
     const section = screen.getByRole('region', { name: 'Favoritos' });
-    const heading = screen.getByRole('heading', {
-      name: 'Favoritos',
-      level: 2,
-    });
+    const heading = screen.getByRole('heading', { name: 'Favoritos', level: 2 });
 
     const labelledBy = section.getAttribute('aria-labelledby');
     expect(labelledBy).toBeTruthy();
     expect(heading.id).toBe(labelledBy);
   });
 
-  // ---- REQ-DL-02: Empty state ----
-
   it('renders compact empty state when there are no favorites', () => {
     setFavoritesState([]);
     setPatientsState([]);
     render(<FavoritesSection />);
 
-    // Descriptive message about no favorites still visible
-    expect(
-      screen.getByText(/No tienes Pacientes Favoritos/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No tienes Pacientes Favoritos/i)).toBeInTheDocument();
 
-    // The inbox icon must be rendered
     const section = screen.getByRole('region', { name: /favoritos/i });
     const svg = section.querySelector('svg');
     expect(svg).toBeInTheDocument();
 
-    // Compact variant: uses reduced padding (py-8), not full padding (py-16)
     const emptyContainer = svg!.parentElement!;
     expect(emptyContainer.className).toContain('py-8');
     expect(emptyContainer.className).not.toContain('py-16');
@@ -163,12 +146,10 @@ describe('FavoritesSection', () => {
 
   it('shows empty state message when patients not yet loaded', () => {
     setFavoritesState(['p1']);
-    setPatientsState([]); // no patients at all
+    setPatientsState([]);
     render(<FavoritesSection />);
 
-    expect(
-      screen.getByText(/No tienes Pacientes Favoritos/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No tienes Pacientes Favoritos/i)).toBeInTheDocument();
   });
 
   it('shows empty state when favorites are orphaned (no matching patients)', () => {
@@ -176,62 +157,54 @@ describe('FavoritesSection', () => {
     setPatientsState([createPatient({ id: 'p1', name: 'Existing' })], '');
     render(<FavoritesSection />);
 
-    expect(
-      screen.getByText(/No tienes Pacientes Favoritos/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No tienes Pacientes Favoritos/i)).toBeInTheDocument();
   });
-
-  // ---- REQ-DL-02: Grid of favorite patients ----
 
   it('renders a responsive grid of PatientCards when favorites exist', () => {
     setFavoritesState(['p1', 'p2']);
-    setPatientsState([createPatient({ id: 'p1', name: 'Ana García' }), createPatient({ id: 'p2', name: 'Juan Pérez' })]);
+    setPatientsState([
+      createPatient({ id: 'p1', name: 'Ana García' }),
+      createPatient({ id: 'p2', name: 'Juan Pérez' }),
+    ]);
     render(<FavoritesSection />);
 
-    // Two cards should be rendered
     const cards = screen.getAllByRole('article');
     expect(cards).toHaveLength(2);
     expect(cards[0]).toHaveTextContent('Ana García');
     expect(cards[1]).toHaveTextContent('Juan Pérez');
   });
 
-  it('paginates favorite patients client-side (6 per page)', async () => {
+  it('paginates favorite patients client-side (3 per page)', async () => {
     const user = userEvent.setup();
-    setFavoritesState(['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7']);
+    setFavoritesState(['p1', 'p2', 'p3', 'p4']);
     setPatientsState([
       createPatient({ id: 'p1', name: 'Ana' }),
       createPatient({ id: 'p2', name: 'Juan' }),
       createPatient({ id: 'p3', name: 'María' }),
       createPatient({ id: 'p4', name: 'Luis' }),
-      createPatient({ id: 'p5', name: 'Pedro' }),
-      createPatient({ id: 'p6', name: 'Sofía' }),
-      createPatient({ id: 'p7', name: 'Carla' }),
     ]);
     render(<FavoritesSection />);
 
-    // Page 1: 6 cards
-    expect(screen.getAllByRole('article')).toHaveLength(6);
+    // Page 1: 3 cards
+    expect(screen.getAllByRole('article')).toHaveLength(3);
     expect(screen.getByText(/página 1 de 2/i)).toBeInTheDocument();
-    expect(screen.queryByText('Carla')).not.toBeInTheDocument();
+    expect(screen.queryByText('Luis')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /siguiente/i }));
 
     // Page 2: 1 card
     expect(screen.getByText(/página 2 de 2/i)).toBeInTheDocument();
     expect(screen.getAllByRole('article')).toHaveLength(1);
-    expect(screen.getByText('Carla')).toBeInTheDocument();
+    expect(screen.getByText('Luis')).toBeInTheDocument();
   });
 
   it('announces page changes with aria-live', () => {
-    setFavoritesState(['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7']);
+    setFavoritesState(['p1', 'p2', 'p3', 'p4']);
     setPatientsState([
       createPatient({ id: 'p1', name: 'Ana' }),
       createPatient({ id: 'p2', name: 'Juan' }),
       createPatient({ id: 'p3', name: 'María' }),
       createPatient({ id: 'p4', name: 'Luis' }),
-      createPatient({ id: 'p5', name: 'Pedro' }),
-      createPatient({ id: 'p6', name: 'Sofía' }),
-      createPatient({ id: 'p7', name: 'Carla' }),
     ]);
     render(<FavoritesSection />);
 
@@ -239,42 +212,30 @@ describe('FavoritesSection', () => {
     expect(pageIndicator).toHaveAttribute('aria-live', 'polite');
   });
 
-  // ---- REQ-DL-09: Join between favorites and patients ----
-
   it('handles orphan favorite IDs gracefully (IDs not found in patients)', () => {
-    // p99 is favorited but doesn't exist in patients — should be silently ignored
     setFavoritesState(['p1', 'p99']);
     setPatientsState([createPatient({ id: 'p1', name: 'Ana García' })]);
     render(<FavoritesSection />);
 
-    // Only Ana's card should render
     const cards = screen.getAllByRole('article');
     expect(cards).toHaveLength(1);
     expect(cards[0]).toHaveTextContent('Ana García');
 
-    // Counter must use matched count (1), not localStorage count (2)
     expect(screen.getByText('1 paciente guardado')).toBeInTheDocument();
   });
 
   it('shows empty state when favorites exist but no patients match', () => {
-    // Favorites have IDs but patients array doesn't contain them yet
     setFavoritesState(['p1', 'p2']);
     setPatientsState([]);
     render(<FavoritesSection />);
 
-    // Should show a graceful empty message heading
     expect(
       screen.getByRole('heading', { name: /No tienes Pacientes Favoritos/i }),
     ).toBeInTheDocument();
 
-    // Counter must show 0 (matched count), NOT the localStorage count (2)
     expect(screen.getByText('0 pacientes guardados')).toBeInTheDocument();
     expect(screen.queryByText('2 pacientes guardados')).not.toBeInTheDocument();
   });
-
-  // ===========================================================================
-  // Section Counter — REQ-COUNTERS-01
-  // ===========================================================================
 
   describe('Section counter', () => {
     it('shows "N pacientes guardados" for plural count', () => {
@@ -301,38 +262,29 @@ describe('FavoritesSection', () => {
       render(<FavoritesSection />);
       expect(screen.getByText('0 pacientes guardados')).toBeInTheDocument();
     });
-
-
   });
 
-  // ===========================================================================
-  // REQ-FOU: Orphan messaging — unified empty state
-  // ===========================================================================
   describe('Orphan messaging — unified', () => {
     it('shows unified empty state when favorites are orphaned regardless of search', () => {
       setFavoritesState(['orphan-1']);
       setPatientsState(
         [createPatient({ id: 'p1', name: 'Existing' })],
-        'smith', // searchQuery is active
+        'smith',
       );
       render(<FavoritesSection />);
 
-      expect(
-        screen.getByText(/No tienes Pacientes Favoritos/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/No tienes Pacientes Favoritos/i)).toBeInTheDocument();
     });
 
     it('shows same unified message when no search is active', () => {
       setFavoritesState(['orphan-1']);
       setPatientsState(
         [createPatient({ id: 'p1', name: 'Existing' })],
-        '', // no search
+        '',
       );
       render(<FavoritesSection />);
 
-      expect(
-        screen.getByText(/No tienes Pacientes Favoritos/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/No tienes Pacientes Favoritos/i)).toBeInTheDocument();
     });
   });
 });

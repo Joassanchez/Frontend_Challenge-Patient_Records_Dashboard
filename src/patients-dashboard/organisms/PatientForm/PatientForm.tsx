@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, type MutableRefObject } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -21,6 +21,8 @@ interface PatientFormProps {
   defaultValues: PatientFormData;
   onSubmit: (data: PatientFormData) => void;
   submitLabel: string;
+  /** Ref mutable que se actualiza en cada render con el valor de isDirty. No causa re-renders. */
+  dirtyRef?: MutableRefObject<boolean>;
 }
 
 // ---------------------------------------------------------------------------
@@ -32,17 +34,23 @@ function PatientForm({
   defaultValues,
   onSubmit,
   submitLabel,
+  dirtyRef,
 }: PatientFormProps) {
   const {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<PatientFormInput, unknown, PatientFormData>({
     resolver: zodResolver(patientFormSchema),
     defaultValues,
     mode: 'onBlur',
   });
+
+  // Actualizar dirtyRef en cada render — sin causar re-renders del padre
+  if (dirtyRef) {
+    dirtyRef.current = isDirty;
+  }
 
   // Watch avatar field for preview
   const avatarValue = useWatch({ control, name: 'avatar' });

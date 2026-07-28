@@ -39,7 +39,6 @@ vi.mock('@/patients-dashboard/store/toast.store', () => ({
 
 const mockToggleFavorite = vi.fn<(id: string) => { success: boolean; error?: string }>().mockReturnValue({ success: true });
 
-// Favorites store state used by the mock selector
 let favoritesStoreState: {
   favoritePatientIds: string[];
   toggleFavorite: (id: string) => { success: boolean; error?: string };
@@ -82,8 +81,6 @@ vi.mock('@/patients-dashboard/store/modal.store', () => ({
 // ---------------------------------------------------------------------------
 
 describe('PatientCard', () => {
-  // ---- Identity rendering ----
-
   it('renders a semantic <article> as the card root', () => {
     render(<PatientCard patient={createPatient()} />);
     const article = screen.getByRole('article');
@@ -123,8 +120,6 @@ describe('PatientCard', () => {
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
-  // ---- Avatar fallback ----
-
   it('renders avatar image with alt text containing patient name when src is provided', () => {
     render(<PatientCard patient={createPatient()} />);
     const img = screen.getByRole('img', { name: /Ana García/i });
@@ -137,8 +132,6 @@ describe('PatientCard', () => {
     expect(screen.getByText('AG')).toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
-
-  // ---- Action buttons: Editar + Favorito only, no "Ver detalle" ----
 
   it('does NOT render a "Ver detalle" button', () => {
     render(<PatientCard patient={createPatient()} />);
@@ -169,10 +162,6 @@ describe('PatientCard', () => {
     const button = screen.getByRole('button', { name: /agregar.*ana.*favoritos/i });
     expect(button).toBeInTheDocument();
   });
-
-  // ---- Description collapse/expand contract ----
-
-  // ---- Expand/collapse behavior (preserved from existing tests) ----
 
   it('renders collapsed by default with "Ver más" toggle', () => {
     render(
@@ -302,10 +291,6 @@ describe('PatientCard', () => {
     expect(screen.queryByText(/fecha de registro/i)).not.toBeInTheDocument();
   });
 
-  // =========================================================================
-  // Favorite Button Behavior (preserved)
-  // =========================================================================
-
   describe('Favorite button', () => {
     it('has aria-pressed="false" when the patient is not a favorite', () => {
       favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
@@ -334,22 +319,17 @@ describe('PatientCard', () => {
       await user.click(button);
 
       expect(mockToggleFavorite).toHaveBeenCalledWith('p1');
-    }    );
+    });
   });
 
-  // =========================================================================
-  // Toast Wiring (REQ-TW-03, REQ-TW-04)
-  // =========================================================================
-
   describe('Toast wiring — favorite toggle', () => {
-    it('REQ-TW-03: calls showSuccess("Agregado a favoritos") when non-favorite patient is favorited', async () => {
+    it('calls showSuccess("Agregado a favoritos") when non-favorite patient is favorited', async () => {
       const user = userEvent.setup();
       toastSpies.showSuccess.mockClear();
       toastSpies.showInfo.mockClear();
       mockToggleFavorite.mockClear();
       mockToggleFavorite.mockReturnValue({ success: true });
 
-      // Patient is NOT a favorite
       favoritesStoreState = { favoritePatientIds: [], toggleFavorite: mockToggleFavorite };
 
       render(<PatientCard patient={createPatient({ id: 'p1' })} />);
@@ -361,14 +341,13 @@ describe('PatientCard', () => {
       expect(toastSpies.showInfo).not.toHaveBeenCalled();
     });
 
-    it('REQ-TW-04: calls showInfo("Quitado de favoritos") with undo action when unfavorited', async () => {
+    it('calls showInfo("Quitado de favoritos") with undo action when unfavorited', async () => {
       const user = userEvent.setup();
       toastSpies.showSuccess.mockClear();
       toastSpies.showInfo.mockClear();
       mockToggleFavorite.mockClear();
       mockToggleFavorite.mockReturnValue({ success: true });
 
-      // Patient IS a favorite
       favoritesStoreState = { favoritePatientIds: ['p1'], toggleFavorite: mockToggleFavorite };
 
       render(<PatientCard patient={createPatient({ id: 'p1' })} />);
@@ -436,9 +415,6 @@ describe('PatientCard', () => {
     });
   });
 
-  // =========================================================================
-  // REQ-PSM-04: Status badge
-  // =========================================================================
   describe('Status badge', () => {
     it('renders "Activo" badge when status is active', () => {
       render(<PatientCard patient={createPatient({ status: 'active' })} />);

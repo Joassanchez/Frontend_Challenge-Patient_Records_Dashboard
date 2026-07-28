@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { cn } from '@/shared/utils/cn';
 import { usePatientsStore, type SortBy } from '@/patients-dashboard/store/patients.store';
 import EmptyState from '@/patients-dashboard/molecules/EmptyState';
@@ -33,6 +33,7 @@ interface PatientsSectionProps {
 function PatientsSection({ className }: PatientsSectionProps) {
   const headingId = 'patients-section-heading';
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const patients = usePatientsStore((s) => s.patients);
   const isLoading = usePatientsStore((s) => s.isLoading);
@@ -94,6 +95,7 @@ function PatientsSection({ className }: PatientsSectionProps) {
   const sectionActions = !showErrorOnly ? (
     <div className="flex flex-wrap items-center gap-2">
       <SearchInput
+        ref={searchInputRef}
         value={searchInput}
         onChange={setSearchInput}
         placeholder="Buscar por nombre o descripción"
@@ -173,6 +175,18 @@ function PatientsSection({ className }: PatientsSectionProps) {
             searchInput.trim()
               ? `No se encontraron pacientes para "${searchInput.trim()}"`
               : 'Creá tu primer paciente para empezar'
+          }
+          action={
+            searchInput.trim()
+              ? {
+                  label: 'Limpiar búsqueda',
+                  onClick: () => {
+                    setSearchInput('');
+                    loadPatients('');
+                    searchInputRef.current?.focus();
+                  },
+                }
+              : undefined
           }
         />
       )}

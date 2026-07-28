@@ -153,7 +153,7 @@ function PatientCard({ patient, className }: PatientCardProps) {
           <span className="truncate max-w-[200px]">{websiteDisplay}</span>
         </a>
       ) : patient.website ? (
-        <span className="inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-sm text-slate-400">
+        <span className="inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-sm text-slate-400 line-through">
           <Icon name="eye" size="sm" />
           <span className="truncate max-w-[200px]">{websiteDisplay}</span>
         </span>

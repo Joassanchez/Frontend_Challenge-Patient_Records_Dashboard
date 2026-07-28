@@ -113,4 +113,42 @@ describe('PatientCardsGrid', () => {
     const skeletonCards = container.querySelectorAll('.animate-\\[shimmer');
     expect(skeletonCards.length).toBe(0);
   });
+
+  // =========================================================================
+  // REQ-SA-01, REQ-SA-02: Sort animation gate
+  // =========================================================================
+  describe('Sort animation gate', () => {
+    it('renders all patients on first render', () => {
+      const patients = [
+        createPatient({ id: '1', name: 'Ana' }),
+        createPatient({ id: '2', name: 'Juan' }),
+        createPatient({ id: '3', name: 'María' }),
+      ];
+      render(<PatientCardsGrid patients={patients} isLoading={false} />);
+      expect(screen.getByText('Ana')).toBeInTheDocument();
+      expect(screen.getByText('Juan')).toBeInTheDocument();
+      expect(screen.getByText('María')).toBeInTheDocument();
+    });
+
+    it('re-renders with new sort order without unmounting cards', () => {
+      const patients = [
+        createPatient({ id: '1', name: 'Ana' }),
+        createPatient({ id: '2', name: 'Juan' }),
+      ];
+      const { rerender } = render(
+        <PatientCardsGrid patients={patients} isLoading={false} />,
+      );
+
+      // Reorder patients
+      const reordered = [
+        createPatient({ id: '2', name: 'Juan' }),
+        createPatient({ id: '1', name: 'Ana' }),
+      ];
+      rerender(<PatientCardsGrid patients={reordered} isLoading={false} />);
+
+      // Both cards should still be present
+      expect(screen.getByText('Ana')).toBeInTheDocument();
+      expect(screen.getByText('Juan')).toBeInTheDocument();
+    });
+  });
 });

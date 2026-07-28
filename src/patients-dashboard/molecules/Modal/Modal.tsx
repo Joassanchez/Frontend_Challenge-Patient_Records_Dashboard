@@ -1,9 +1,10 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@/shared/utils/cn';
 import Icon from '@/patients-dashboard/atoms/Icon';
 import Button from '@/patients-dashboard/atoms/Button';
 import { useReducedMotionTransition } from '@/shared/motion/motion-presets';
+import { useFocusTrap } from './useFocusTrap';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,12 +12,18 @@ interface ModalProps {
   title: string;
   ariaLabel: string;
   children: ReactNode;
+  triggerRef?: RefObject<HTMLElement | null>;
 }
 
-function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
+function Modal({ isOpen, onClose, title, ariaLabel, children, triggerRef }: ModalProps) {
   const titleId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const reducedTransition = useReducedMotionTransition();
+
+  // Focus trap — wire triggerRef (default to closeButtonRef if not provided)
+  const internalTriggerRef = useRef<HTMLButtonElement>(null);
+  const resolvedTriggerRef = triggerRef ?? internalTriggerRef;
+  const { panelRef } = useFocusTrap({ open: isOpen, triggerRef: resolvedTriggerRef });
 
   // --- Enfocar botón de cierre al abrir el modal ---
   useEffect(() => {
@@ -56,6 +63,7 @@ function Modal({ isOpen, onClose, title, ariaLabel, children }: ModalProps) {
         >
           {/* Panel — evita la propagación del clic para no cerrar al hacer clic adentro */}
           <motion.div
+            ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby={title ? titleId : undefined}

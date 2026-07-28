@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '@/shared/utils/cn';
 import type { Patient } from '@/patients-dashboard/types';
@@ -33,6 +34,16 @@ const childVariants = {
 
 function PatientCardsGrid({ patients, isLoading = false, skeletonCount = 6 }: PatientCardsGridProps) {
   const reducedTransition = useReducedMotionTransition();
+  const hasMountedRef = useRef(false);
+
+  // After first render, disable stagger — only layout animations apply
+  const initialVariant = hasMountedRef.current ? false : 'hidden';
+  const animateVariant = 'show';
+
+  // Mark as mounted after first render
+  if (!hasMountedRef.current && patients.length > 0) {
+    hasMountedRef.current = true;
+  }
 
   if (isLoading) {
     return (
@@ -60,8 +71,8 @@ function PatientCardsGrid({ patients, isLoading = false, skeletonCount = 6 }: Pa
         'lg:grid-cols-3',
       )}
       variants={containerVariants}
-      initial="hidden"
-      animate="show"
+      initial={initialVariant}
+      animate={animateVariant}
     >
       {patients.map((patient) => (
         <motion.div

@@ -23,13 +23,16 @@ export default function Header() {
           onClick={toggleTheme}
           aria-label={theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           className={cn(
-            'rounded-lg p-2 text-slate-500 transition-colors',
+            'inline-flex items-center gap-2 rounded-lg p-2 text-slate-500 transition-colors',
             'hover:bg-slate-100 hover:text-slate-700',
             'dark:hover:bg-slate-800 dark:hover:text-slate-300',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
           )}
         >
           <Icon name={theme === 'dark' ? 'sun' : 'moon'} size="md" />
+          <span className="hidden sm:inline text-sm font-medium">
+            {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+          </span>
         </button>
       </div>
     </header>

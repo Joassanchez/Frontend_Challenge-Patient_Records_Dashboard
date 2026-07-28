@@ -498,3 +498,105 @@ describe('Toast NOT shown on validation failure', () => {
     expect(mockUpdatePatient).not.toHaveBeenCalled();
   });
 });
+
+// ============================================================================
+// REQ-MD-01, REQ-MD-02, REQ-MD-03: Dirty form confirmation
+// ============================================================================
+
+describe('Dirty form confirmation', () => {
+  it('shows confirm dialog when Escape is pressed with dirty form', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'edit',
+      selectedPatientId: 'p1',
+    };
+    mockCloseModal.mockClear();
+
+    render(<PatientModal />);
+
+    // Dirty the form
+    await user.clear(screen.getByLabelText(/nombre/i));
+    await user.type(screen.getByLabelText(/nombre/i), 'Changed');
+
+    // Press Escape — should show confirm dialog, NOT close
+    await user.keyboard('{Escape}');
+
+    expect(mockCloseModal).not.toHaveBeenCalled();
+    expect(screen.getByText(/descartar cambios/i)).toBeInTheDocument();
+    expect(screen.getByText(/seguir editando/i)).toBeInTheDocument();
+  });
+
+  it('closes immediately when Escape is pressed with clean form', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'edit',
+      selectedPatientId: 'p1',
+    };
+    mockCloseModal.mockClear();
+
+    render(<PatientModal />);
+
+    // Don't dirty the form — press Escape
+    await user.keyboard('{Escape}');
+
+    expect(mockCloseModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Descartar cambios" closes the modal', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'edit',
+      selectedPatientId: 'p1',
+    };
+    mockCloseModal.mockClear();
+
+    render(<PatientModal />);
+
+    // Dirty the form
+    await user.clear(screen.getByLabelText(/nombre/i));
+    await user.type(screen.getByLabelText(/nombre/i), 'Changed');
+
+    // Press Escape to open confirm dialog
+    await user.keyboard('{Escape}');
+    expect(screen.getByText(/descartar cambios/i)).toBeInTheDocument();
+
+    // Click "Descartar cambios"
+    await user.click(screen.getByRole('button', { name: /descartar cambios/i }));
+    expect(mockCloseModal).toHaveBeenCalledTimes(1);
+  });
+
+  it('"Seguir editando" dismisses the confirm dialog and keeps modal open', async () => {
+    const user = userEvent.setup();
+    modalStoreState = {
+      ...defaultModalState(),
+      isOpen: true,
+      mode: 'edit',
+      selectedPatientId: 'p1',
+    };
+    mockCloseModal.mockClear();
+
+    render(<PatientModal />);
+
+    // Dirty the form
+    await user.clear(screen.getByLabelText(/nombre/i));
+    await user.type(screen.getByLabelText(/nombre/i), 'Changed');
+
+    // Press Escape to open confirm dialog
+    await user.keyboard('{Escape}');
+    expect(screen.getByText(/descartar cambios/i)).toBeInTheDocument();
+
+    // Click "Seguir editando"
+    await user.click(screen.getByRole('button', { name: /seguir editando/i }));
+
+    expect(mockCloseModal).not.toHaveBeenCalled();
+    expect(screen.queryByText(/descartar cambios/i)).not.toBeInTheDocument();
+    // Modal is still open
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+});

@@ -11,7 +11,7 @@ interface FavoritesSectionProps {
   className?: string;
 }
 
-const FAVORITES_PAGE_SIZE = 6;
+const FAVORITES_PAGE_SIZE = 3;
 
 function FavoritesSection({ className }: FavoritesSectionProps) {
   const headingId = 'favorites-section-heading';
@@ -80,14 +80,14 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
                 variant="secondary"
                 size="sm"
                 disabled={safeCurrentPage === 1}
-                className="rounded-full disabled:bg-slate-50"
+                className="rounded-full disabled:bg-slate-100 dark:disabled:bg-slate-700"
                 onClick={() => setCurrentPage((page) => page - 1)}
               >
                 Anterior
               </Button>
               <span
                 aria-live="polite"
-                className="text-sm font-medium text-slate-500"
+                className="text-sm font-medium text-slate-500 dark:text-slate-400"
               >
                 Página {safeCurrentPage} de {totalPages}
               </span>
@@ -95,7 +95,7 @@ function FavoritesSection({ className }: FavoritesSectionProps) {
                 variant="secondary"
                 size="sm"
                 disabled={safeCurrentPage === totalPages}
-                className="rounded-full disabled:bg-slate-50"
+                className="rounded-full disabled:bg-slate-100 dark:disabled:bg-slate-700"
                 onClick={() => setCurrentPage((page) => page + 1)}
               >
                 Siguiente
